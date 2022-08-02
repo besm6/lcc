@@ -20,3 +20,11 @@ the distribution and installation instructions.
 Chris Fraser / cwf@aya.yale.edu
 David Hanson / drh@drhanson.net
 $Revision$ $Date$
+
+
+Build with cmake:
+
+    mkdir build
+    cd build
+    cmake ..
+    make
