@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id$
 # run .../target/os/tst/foo.s [ remotehost ]
 
 # set -x

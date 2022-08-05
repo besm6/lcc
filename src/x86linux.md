@@ -1,4 +1,5 @@
 %{
+/* clang-format off */
 /* x86/linux lburg spec. Derived from x86.md by
 Marcos Ramirez <marcos@inf.utfsm.cl>
 Horst von Brand <vonbrand@sleipnir.valparaiso.cl>
@@ -681,402 +682,446 @@ stmt: RETP4(reg)  "# ret\n"
 stmt: RETF4(freg) "# ret\n"
 stmt: RETF8(freg) "# ret\n"
 %%
-static void progbeg(int argc, char *argv[]) {
-        int i;
-        extern Interface x86IR, x86linuxIR;
+/* clang-format on */
 
-#define xx(f) assert(!x86linuxIR.f); x86linuxIR.f = x86IR.f
-        xx(address);
-        xx(local);
-        xx(x.blkfetch);
-        xx(x.blkstore);
-        xx(x.blkloop);
-        xx(x.doarg);
+static void progbeg(int argc, char *argv[])
+{
+    int i;
+    extern Interface x86IR, x86linuxIR;
+
+#define xx(f)              \
+    assert(!x86linuxIR.f); \
+    x86linuxIR.f = x86IR.f
+    xx(address);
+    xx(local);
+    xx(x.blkfetch);
+    xx(x.blkstore);
+    xx(x.blkloop);
+    xx(x.doarg);
 #undef xx
-        {
-                union {
-                        char c;
-                        int i;
-                } u;
-                u.i = 0;
-                u.c = 1;
-                swap = ((int)(u.i == 1)) != IR->little_endian;
-        }
-        parseflags(argc, argv);
-        for (i = 0; i < argc; i++)
-                if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "-pg") == 0)
-                        pflag = 1;
-        intreg[EAX]   = mkreg("%%eax", EAX, 1, IREG);
-        intreg[EDX]   = mkreg("%%edx", EDX, 1, IREG);
-        intreg[ECX]   = mkreg("%%ecx", ECX, 1, IREG);
-        intreg[EBX]   = mkreg("%%ebx", EBX, 1, IREG);
-        intreg[ESI]   = mkreg("%%esi", ESI, 1, IREG);
-        intreg[EDI]   = mkreg("%%edi", EDI, 1, IREG);
-        shortreg[EAX] = mkreg("%%ax", EAX, 1, IREG);
-        shortreg[ECX] = mkreg("%%cx", ECX, 1, IREG);
-        shortreg[EDX] = mkreg("%%dx", EDX, 1, IREG);
-        shortreg[EBX] = mkreg("%%bx", EBX, 1, IREG);
-        shortreg[ESI] = mkreg("%%si", ESI, 1, IREG);
-        shortreg[EDI] = mkreg("%%di", EDI, 1, IREG);
-        charreg[EAX]  = mkreg("%%al", EAX, 1, IREG);
-        charreg[ECX]  = mkreg("%%cl", ECX, 1, IREG);
-        charreg[EDX]  = mkreg("%%dl", EDX, 1, IREG);
-        charreg[EBX]  = mkreg("%%bl", EBX, 1, IREG);
-        for (i = 0; i < 8; i++)
-                fltreg[i] = mkreg("%d", i, 0, FREG);
-        charregw = mkwildcard(charreg);
-        shortregw = mkwildcard(shortreg);
-        intregw = mkwildcard(intreg);
-        fltregw = mkwildcard(fltreg);
+    {
+        union {
+            char c;
+            int i;
+        } u;
+        u.i  = 0;
+        u.c  = 1;
+        swap = ((int)(u.i == 1)) != IR->little_endian;
+    }
+    parseflags(argc, argv);
+    for (i = 0; i < argc; i++)
+        if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "-pg") == 0)
+            pflag = 1;
+    intreg[EAX]   = mkreg("%%eax", EAX, 1, IREG);
+    intreg[EDX]   = mkreg("%%edx", EDX, 1, IREG);
+    intreg[ECX]   = mkreg("%%ecx", ECX, 1, IREG);
+    intreg[EBX]   = mkreg("%%ebx", EBX, 1, IREG);
+    intreg[ESI]   = mkreg("%%esi", ESI, 1, IREG);
+    intreg[EDI]   = mkreg("%%edi", EDI, 1, IREG);
+    shortreg[EAX] = mkreg("%%ax", EAX, 1, IREG);
+    shortreg[ECX] = mkreg("%%cx", ECX, 1, IREG);
+    shortreg[EDX] = mkreg("%%dx", EDX, 1, IREG);
+    shortreg[EBX] = mkreg("%%bx", EBX, 1, IREG);
+    shortreg[ESI] = mkreg("%%si", ESI, 1, IREG);
+    shortreg[EDI] = mkreg("%%di", EDI, 1, IREG);
+    charreg[EAX]  = mkreg("%%al", EAX, 1, IREG);
+    charreg[ECX]  = mkreg("%%cl", ECX, 1, IREG);
+    charreg[EDX]  = mkreg("%%dl", EDX, 1, IREG);
+    charreg[EBX]  = mkreg("%%bl", EBX, 1, IREG);
+    for (i = 0; i < 8; i++)
+        fltreg[i] = mkreg("%d", i, 0, FREG);
+    charregw  = mkwildcard(charreg);
+    shortregw = mkwildcard(shortreg);
+    intregw   = mkwildcard(intreg);
+    fltregw   = mkwildcard(fltreg);
 
-        tmask[IREG] = (1<<EDI) | (1<<ESI) | (1<<EBX)
-                    | (1<<EDX) | (1<<ECX) | (1<<EAX);
-        vmask[IREG] = 0;
-        tmask[FREG] = 0xff;
-        vmask[FREG] = 0;
+    tmask[IREG] = (1 << EDI) | (1 << ESI) | (1 << EBX) | (1 << EDX) | (1 << ECX) | (1 << EAX);
+    vmask[IREG] = 0;
+    tmask[FREG] = 0xff;
+    vmask[FREG] = 0;
 
-        cseg = 0;
-        quo = mkreg("%%eax", EAX, 1, IREG);
-        quo->x.regnode->mask |= 1<<EDX;
-        rem = mkreg("%%edx", EDX, 1, IREG);
-        rem->x.regnode->mask |= 1<<EAX;
+    cseg = 0;
+    quo  = mkreg("%%eax", EAX, 1, IREG);
+    quo->x.regnode->mask |= 1 << EDX;
+    rem = mkreg("%%edx", EDX, 1, IREG);
+    rem->x.regnode->mask |= 1 << EAX;
 
-        stabprefix = ".LL";
+    stabprefix = ".LL";
 }
 
-static Symbol rmap(int opk) {
-        switch (optype(opk)) {
-        case B: case P:
-                return intregw;
-        case I: case U:
-                if (opsize(opk) == 1)
-                        return charregw;
-                else if (opsize(opk) == 2)
-                        return shortregw;
-                else
-                        return intregw;
-        case F:
-                return fltregw;
-        default:
-                return 0;
-        }
+static Symbol rmap(int opk)
+{
+    switch (optype(opk)) {
+    case B:
+    case P:
+        return intregw;
+    case I:
+    case U:
+        if (opsize(opk) == 1)
+            return charregw;
+        else if (opsize(opk) == 2)
+            return shortregw;
+        else
+            return intregw;
+    case F:
+        return fltregw;
+    default:
+        return 0;
+    }
 }
 
 static Symbol prevg;
 
-static void globalend(void) {
-        if (prevg && prevg->type->size > 0)
-                print(".size %s,%d\n", prevg->x.name, prevg->type->size);
-        prevg = NULL;
+static void globalend(void)
+{
+    if (prevg && prevg->type->size > 0)
+        print(".size %s,%d\n", prevg->x.name, prevg->type->size);
+    prevg = NULL;
 }
 
-static void progend(void) {
-        globalend();
-        (*IR->segment)(CODE);
-        print(".ident \"LCC: 4.2\"\n");
+static void progend(void)
+{
+    globalend();
+    (*IR->segment)(CODE);
+    print(".ident \"LCC: 4.2\"\n");
 }
 
-static void target(Node p) {
-        assert(p);
-        switch (specific(p->op)) {
-        case RSH+I: case RSH+U: case LSH+I: case LSH+U:
-                if (generic(p->kids[1]->op) != CNST
-                && !(   generic(p->kids[1]->op) == INDIR
-                     && specific(p->kids[1]->kids[0]->op) == VREG+P
-                     && p->kids[1]->syms[RX]->u.t.cse
-                     && generic(p->kids[1]->syms[RX]->u.t.cse->op) == CNST)) {
-                        rtarget(p, 1, intreg[ECX]);
-                        setreg(p, intreg[EAX]);
-                }
-                break;
-        case MUL+U:
-                setreg(p, quo);
-                rtarget(p, 0, intreg[EAX]);
-                break;
-        case DIV+I: case DIV+U:
-                setreg(p, quo);
-                rtarget(p, 0, intreg[EAX]);
-                rtarget(p, 1, intreg[ECX]);
-                break;
-        case MOD+I: case MOD+U:
-                setreg(p, rem);
-                rtarget(p, 0, intreg[EAX]);
-                rtarget(p, 1, intreg[ECX]);
-                break;
-        case ASGN+B:
-                rtarget(p, 0, intreg[EDI]);
-                rtarget(p->kids[1], 0, intreg[ESI]);
-                break;
-        case ARG+B:
-                rtarget(p->kids[0], 0, intreg[ESI]);
-                break;
-        case CVF+I:
-                setreg(p, intreg[EAX]);
-                break;
-        case CALL+I: case CALL+U: case CALL+P: case CALL+V:
-                setreg(p, intreg[EAX]);
-                break;
-        case RET+I: case RET+U: case RET+P:
-                rtarget(p, 0, intreg[EAX]);
-                break;
+static void target(Node p)
+{
+    assert(p);
+    switch (specific(p->op)) {
+    case RSH + I:
+    case RSH + U:
+    case LSH + I:
+    case LSH + U:
+        if (generic(p->kids[1]->op) != CNST &&
+            !(generic(p->kids[1]->op) == INDIR && specific(p->kids[1]->kids[0]->op) == VREG + P &&
+              p->kids[1]->syms[RX]->u.t.cse &&
+              generic(p->kids[1]->syms[RX]->u.t.cse->op) == CNST)) {
+            rtarget(p, 1, intreg[ECX]);
+            setreg(p, intreg[EAX]);
         }
+        break;
+    case MUL + U:
+        setreg(p, quo);
+        rtarget(p, 0, intreg[EAX]);
+        break;
+    case DIV + I:
+    case DIV + U:
+        setreg(p, quo);
+        rtarget(p, 0, intreg[EAX]);
+        rtarget(p, 1, intreg[ECX]);
+        break;
+    case MOD + I:
+    case MOD + U:
+        setreg(p, rem);
+        rtarget(p, 0, intreg[EAX]);
+        rtarget(p, 1, intreg[ECX]);
+        break;
+    case ASGN + B:
+        rtarget(p, 0, intreg[EDI]);
+        rtarget(p->kids[1], 0, intreg[ESI]);
+        break;
+    case ARG + B:
+        rtarget(p->kids[0], 0, intreg[ESI]);
+        break;
+    case CVF + I:
+        setreg(p, intreg[EAX]);
+        break;
+    case CALL + I:
+    case CALL + U:
+    case CALL + P:
+    case CALL + V:
+        setreg(p, intreg[EAX]);
+        break;
+    case RET + I:
+    case RET + U:
+    case RET + P:
+        rtarget(p, 0, intreg[EAX]);
+        break;
+    }
 }
 
-static void clobber(Node p) {
-        static int nstack = 0;
+static void clobber(Node p)
+{
+    static int nstack = 0;
 
-        assert(p);
-        nstack = ckstack(p, nstack);
-        switch (specific(p->op)) {
-        case ASGN+B: case ARG+B:
-                spill(1<<ECX | 1<<ESI | 1<<EDI, IREG, p);
-                break;
-        case EQ+F: case LE+F: case GE+F: case LT+F: case GT+F: case NE+F:
-                spill(1<<EAX, IREG, p);
-                break;
-        case CVF+I:
-                spill(1<<EDX, IREG, p);
-                break;
-        case CALL+F:
-                spill(1<<EDX | 1<<EAX | 1<<ECX, IREG, p);
-                break;
-        case CALL+I: case CALL+U: case CALL+P: case CALL+V:
-                spill(1<<EDX | 1<<ECX, IREG, p);
-                break;
-        }
+    assert(p);
+    nstack = ckstack(p, nstack);
+    switch (specific(p->op)) {
+    case ASGN + B:
+    case ARG + B:
+        spill(1 << ECX | 1 << ESI | 1 << EDI, IREG, p);
+        break;
+    case EQ + F:
+    case LE + F:
+    case GE + F:
+    case LT + F:
+    case GT + F:
+    case NE + F:
+        spill(1 << EAX, IREG, p);
+        break;
+    case CVF + I:
+        spill(1 << EDX, IREG, p);
+        break;
+    case CALL + F:
+        spill(1 << EDX | 1 << EAX | 1 << ECX, IREG, p);
+        break;
+    case CALL + I:
+    case CALL + U:
+    case CALL + P:
+    case CALL + V:
+        spill(1 << EDX | 1 << ECX, IREG, p);
+        break;
+    }
 }
 
-static void emit2(Node p) {
-        int op = specific(p->op);
+static void emit2(Node p)
+{
+    int op = specific(p->op);
 #define preg(f) ((f)[getregnum(p->x.kids[0])]->x.name)
 
-        if (op == CVI+I && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 1)
-                print("movsbl %s,%s\n", preg(charreg), p->syms[RX]->x.name);
-        else if (op == CVI+U && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 1)
-                print("movsbl %s,%s\n", preg(charreg), p->syms[RX]->x.name);
-        else if (op == CVI+I && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 2)
-                print("movswl %s,%s\n", preg(shortreg), p->syms[RX]->x.name);
-        else if (op == CVI+U && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 2)
-                print("movswl %s,%s\n", preg(shortreg), p->syms[RX]->x.name);
-        else if (op == CVU+I && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 1)
-                print("movzbl %s,%s\n", preg(charreg), p->syms[RX]->x.name);
-        else if (op == CVU+U && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 1)
-                print("movzbl %s,%s\n", preg(charreg), p->syms[RX]->x.name);
-        else if (op == CVU+I && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 2)
-                print("movzwl %s,%s\n", preg(shortreg), p->syms[RX]->x.name);
-        else if (op == CVU+U && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 2)
-                print("movzwl %s,%s\n", preg(shortreg), p->syms[RX]->x.name);
-        else if (generic(op) == CVI || generic(op) == CVU || generic(op) == LOAD) {
-                char *dst = intreg[getregnum(p)]->x.name;
-                char *src = preg(intreg);
-                assert(opsize(p->op) <= opsize(p->x.kids[0]->op));
-                if (dst != src)
-                        print("movl %s,%s\n", src, dst);
-        } else if (op == ARG+B)
-                print("subl $%d,%%esp\nmovl %%esp,%%edi\nmovl $%d,%%ecx\nrep\nmovsb\n",
-                        roundup(p->syms[0]->u.c.v.i, 4), p->syms[0]->u.c.v.i);
+    if (op == CVI + I && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 1)
+        print("movsbl %s,%s\n", preg(charreg), p->syms[RX]->x.name);
+    else if (op == CVI + U && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 1)
+        print("movsbl %s,%s\n", preg(charreg), p->syms[RX]->x.name);
+    else if (op == CVI + I && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 2)
+        print("movswl %s,%s\n", preg(shortreg), p->syms[RX]->x.name);
+    else if (op == CVI + U && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 2)
+        print("movswl %s,%s\n", preg(shortreg), p->syms[RX]->x.name);
+    else if (op == CVU + I && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 1)
+        print("movzbl %s,%s\n", preg(charreg), p->syms[RX]->x.name);
+    else if (op == CVU + U && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 1)
+        print("movzbl %s,%s\n", preg(charreg), p->syms[RX]->x.name);
+    else if (op == CVU + I && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 2)
+        print("movzwl %s,%s\n", preg(shortreg), p->syms[RX]->x.name);
+    else if (op == CVU + U && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 2)
+        print("movzwl %s,%s\n", preg(shortreg), p->syms[RX]->x.name);
+    else if (generic(op) == CVI || generic(op) == CVU || generic(op) == LOAD) {
+        char *dst = intreg[getregnum(p)]->x.name;
+        char *src = preg(intreg);
+        assert(opsize(p->op) <= opsize(p->x.kids[0]->op));
+        if (dst != src)
+            print("movl %s,%s\n", src, dst);
+    } else if (op == ARG + B)
+        print("subl $%d,%%esp\nmovl %%esp,%%edi\nmovl $%d,%%ecx\nrep\nmovsb\n",
+              roundup(p->syms[0]->u.c.v.i, 4), p->syms[0]->u.c.v.i);
 }
 
-static void function(Symbol f, Symbol caller[], Symbol callee[], int n) {
-        int i;
+static void function(Symbol f, Symbol caller[], Symbol callee[], int n)
+{
+    int i;
 
-        globalend();
-        print(".align 16\n");
-        print(".type %s,@function\n", f->x.name);
-        print("%s:\n", f->x.name);
-        print("pushl %%ebp\n");
-        if (pflag) {
-                static int plab;
-                print("movl %%esp,%%ebp\n");
-                (*IR->segment)(DATA);
-                print(".align 4\n.LP%d:\n.long 0\n", plab);
-                (*IR->segment)(CODE);
-                print("movl $.LP%d,%%edx\ncall mcount\n", plab);
-                plab++;
-        }
-        print("pushl %%ebx\n");
-        print("pushl %%esi\n");
-        print("pushl %%edi\n");
+    globalend();
+    print(".align 16\n");
+    print(".type %s,@function\n", f->x.name);
+    print("%s:\n", f->x.name);
+    print("pushl %%ebp\n");
+    if (pflag) {
+        static int plab;
         print("movl %%esp,%%ebp\n");
+        (*IR->segment)(DATA);
+        print(".align 4\n.LP%d:\n.long 0\n", plab);
+        (*IR->segment)(CODE);
+        print("movl $.LP%d,%%edx\ncall mcount\n", plab);
+        plab++;
+    }
+    print("pushl %%ebx\n");
+    print("pushl %%esi\n");
+    print("pushl %%edi\n");
+    print("movl %%esp,%%ebp\n");
 
-        usedmask[0] = usedmask[1] = 0;
-        freemask[0] = freemask[1] = ~0U;
-        offset = 16 + 4;
-        for (i = 0; callee[i]; i++) {
-                Symbol p = callee[i];
-                Symbol q = caller[i];
-                assert(q);
-                offset = roundup(offset, q->type->align);
-                p->x.offset = q->x.offset = offset;
-                p->x.name = q->x.name = stringf("%d", p->x.offset);
-                p->sclass = q->sclass = AUTO;
-                offset += roundup(q->type->size, 4);
-        }
-        assert(caller[i] == 0);
-        offset = maxoffset = 0;
-        gencode(caller, callee);
-        framesize = roundup(maxoffset, 4);
-        if (framesize > 0)
-                print("subl $%d,%%esp\n", framesize);
-        emitcode();
-        print("movl %%ebp,%%esp\n");
-        print("popl %%edi\n");
-        print("popl %%esi\n");
-        print("popl %%ebx\n");
-        print("popl %%ebp\n");
-	if (isstruct(freturn(f->type)))
-		print("ret $4\n");
-	else
-		print("ret\n");
-        { int l = genlabel(1);
-          print(".Lf%d:\n", l);
-          print(".size %s,.Lf%d-%s\n", f->x.name, l, f->x.name);
-        }
+    usedmask[0] = usedmask[1] = 0;
+    freemask[0] = freemask[1] = ~0U;
+    offset                    = 16 + 4;
+    for (i = 0; callee[i]; i++) {
+        Symbol p = callee[i];
+        Symbol q = caller[i];
+        assert(q);
+        offset      = roundup(offset, q->type->align);
+        p->x.offset = q->x.offset = offset;
+        p->x.name = q->x.name = stringf("%d", p->x.offset);
+        p->sclass = q->sclass = AUTO;
+        offset += roundup(q->type->size, 4);
+    }
+    assert(caller[i] == 0);
+    offset = maxoffset = 0;
+    gencode(caller, callee);
+    framesize = roundup(maxoffset, 4);
+    if (framesize > 0)
+        print("subl $%d,%%esp\n", framesize);
+    emitcode();
+    print("movl %%ebp,%%esp\n");
+    print("popl %%edi\n");
+    print("popl %%esi\n");
+    print("popl %%ebx\n");
+    print("popl %%ebp\n");
+    if (isstruct(freturn(f->type)))
+        print("ret $4\n");
+    else
+        print("ret\n");
+    {
+        int l = genlabel(1);
+        print(".Lf%d:\n", l);
+        print(".size %s,.Lf%d-%s\n", f->x.name, l, f->x.name);
+    }
 }
 
-static void defsymbol(Symbol p) {
-        if (p->scope >= LOCAL && p->sclass == STATIC)
-                p->x.name = stringf("%s.%d", p->name, genlabel(1));
-        else if (p->generated)
-                p->x.name = stringf(".LC%s", p->name);
-        else if (p->scope == GLOBAL || p->sclass == EXTERN)
-                p->x.name = stringf("%s", p->name);
+static void defsymbol(Symbol p)
+{
+    if (p->scope >= LOCAL && p->sclass == STATIC)
+        p->x.name = stringf("%s.%d", p->name, genlabel(1));
+    else if (p->generated)
+        p->x.name = stringf(".LC%s", p->name);
+    else if (p->scope == GLOBAL || p->sclass == EXTERN)
+        p->x.name = stringf("%s", p->name);
+    else
+        p->x.name = p->name;
+}
+
+static void segment(int n)
+{
+    if (n == cseg)
+        return;
+    cseg = n;
+    if (cseg == CODE)
+        print(".text\n");
+    else if (cseg == BSS)
+        print(".bss\n");
+    else if (cseg == DATA || cseg == LIT)
+        print(".data\n");
+}
+
+static void defconst(int suffix, int size, Value v)
+{
+    if (suffix == I && size == 1)
+        print(".byte %d\n", (int)v.u);
+    else if (suffix == I && size == 2)
+        print(".word %d\n", (int)v.i);
+    else if (suffix == I && size == 4)
+        print(".long %d\n", (int)v.i);
+    else if (suffix == U && size == 1)
+        print(".byte %d\n", (int)((char)v.u));
+    else if (suffix == U && size == 2)
+        print(".word %d\n", (int)v.u);
+    else if (suffix == U && size == 4)
+        print(".long %d\n", (int)v.u);
+    else if (suffix == P && size == 4)
+        print(".long %p\n", v.p);
+    else if (suffix == F && size == 4) {
+        float f = v.d;
+        print(".long %d\n", (int)(*(unsigned *)&f));
+    } else if (suffix == F && size == 8) {
+        double d    = v.d;
+        unsigned *p = (unsigned *)&d;
+        print(".long %d\n.long %d\n", (int)p[swap], (int)p[!swap]);
+    } else
+        assert(0);
+}
+
+static void defaddress(Symbol p)
+{
+    print(".long %s\n", p->x.name);
+}
+
+static void defstring(int n, char *str)
+{
+    char *s;
+
+    for (s = str; s < str + n; s++)
+        print(".byte %d\n", (*s) & 0377);
+}
+
+static void export(Symbol p)
+{
+    globalend();
+    print(".globl %s\n", p->x.name);
+}
+
+static void import(Symbol p)
+{
+}
+
+static void global(Symbol p)
+{
+    globalend();
+    print(".align %d\n", p->type->align > 4 ? 4 : p->type->align);
+    if (!p->generated) {
+        print(".type %s,@%s\n", p->x.name, isfunc(p->type) ? "function" : "object");
+        if (p->type->size > 0)
+            print(".size %s,%d\n", p->x.name, p->type->size);
         else
-                p->x.name = p->name;
+            prevg = p;
+    }
+    if (p->u.seg == BSS) {
+        if (p->sclass == STATIC)
+            print(".lcomm %s,%d\n", p->x.name, p->type->size);
+        else
+            print(".comm %s,%d\n", p->x.name, p->type->size);
+    } else {
+        print("%s:\n", p->x.name);
+    }
 }
 
-static void segment(int n) {
-        if (n == cseg)
-                return;
-        cseg = n;
-        if (cseg == CODE)
-                print(".text\n");
-        else if (cseg == BSS)
-                print(".bss\n");
-        else if (cseg == DATA || cseg == LIT)
-                print(".data\n");
-}
-
-static void defconst(int suffix, int size, Value v) {
-        if (suffix == I && size == 1)
-                print(".byte %d\n", (int)v.u);
-        else if (suffix == I && size == 2)
-                print(".word %d\n", (int)v.i);
-        else if (suffix == I && size == 4)
-                print(".long %d\n", (int)v.i);
-        else if (suffix == U && size == 1)
-                print(".byte %d\n", (int)((char)v.u));
-        else if (suffix == U && size == 2)
-                print(".word %d\n", (int)v.u);
-        else if (suffix == U && size == 4)
-                print(".long %d\n", (int)v.u);
-        else if (suffix == P && size == 4)
-                print(".long %d\n", (int)v.p);
-        else if (suffix == F && size == 4) {
-                float f = v.d;
-                print(".long %d\n", (int)(*(unsigned *)&f));
-        } else if (suffix == F && size == 8) {
-                double d = v.d;
-                unsigned *p = (unsigned *)&d;
-                print(".long %d\n.long %d\n", (int)p[swap], (int)p[!swap]);
-        }
-        else assert(0);
-}
-
-static void defaddress(Symbol p) {
-        print(".long %s\n", p->x.name);
-}
-
-static void defstring(int n, char *str) {
-        char *s;
-
-        for (s = str; s < str + n; s++)
-                print(".byte %d\n", (*s)&0377);
-}
-
-static void export(Symbol p) {
-        globalend();
-        print(".globl %s\n", p->x.name);
-}
-
-static void import(Symbol p) {}
-
-static void global(Symbol p) {
-        globalend();
-        print(".align %d\n", p->type->align > 4 ? 4 : p->type->align);
-        if (!p->generated) {
-                print(".type %s,@%s\n", p->x.name,
-                        isfunc(p->type) ? "function" : "object");
-                if (p->type->size > 0)
-                        print(".size %s,%d\n", p->x.name, p->type->size);
-                else
-                        prevg = p;
-        }
-        if (p->u.seg == BSS) {
-                if (p->sclass == STATIC)
-                        print(".lcomm %s,%d\n", p->x.name, p->type->size);
-                else
-                        print(".comm %s,%d\n", p->x.name, p->type->size);
-        } else {
-                print("%s:\n", p->x.name);
-        }
-}
-
-static void space(int n) {
-        if (cseg != BSS)
-                print(".space %d\n", n);
+static void space(int n)
+{
+    if (cseg != BSS)
+        print(".space %d\n", n);
 }
 
 Interface x86linuxIR = {
-        1, 1, 0,  /* char */
-        2, 2, 0,  /* short */
-        4, 4, 0,  /* int */
-        4, 4, 0,  /* long */
-        4, 4, 0,  /* long long */
-        4, 4, 1,  /* float */
-        8, 4, 1,  /* double */
-        8, 4, 1,  /* long double */
-        4, 4, 0,  /* T * */
-        0, 1, 0,  /* struct */
-        1,        /* little_endian */
-        0,        /* mulops_calls */
-        0,        /* wants_callb */
-        1,        /* wants_argb */
-        0,        /* left_to_right */
-        0,        /* wants_dag */
-        0,        /* unsigned_char */
-        0, /* address */
-        blockbeg,
-        blockend,
-        defaddress,
-        defconst,
-        defstring,
-        defsymbol,
-        emit,
-        export,
-        function,
-        gen,
-        global,
-        import,
-        0, /* local */
-        progbeg,
-        progend,
-        segment,
-        space,
-        stabblock, stabend, 0, stabinit, stabline, stabsym, stabtype,
-        {1, rmap,
-            0, 0, 0,    /* blkfetch, blkstore, blkloop */
-            _label,
-            _rule,
-            _nts,
-            _kids,
-            _string,
-            _templates,
-            _isinstruction,
-            _ntname,
-            emit2,
-            0, /* doarg */
-            target,
-            clobber,
-        }
+    // clang-format off
+    1, 1, 0,    /* char */
+    2, 2, 0,    /* short */
+    4, 4, 0,    /* int */
+    4, 4, 0,    /* long */
+    4, 4, 0,    /* long long */
+    4, 4, 1,    /* float */
+    8, 4, 1,    /* double */
+    8, 4, 1,    /* long double */
+    4, 4, 0,    /* T * */
+    0, 1, 0,    /* struct */
+    1,          /* little_endian */
+    0,          /* mulops_calls */
+    0,          /* wants_callb */
+    1,          /* wants_argb */
+    0,          /* left_to_right */
+    0,          /* wants_dag */
+    0,          /* unsigned_char */
+    0, /* address */
+    blockbeg,
+    blockend,
+    defaddress,
+    defconst,
+    defstring,
+    defsymbol,
+    emit,
+    export,
+    function,
+    gen,
+    global,
+    import,
+    0, /* local */
+    progbeg,
+    progend,
+    segment,
+    space,
+    stabblock, stabend, 0, stabinit, stabline, stabsym, stabtype,
+    {
+        1, rmap,
+        0, 0, 0, /* blkfetch, blkstore, blkloop */
+        _label,
+        _rule,
+        _nts,
+        _kids,
+        _string,
+        _templates,
+        _isinstruction,
+        _ntname,
+        emit2,
+        0, /* doarg */
+        target,
+        clobber,
+    }
+    // clang-format on
 };

@@ -1,4 +1,6 @@
 #include "c.h"
+
+// clang-format off
 #undef yy
 #define yy \
 xx(alpha/osf,    alphaIR) \
@@ -12,16 +14,20 @@ xx(symbolic/irix,symbolicIR) \
 xx(symbolic,     symbolicIR) \
 xx(bytecode,     bytecodeIR) \
 xx(null,         nullIR)
+// clang-format on
 
 #undef xx
-#define xx(a,b) extern Interface b;
+#define xx(a, b) extern Interface b;
 yy
+
+#undef xx
+#define xx(a, b) { #a, &b },
 
 Binding bindings[] = {
-#undef xx
-#define xx(a,b) { #a, &b },
-yy
-	{ NULL, NULL },
+    // clang-format off
+    yy
+    { NULL, NULL },
+    // clang-format on
 };
 #undef yy
 #undef xx

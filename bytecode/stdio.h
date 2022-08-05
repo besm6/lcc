@@ -1,40 +1,38 @@
 extern struct _iobuf {
-    int     _cnt;
-    char    *_ptr;
-    char    *_base;
-    int     _bufsiz;
-    int     _flag;
-    int     _file;
-    int     _unused1;
-    int     _unused2;
+    int _cnt;
+    char *_ptr;
+    char *_base;
+    int _bufsiz;
+    int _flag;
+    int _file;
+    int _unused1;
+    int _unused2;
 } _iob[];
 
-#define	_IOREAD     01
-#define	_IOWRT      02
-#define	_IONBF      04
-#define	_IOMYBUF    010
-#define	_IOEOF      020
-#define	_IOERR      040
-#define	_IOSTRG     0100
-#define	_IOLBF      0200
-#define	_IORW       0400
+#define _IOREAD  01
+#define _IOWRT   02
+#define _IONBF   04
+#define _IOMYBUF 010
+#define _IOEOF   020
+#define _IOERR   040
+#define _IOSTRG  0100
+#define _IOLBF   0200
+#define _IORW    0400
 
-#ifndef	NULL
-#define	NULL        0
+#ifndef NULL
+#define NULL 0
 #endif
 
-#define	FILE        struct _iobuf
-#define	EOF         (-1)
+#define FILE struct _iobuf
+#define EOF  (-1)
 
-#define	stdin       (&_iob[0])
-#define	stdout      (&_iob[1])
-#define	stderr      (&_iob[2])
+#define stdin  (&_iob[0])
+#define stdout (&_iob[1])
+#define stderr (&_iob[2])
 
-#define	getc(p)     (--(p)->_cnt>=0 ? (*(p)->_ptr++ & 0xff) : _filbuf(p))
+#define getc(p) (--(p)->_cnt >= 0 ? (*(p)->_ptr++ & 0xff) : _filbuf(p))
 
-#define putc(x, p)  (--(p)->_cnt >= 0 ? \
-                    (int)(*(p)->_ptr++ = (x)) : \
-                    _flsbuf((x), p))
+#define putc(x, p) (--(p)->_cnt >= 0 ? (int)(*(p)->_ptr++ = (x)) : _flsbuf((x), p))
 
 int _filbuf(FILE *);
 int _flsbuf(int, FILE *);

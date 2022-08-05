@@ -1,39 +1,45 @@
-main() {}
-
-memchar() {
-	char x, *p;
-
-	&x, &p;
-	x = *p++;
-	x = *++p;
-	x = *p--;
-	x = *--p;
+main()
+{
 }
 
-memint() {
-	int x, *p;
+memchar()
+{
+    char x, *p;
 
-	&x, &p;
-	x = *p++;
-	x = *++p;
-	x = *p--;
-	x = *--p;
+    &x, &p;
+    x = *p++;
+    x = *++p;
+    x = *p--;
+    x = *--p;
 }
 
-regchar() {
-	register char x, *p;
+memint()
+{
+    int x, *p;
 
-	x = *p++;
-	x = *++p;
-	x = *p--;
-	x = *--p;
+    &x, &p;
+    x = *p++;
+    x = *++p;
+    x = *p--;
+    x = *--p;
 }
 
-regint() {
-	register int x, *p;
+regchar()
+{
+    register char x, *p;
 
-	x = *p++;
-	x = *++p;
-	x = *p--;
-	x = *--p;
+    x = *p++;
+    x = *++p;
+    x = *p--;
+    x = *--p;
+}
+
+regint()
+{
+    register int x, *p;
+
+    x = *p++;
+    x = *++p;
+    x = *p--;
+    x = *--p;
 }

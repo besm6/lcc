@@ -4,9 +4,9 @@
 /* $Id$ */
 
 #ifndef NULL
-#define NULL ((void*)0)
+#define NULL ((void *)0)
 #endif
-#define offsetof(ty,mem) ((size_t)((char*)&((ty*)0)->mem - (char*)0))
+#define offsetof(ty, mem) ((size_t)((char *)&((ty *)0)->mem - (char *)0))
 
 typedef long ptrdiff_t;
 
@@ -21,7 +21,7 @@ typedef unsigned long size_t;
 #define _WCHAR_T
 #define _WCHAR_T_
 #define _WCHAR_T_DEFINED
-#if   (_WCHAR_T_SIZE + 0) == 1
+#if (_WCHAR_T_SIZE + 0) == 1
 typedef unsigned char wchar_t;
 #elif (_WCHAR_T_SIZE + 0) == 2
 typedef unsigned short wchar_t;

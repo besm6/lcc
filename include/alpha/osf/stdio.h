@@ -5,22 +5,22 @@
 #define _IOLBF 0200
 #define _IONBF 04
 #define BUFSIZ 8192
-#define EOF (-1)
+#define EOF    (-1)
 
 typedef struct _iobuf {
-	int	_cnt;
-	unsigned char	*_ptr;
-	unsigned char	*_base;
-	int	_bufsiz;
-	short	_flag;
-	short	_file;
-	char    *__newbase;
-	void    *_lock;
-	unsigned char	*_bufendp;
+    int _cnt;
+    unsigned char *_ptr;
+    unsigned char *_base;
+    int _bufsiz;
+    short _flag;
+    short _file;
+    char *__newbase;
+    void *_lock;
+    unsigned char *_bufendp;
 } FILE;
 extern FILE _iob[];
 #define FILENAME_MAX 255
-#define FOPEN_MAX 64
+#define FOPEN_MAX    64
 
 #if !defined(_FPOS_T) && !defined(_FPOS_T_) && !defined(_FPOS_T_DEFINED)
 #define _FPOS_T
@@ -31,7 +31,7 @@ typedef long fpos_t;
 
 #define L_tmpnam 21
 #ifndef NULL
-#define NULL ((void*)0)
+#define NULL ((void *)0)
 #endif
 #define SEEK_CUR 1
 #define SEEK_END 2
@@ -48,15 +48,15 @@ typedef unsigned long size_t;
 #define _VA_LIST
 #define _VA_LIST_DEFINED
 typedef struct {
-	char	*_a0;		/* pointer to first homed integer arg */
-	int	_offset;	/* byte offset of next param */
-	float	_tmp;
+    char *_a0;   /* pointer to first homed integer arg */
+    int _offset; /* byte offset of next param */
+    float _tmp;
 } __va_list;
 #endif
 
-#define stderr (&_iob[2])
-#define stdin  (&_iob[0])
-#define stdout (&_iob[1])
+#define stderr  (&_iob[2])
+#define stdin   (&_iob[0])
+#define stdout  (&_iob[1])
 #define TMP_MAX 16384
 
 extern int remove(const char *);
@@ -101,12 +101,11 @@ extern int feof(FILE *);
 extern int ferror(FILE *);
 extern void perror(const char *);
 
-#define	_IOEOF 020
-#define	_IOERR 040
+#define _IOEOF 020
+#define _IOERR 040
 
-#define getc(p) (--(p)->_cnt < 0 ? _filbuf(p) : (int) *(p)->_ptr++)
-#define putc(x, p) (--(p)->_cnt < 0 ? \
-	_flsbuf((unsigned char) (x), p) : \
-	(int) (*(p)->_ptr++ = (unsigned char) (x)))
+#define getc(p) (--(p)->_cnt < 0 ? _filbuf(p) : (int)*(p)->_ptr++)
+#define putc(x, p) \
+    (--(p)->_cnt < 0 ? _flsbuf((unsigned char)(x), p) : (int)(*(p)->_ptr++ = (unsigned char)(x)))
 extern int _filbuf(FILE *), _flsbuf(unsigned, FILE *);
 #endif /* __STDIO */

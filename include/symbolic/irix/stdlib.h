@@ -3,14 +3,18 @@
 
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
-#define MB_CUR_MAX 1
+#define MB_CUR_MAX   1
 #ifndef NULL
-#define NULL ((void*)0)
+#define NULL ((void *)0)
 #endif
 #define RAND_MAX 32767
 
-typedef struct { int quot, rem; } div_t;
-typedef struct { long quot, rem; } ldiv_t;
+typedef struct {
+    int quot, rem;
+} div_t;
+typedef struct {
+    long quot, rem;
+} ldiv_t;
 
 #if !defined(_SIZE_T) && !defined(_SIZE_T_) && !defined(_SIZE_T_DEFINED)
 #define _SIZE_T
@@ -23,7 +27,7 @@ typedef unsigned long size_t;
 #define _WCHAR_T
 #define _WCHAR_T_
 #define _WCHAR_T_DEFINED
-#if   (_WCHAR_T_SIZE + 0) == 1
+#if (_WCHAR_T_SIZE + 0) == 1
 typedef unsigned char wchar_t;
 #elif (_WCHAR_T_SIZE + 0) == 2
 typedef unsigned short wchar_t;
@@ -51,7 +55,8 @@ extern int atexit(void (*)(void));
 extern void exit(int);
 extern char *getenv(const char *);
 extern int system(const char *);
-extern void *bsearch(const void *, const void *, size_t, size_t, int (*)(const void *, const void *));
+extern void *bsearch(const void *, const void *, size_t, size_t,
+                     int (*)(const void *, const void *));
 extern void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
 extern int abs(int);
 extern div_t div(int, int);

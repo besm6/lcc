@@ -5,18 +5,18 @@
 #define _IOLBF 0100
 #define _IONBF 04
 #define BUFSIZ 1024
-#define EOF (-1)
+#define EOF    (-1)
 
 typedef struct {
-	int	_cnt;
-	unsigned char *_ptr;
-	unsigned char *_base;
-	unsigned char _flag;
-	unsigned char _file;
+    int _cnt;
+    unsigned char *_ptr;
+    unsigned char *_base;
+    unsigned char _flag;
+    unsigned char _file;
 } FILE;
 extern FILE __iob[];
 #define FILENAME_MAX 1024
-#define FOPEN_MAX 20
+#define FOPEN_MAX    20
 
 #if !defined(_FPOS_T) && !defined(_FPOS_T_) && !defined(_FPOS_T_DEFINED)
 #define _FPOS_T
@@ -27,7 +27,7 @@ typedef long fpos_t;
 
 #define L_tmpnam 25
 #ifndef NULL
-#define NULL ((void*)0)
+#define NULL ((void *)0)
 #endif
 #define SEEK_CUR 1
 #define SEEK_END 2
@@ -46,9 +46,9 @@ typedef unsigned long size_t;
 typedef char *__va_list;
 #endif
 
-#define stderr (&__iob[2])
-#define stdin  (&__iob[0])
-#define stdout (&__iob[1])
+#define stderr  (&__iob[2])
+#define stdin   (&__iob[0])
+#define stdout  (&__iob[1])
 #define TMP_MAX 17576
 
 extern int remove(const char *);
@@ -93,11 +93,10 @@ extern int feof(FILE *);
 extern int ferror(FILE *);
 extern void perror(const char *);
 
-#define	_IOEOF 020
-#define	_IOERR 040
+#define _IOEOF 020
+#define _IOERR 040
 
-#define	getc(p) (--(p)->_cnt < 0 ? __filbuf(p) : (int)*(p)->_ptr++)
-#define putc(x, p) (--(p)->_cnt < 0 ? __flsbuf((unsigned char) (x), (p)) \
-			: (int)(*(p)->_ptr++ = (x)))
+#define getc(p)    (--(p)->_cnt < 0 ? __filbuf(p) : (int)*(p)->_ptr++)
+#define putc(x, p) (--(p)->_cnt < 0 ? __flsbuf((unsigned char)(x), (p)) : (int)(*(p)->_ptr++ = (x)))
 extern int __filbuf(FILE *), __flsbuf(unsigned, FILE *);
 #endif /* __STDIO */

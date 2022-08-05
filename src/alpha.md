@@ -1,4 +1,5 @@
 %{
+/* clang-format off */
 #define INTTMP ((0xff<<1)|(1<<22)|(1<<25)|(1<<27))
 #define INTVAR (0x3f<<9)
 #define FLTTMP ((0x3f<<10)|(0x1ff<<22))
@@ -621,568 +622,614 @@ stmt: ARGB(INDIRB(reg))       "# argb %0\n"      1
 stmt: ASGNB(reg,INDIRB(reg))  "# asgnb %0 %1\n"  1
 
 %%
-static void progend(void){}
+/* clang-format on */
 
-static void progbeg(int argc, char *argv[]) {
-        int i;
-
-        {
-                union {
-                        char c;
-                        int i;
-                } u;
-                u.i = 0;
-                u.c = 1;
-                swap = ((int)(u.i == 1)) != IR->little_endian;
-        }
-        parseflags(argc, argv);
-
-        for (i = 0; i < 32; i++)
-                freg[i] = mkreg("%d", i, 1, FREG);
-        for (i = 0; i < 32; i++)
-                ireg[i]  = mkreg("%d", i, 1, IREG);
-        ireg[29]->x.name = "gp";
-        ireg[30]->x.name = "sp";
-        fregw = mkwildcard(freg);
-        iregw = mkwildcard(ireg);
-
-        tmask[IREG] = INTTMP; tmask[FREG] = FLTTMP;
-        vmask[IREG] = INTVAR; vmask[FREG] = FLTVAR;
-
-        blkreg = mkreg("1", 1, 0xf, IREG);
-
+static void progend(void)
+{
 }
 
-static Symbol rmap(int opk) {
-        switch (optype(opk)) {
-        case I: case U: case P: case B:
-                return iregw;
-        case F:
-                return fregw;
-        default:
-                return 0;
-        }
+static void progbeg(int argc, char *argv[])
+{
+    int i;
+
+    {
+        union {
+            char c;
+            int i;
+        } u;
+        u.i  = 0;
+        u.c  = 1;
+        swap = ((int)(u.i == 1)) != IR->little_endian;
+    }
+    parseflags(argc, argv);
+
+    for (i = 0; i < 32; i++)
+        freg[i] = mkreg("%d", i, 1, FREG);
+    for (i = 0; i < 32; i++)
+        ireg[i] = mkreg("%d", i, 1, IREG);
+    ireg[29]->x.name = "gp";
+    ireg[30]->x.name = "sp";
+    fregw            = mkwildcard(freg);
+    iregw            = mkwildcard(ireg);
+
+    tmask[IREG] = INTTMP;
+    tmask[FREG] = FLTTMP;
+    vmask[IREG] = INTVAR;
+    vmask[FREG] = FLTVAR;
+
+    blkreg = mkreg("1", 1, 0xf, IREG);
 }
 
-static Symbol argreg(int offset, int ty) {
-        if (offset >= 48)
-                return NULL;
-        else if (ty == F)
-                return freg[(offset/8) + 16];
+static Symbol rmap(int opk)
+{
+    switch (optype(opk)) {
+    case I:
+    case U:
+    case P:
+    case B:
+        return iregw;
+    case F:
+        return fregw;
+    default:
+        return 0;
+    }
+}
+
+static Symbol argreg(int offset, int ty)
+{
+    if (offset >= 48)
+        return NULL;
+    else if (ty == F)
+        return freg[(offset / 8) + 16];
+    else
+        return ireg[(offset / 8) + 16];
+}
+
+static void target(Node p)
+{
+    assert(p);
+    switch (specific(p->op)) {
+    case CNST + I:
+    case CNST + U:
+    case CNST + P:
+        if (range(p, 0, 0) == 0) {
+            setreg(p, ireg[31]);
+            p->x.registered = 1;
+        }
+        break;
+    case CNST + F:
+        if (p->syms[0]->u.c.v.d == 0) {
+            setreg(p, freg[31]);
+            p->x.registered = 1;
+        }
+        break;
+
+    case CALL + V:
+        rtarget(p, 0, ireg[27]);
+        break;
+    case CALL + F:
+        rtarget(p, 0, ireg[27]);
+        setreg(p, freg[0]);
+        break;
+    case CALL + I:
+    case CALL + P:
+    case CALL + U:
+        rtarget(p, 0, ireg[27]);
+        setreg(p, ireg[0]);
+        break;
+    case RET + F:
+        rtarget(p, 0, freg[0]);
+        break;
+    case RET + I:
+    case RET + U:
+    case RET + P:
+        rtarget(p, 0, ireg[0]);
+        break;
+
+    case ARG + F:
+    case ARG + I:
+    case ARG + P:
+    case ARG + U: {
+        Symbol q = argreg(p->syms[2]->u.c.v.i, optype(p->op));
+        if (q)
+            rtarget(p, 0, q);
+        break;
+    }
+
+    case ASGN + B:
+        rtarget(p->kids[1], 0, blkreg);
+        break;
+    case ARG + B:
+        rtarget(p->kids[0], 0, blkreg);
+        break;
+    }
+}
+
+static void clobber(Node p)
+{
+    assert(p);
+    switch (specific(p->op)) {
+    case ASGN + I:
+    case ASGN + U:
+        if (opsize(p->op) <= 2)
+            spill(1 << 24, IREG, p);
+        break;
+
+    case DIV + I:
+    case DIV + U:
+    case MOD + I:
+    case MOD + U:
+        spill(((1 << 27) | (3 << 24)) & ~p->syms[RX]->x.regnode->mask, IREG, p);
+        break;
+
+    case CALL + F:
+        spill(INTTMP | INTRET, IREG, p);
+        spill(FLTTMP, FREG, p);
+        break;
+    case CALL + I:
+    case CALL + P:
+    case CALL + U:
+        spill(INTTMP, IREG, p);
+        spill(FLTTMP | FLTRET, FREG, p);
+        break;
+    case CALL + V:
+        spill(INTTMP | INTRET, IREG, p);
+        spill(FLTTMP | FLTRET, FREG, p);
+        break;
+    }
+}
+
+static void emit2(Node p)
+{
+    int dst, n, src, sz, ty;
+    static int ty0;
+    Symbol q;
+
+    switch (specific(p->op)) {
+    case ARG + F:
+    case ARG + I:
+    case ARG + P:
+    case ARG + U:
+        ty  = optype(p->op);
+        sz  = opsize(p->op);
+        q   = argreg(p->syms[2]->u.c.v.i, ty);
+        src = getregnum(p->x.kids[0]);
+        if (q)
+            break;
+        else if (ty == F && sz == 4)
+            print("sts $f%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
+        else if (ty == F && sz == 8)
+            print("stt $f%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
+        else if (sz == 4)
+            print("stq $%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
+        else if (sz == 8)
+            print("stq $%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
         else
-                return ireg[(offset/8) + 16];
-}
+            assert(0);
+        break;
 
-static void target(Node p) {
-        assert(p);
-        switch (specific(p->op)) {
-        case CNST+I: case CNST+U: case CNST+P:
-                if (range(p, 0, 0) == 0) {
-                        setreg(p, ireg[31]);
-                        p->x.registered = 1;
-                }
-                break;
-        case CNST+F:
-                if (p->syms[0]->u.c.v.d == 0) {
-                        setreg(p, freg[31]);
-                        p->x.registered = 1;
-                }
-                break;
+    case ASGN + B:
+        dalign = salign = p->syms[1]->u.c.v.i;
+        blkcopy(getregnum(p->x.kids[0]), 0, getregnum(p->x.kids[1]), 0, p->syms[0]->u.c.v.i,
+                tmpregs);
+        break;
 
-        case CALL+V:
-                rtarget(p, 0, ireg[27]);
-                break;
-        case CALL+F:
-                rtarget(p, 0, ireg[27]);
-                setreg(p, freg[0]);
-                break;
-        case CALL+I: case CALL+P: case CALL+U:
-                rtarget(p, 0, ireg[27]);
-                setreg(p, ireg[0]);
-                break;
-        case RET+F:
-                rtarget(p, 0, freg[0]);
-                break;
-        case RET+I: case RET+U: case RET+P:
-                rtarget(p, 0, ireg[0]);
-                break;
-
-        case ARG+F: case ARG+I: case ARG+P: case ARG+U: {
-                Symbol q = argreg(p->syms[2]->u.c.v.i, optype(p->op));
-                if (q)
-                        rtarget(p, 0, q);
-                break;
-                }
-
-
-        case ASGN+B: rtarget(p->kids[1], 0, blkreg); break;
-        case ARG+B:  rtarget(p->kids[0], 0, blkreg); break;
-
+    case ARG + B: {
+        int doff = p->syms[2]->u.c.v.i, soff = 0, sreg = getregnum(p->x.kids[0]);
+        dalign = 8;
+        salign = p->syms[1]->u.c.v.i;
+        n      = p->syms[0]->u.c.v.i;
+        for (; doff <= 40 && n > 0; doff += 8) {
+            print("uldq $%d,%d($%d)\n", (doff / 8) + 16, soff, sreg);
+            soff += 8;
+            n -= 8;
         }
+        if (n > 0)
+            blkcopy(30, doff - 48, sreg, soff, n, tmpregs);
+        break;
+    }
+    }
 }
 
-static void clobber(Node p) {
-        assert(p);
-        switch (specific(p->op)) {
-        case ASGN+I: case ASGN+U:
-                if (opsize(p->op) <= 2)
-                        spill(1<<24, IREG, p);
-                break;
+static void doarg(Node p)
+{
+    p->syms[2] = intconst(mkactual(8, roundup(p->syms[0]->u.c.v.i, 8)));
+}
 
-        case DIV+I: case DIV+U: case MOD+I: case MOD+U:
-                spill(((1<<27)|(3<<24))&~p->syms[RX]->x.regnode->mask, IREG, p);
-                break;
+static void local(Symbol p)
+{
+    if (askregvar(p, rmap(ttob(p->type))) == 0)
+        mkauto(p);
+}
 
-        case CALL+F:
-                spill(INTTMP | INTRET, IREG, p);
-                spill(FLTTMP,          FREG, p);
-                break;
-        case CALL+I: case CALL+P: case CALL+U:
-                spill(INTTMP,          IREG, p);
-                spill(FLTTMP | FLTRET, FREG, p);
-                break;
-        case CALL+V:
-                spill(INTTMP | INTRET, IREG, p);
-                spill(FLTTMP | FLTRET, FREG, p);
-                break;
+static int bitcount(unsigned mask)
+{
+    unsigned i, n = 0;
 
+    for (i = 1; i; i <<= 1)
+        if (mask & i)
+            n++;
+    return n;
+}
+
+static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls)
+{
+    int i, sizeargs, saved, sizefsave, sizeisave, varargs;
+    Symbol r, argregs[6];
+
+    usedmask[0] = usedmask[1] = 0;
+    freemask[0] = freemask[1] = ~(unsigned)0;
+    maxargoffset = offset = maxoffset = 0;
+
+    for (i = 0; callee[i]; i++)
+        ;
+    varargs = variadic(f->type) || i > 0 && strcmp(callee[i - 1]->name, "va_alist") == 0;
+    if (varargs)
+        sizeargs = 2 * 48;
+    else
+        sizeargs = 48;
+
+    for (i = 0; callee[i]; i++) {
+        Symbol p = callee[i];
+        Symbol q = caller[i];
+        assert(q);
+        if (isfloat(p->type) && varargs) {
+            p->x.offset = q->x.offset = offset - 2 * 48;
+            p->x.name = q->x.name = stringd(offset - 2 * 48);
+        } else {
+            p->x.offset = q->x.offset = offset - 48;
+            p->x.name = q->x.name = stringd(offset - 48);
         }
-}
-
-static void emit2(Node p) {
-        int dst, n, src, sz, ty;
-        static int ty0;
-        Symbol q;
-
-        switch (specific(p->op)) {
-        case ARG+F: case ARG+I: case ARG+P: case ARG+U:
-                ty = optype(p->op);
-                sz = opsize(p->op);
-                q = argreg(p->syms[2]->u.c.v.i, ty);
-                src = getregnum(p->x.kids[0]);
-                if (q)
-                        break;
-                else if (ty == F && sz == 4)
-                        print("sts $f%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
-                else if (ty == F && sz == 8)
-                        print("stt $f%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
-                else if (sz == 4)
-                        print("stq $%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
-                else if (sz == 8)
-                        print("stq $%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
-                else
-                        assert(0);
-                break;
-
-        case ASGN+B:
-                dalign = salign = p->syms[1]->u.c.v.i;
-                blkcopy(getregnum(p->x.kids[0]), 0,
-                        getregnum(p->x.kids[1]), 0,
-                        p->syms[0]->u.c.v.i, tmpregs);
-                break;
-
-
-        case ARG+B: {
-                int doff = p->syms[2]->u.c.v.i, soff = 0, sreg = getregnum(p->x.kids[0]);
-                dalign = 8;
-                salign = p->syms[1]->u.c.v.i;
-                n = p->syms[0]->u.c.v.i;
-                for ( ; doff <= 40 && n > 0; doff += 8) {
-                        print("uldq $%d,%d($%d)\n", (doff/8)+16, soff, sreg);
-                        soff += 8;
-                        n -= 8;
-                }
-                if (n > 0)
-                        blkcopy(30, doff - 48, sreg, soff, n, tmpregs);
-                break;
-                }
-
-        }
-}
-
-static void doarg(Node p) {
-        p->syms[2] = intconst(mkactual(8, roundup(p->syms[0]->u.c.v.i,8)));
-}
-
-static void local(Symbol p) {
-        if (askregvar(p, rmap(ttob(p->type))) == 0)
-                mkauto(p);
-}
-
-static int bitcount(unsigned mask) {
-        unsigned i, n = 0;
-
-        for (i = 1; i; i <<= 1)
-                if (mask&i)
-                        n++;
-        return n;
-}
-
-static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls) {
-        int i, sizeargs, saved, sizefsave, sizeisave, varargs;
-        Symbol r, argregs[6];
-
-        usedmask[0] = usedmask[1] = 0;
-        freemask[0] = freemask[1] = ~(unsigned)0;
-        maxargoffset = offset = maxoffset = 0;
-
-        for (i = 0; callee[i]; i++)
-                ;
-        varargs = variadic(f->type)
-                || i > 0 && strcmp(callee[i-1]->name, "va_alist") == 0;
+        offset = roundup(offset, q->type->align);
+        r      = argreg(offset, optype(ttob(q->type)));
+        if (i < 6)
+            argregs[i] = r;
+        offset = roundup(offset + q->type->size, 8);
         if (varargs)
-                sizeargs = 2*48;
-        else
-                sizeargs = 48;
-
-        for (i = 0; callee[i]; i++) {
-                Symbol p = callee[i];
-                Symbol q = caller[i];
-                assert(q);
-                if (isfloat(p->type) && varargs) {
-                        p->x.offset = q->x.offset = offset - 2*48;
-                        p->x.name = q->x.name = stringd(offset - 2*48);
-                } else {
-                        p->x.offset = q->x.offset = offset - 48;
-                        p->x.name = q->x.name = stringd(offset - 48);
-                }
-                offset = roundup(offset, q->type->align);
-                r = argreg(offset, optype(ttob(q->type)));
-                if (i < 6)
-                        argregs[i] = r;
-                offset = roundup(offset + q->type->size, 8);
-                if (varargs)
-                        p->sclass = AUTO;
-                else if (r && ncalls == 0 && !isstruct(q->type) && !p->addressed
-) {
-                        p->sclass = q->sclass = REGISTER;
-                        askregvar(p, r);
-                        assert(p->x.regnode && p->x.regnode->vbl == p);
-                        q->x = p->x;
-                        q->type = p->type;
-                } else if (askregvar(p, rmap(ttob(p->type)))
-                           && r != NULL /*
-                           && (isint(p->type) || p->type == q->type) */
-) {
-                        assert(q->sclass != REGISTER);
-                        p->sclass = q->sclass = REGISTER;
-                        q->type = p->type;
-                }
-
+            p->sclass = AUTO;
+        else if (r && ncalls == 0 && !isstruct(q->type) && !p->addressed) {
+            p->sclass = q->sclass = REGISTER;
+            askregvar(p, r);
+            assert(p->x.regnode && p->x.regnode->vbl == p);
+            q->x    = p->x;
+            q->type = p->type;
+        } else if (askregvar(p, rmap(ttob(p->type))) && r != NULL /*
+                                                     && (isint(p->type) || p->type == q->type) */
+        ) {
+            assert(q->sclass != REGISTER);
+            p->sclass = q->sclass = REGISTER;
+            q->type               = p->type;
         }
-        assert(!caller[i]);
+    }
+    assert(!caller[i]);
 
-        offset = sizeargs + 8;
-        gencode(caller, callee);
-        usedmask[IREG] &= ~(INTTMP|(0x3f<<16)|INTRET);
-        usedmask[FREG] &= ~(FLTTMP|(0x3f<<16)|FLTRET);
-        if (ncalls || usedmask[IREG] || usedmask[FREG])
-                usedmask[IREG] |= 1<<26;
-        sizefsave = 8*bitcount(usedmask[FREG]);
-        sizeisave = 8*bitcount(usedmask[IREG]);
-        if (maxargoffset > 48)
-                maxargoffset -= 48;
-        else
-                maxargoffset = 0;
-        if (maxoffset < sizeargs)
-                maxoffset = sizeargs;
-        framesize = roundup(maxargoffset + sizefsave + sizeisave + maxoffset, 16);
-        segment(CODE);
-        print(".ent %s\n", f->x.name);
-        print("%s:\n", f->x.name);
-        print("ldgp $gp,0($27)\n");
-        i = maxargoffset + sizefsave - framesize;
-        if (framesize > 0)
-                print("lda $sp,%d($sp)\n", -framesize);
-        if (usedmask[FREG])
-                print(".fmask 0x%x,%d\n", usedmask[FREG], i - 8);
-        if (usedmask[IREG])
-                print(".mask 0x%x,%d\n",  usedmask[IREG], i + sizeisave - 8);
-        print(".frame $sp,%d,$26,%d\n", framesize, sizeargs);
+    offset = sizeargs + 8;
+    gencode(caller, callee);
+    usedmask[IREG] &= ~(INTTMP | (0x3f << 16) | INTRET);
+    usedmask[FREG] &= ~(FLTTMP | (0x3f << 16) | FLTRET);
+    if (ncalls || usedmask[IREG] || usedmask[FREG])
+        usedmask[IREG] |= 1 << 26;
+    sizefsave = 8 * bitcount(usedmask[FREG]);
+    sizeisave = 8 * bitcount(usedmask[IREG]);
+    if (maxargoffset > 48)
+        maxargoffset -= 48;
+    else
+        maxargoffset = 0;
+    if (maxoffset < sizeargs)
+        maxoffset = sizeargs;
+    framesize = roundup(maxargoffset + sizefsave + sizeisave + maxoffset, 16);
+    segment(CODE);
+    print(".ent %s\n", f->x.name);
+    print("%s:\n", f->x.name);
+    print("ldgp $gp,0($27)\n");
+    i = maxargoffset + sizefsave - framesize;
+    if (framesize > 0)
+        print("lda $sp,%d($sp)\n", -framesize);
+    if (usedmask[FREG])
+        print(".fmask 0x%x,%d\n", usedmask[FREG], i - 8);
+    if (usedmask[IREG])
+        print(".mask 0x%x,%d\n", usedmask[IREG], i + sizeisave - 8);
+    print(".frame $sp,%d,$26,%d\n", framesize, sizeargs);
 
-        saved = maxargoffset;
-        for (i = 2; i <= 9; i++)
-                if (usedmask[FREG]&(1<<i)) {
-                        print("stt $f%d,%d($sp)\n", i, saved);
-                        saved += 8;
-                }
-
-        for (i = 9; i <= 26; i++)
-                if (usedmask[IREG]&(1<<i)) {
-                        print("stq $%d,%d($sp)\n", i, saved);
-                        saved += 8;
-                }
-        for (i = 0; i < 6 && callee[i]; i++) {
-                r = argregs[i];
-                if (r && r->x.regnode != callee[i]->x.regnode) {
-                        Symbol out = callee[i];
-                        Symbol in  = caller[i];
-                        int rn = r->x.regnode->number;
-                        int rs = r->x.regnode->set;
-                        int tyin = ttob(in->type);
-
-                        assert(out && in && r && r->x.regnode);
-                        assert(out->sclass != REGISTER || out->x.regnode);
-                        if (out->sclass == REGISTER) {
-                                if (rs == FREG)
-                                        print("fmov $f%d,$f%d\n", rn, out->x.regnode->number);
-                                else
-                                        print("mov $%d,$%d\n", rn, out->x.regnode->number);
-
-                        } else {
-                                int off = in->x.offset + framesize;
-                                if (rs == FREG && tyin == F+sizeop(8))
-                                        print("stt $f%d,%d($sp)\n", rn, off);
-                                else if (rs == FREG && tyin == F+sizeop(4))
-                                        print("sts $f%d,%d($sp)\n", rn, off);
-                                else {
-                                        int i, n = (in->type->size + 7)/8;
-                                        for (i = rn; i < rn+n && i <= 21; i++)
-                                                print("stq $%d,%d($sp)\n", i, off + (i-rn)*8);
-                                }
-
-                        }
-
-                }
+    saved = maxargoffset;
+    for (i = 2; i <= 9; i++)
+        if (usedmask[FREG] & (1 << i)) {
+            print("stt $f%d,%d($sp)\n", i, saved);
+            saved += 8;
         }
-        if (varargs && callee[i-1]) {
-                i = callee[i-1]->x.offset + roundup(callee[i-1]->type->size, 8);
-                for (i = (48+i)/8; i < 6; i++) {
-                        print("stq $%d,%d($sp)\n",  i + 16, framesize -   48 + 8*i);
-                        print("stt $f%d,%d($sp)\n", i + 16, framesize - 2*48 + 8*i);
-                }
+
+    for (i = 9; i <= 26; i++)
+        if (usedmask[IREG] & (1 << i)) {
+            print("stq $%d,%d($sp)\n", i, saved);
+            saved += 8;
         }
-        print(".prologue 1\n");
+    for (i = 0; i < 6 && callee[i]; i++) {
+        r = argregs[i];
+        if (r && r->x.regnode != callee[i]->x.regnode) {
+            Symbol out = callee[i];
+            Symbol in  = caller[i];
+            int rn     = r->x.regnode->number;
+            int rs     = r->x.regnode->set;
+            int tyin   = ttob(in->type);
 
-        emitcode();
-        saved = maxargoffset;
-        for (i = 2; i <= 9; i++)
-                if (usedmask[FREG]&(1<<i)) {
-                        print("ldt $f%d,%d($sp)\n", i, saved);
-                        saved += 8;
+            assert(out && in && r && r->x.regnode);
+            assert(out->sclass != REGISTER || out->x.regnode);
+            if (out->sclass == REGISTER) {
+                if (rs == FREG)
+                    print("fmov $f%d,$f%d\n", rn, out->x.regnode->number);
+                else
+                    print("mov $%d,$%d\n", rn, out->x.regnode->number);
+
+            } else {
+                int off = in->x.offset + framesize;
+                if (rs == FREG && tyin == F + sizeop(8))
+                    print("stt $f%d,%d($sp)\n", rn, off);
+                else if (rs == FREG && tyin == F + sizeop(4))
+                    print("sts $f%d,%d($sp)\n", rn, off);
+                else {
+                    int i, n = (in->type->size + 7) / 8;
+                    for (i = rn; i < rn + n && i <= 21; i++)
+                        print("stq $%d,%d($sp)\n", i, off + (i - rn) * 8);
                 }
-        for (i = 9; i <= 26; i++)
-                if (usedmask[IREG]&(1<<i)) {
-                        print("ldq $%d,%d($sp)\n", i, saved);
-                        saved += 8;
-                }
-        if (framesize > 0)
-                print("lda $sp,%d($sp)\n", framesize);
-        print("ret\n");
-        print(".end %s\n", f->x.name);
-
-}
-
-static void defconst(int suffix, int size, Value v) {
-        if (suffix == F && size == 4) {
-                float f = v.d;
-                print(".long 0x%x\n", *(unsigned *)&f);
-        } else if (suffix == F && size == 8) {
-                double d = v.d;
-                unsigned *p = (unsigned *)&d;
-                print(".long 0x%x\n.long 0x%x\n", p[swap], p[!swap]);
-        } else if (suffix == P)
-                print(".quad 0x%X\n", v.p);
-        else if (size == 1)
-                print(".byte 0x%x\n", suffix == I ? v.i : v.u);
-        else if (size == 2)
-                print(".word 0x%x\n", suffix == I ? v.i&0xFFFF : v.u&0xFFFF);
-        else if (size == 4)
-                print(".long 0x%x\n", suffix == I ? v.i : v.u);
-        else if (size == 8)
-                print(".quad 0x%X\n", suffix == I ? v.i : v.u);
-
-}
-
-static void defaddress(Symbol p) {
-        print(".quad %s\n", p->x.name);
-}
-
-static void defstring(int n, char *str) {
-        char *s;
-
-        for (s = str; s < str + n; s++)
-                print(".byte %d\n", (*s)&0377);
-}
-
-static void export(Symbol p) {
-        print(".globl %s\n", p->x.name);
-}
-
-static void import(Symbol p) {
-        if (!isfunc(p->type))
-                print(".extern %s %d\n", p->name, p->type->size);
-}
-
-static void defsymbol(Symbol p) {
-        if (p->scope >= LOCAL && p->sclass == STATIC)
-                p->x.name = stringf("L.%d", genlabel(1));
-        else if (p->generated)
-                p->x.name = stringf("L.%s", p->name);
-        else
-                assert(p->scope != CONSTANTS || isint(p->type) || isptr(p->type)),
-                p->x.name = p->name;
-}
-
-static void address(Symbol q, Symbol p, long n) {
-        if (p->scope == GLOBAL
-        || p->sclass == STATIC || p->sclass == EXTERN)
-                q->x.name = stringf("%s%s%D", p->x.name,
-                        n >= 0 ? "+" : "", n);
-        else {
-                assert(n <= INT_MAX && n >= INT_MIN);
-                q->x.offset = p->x.offset + n;
-                q->x.name = stringd(q->x.offset);
+            }
         }
-}
-
-static void global(Symbol p) {
-        if (p->u.seg == DATA || p->u.seg == LIT) {
-                assert(p->type->align <= 8);
-                print(".align %c\n", ".01.2...3"[p->type->align]);
-                print("%s:\n", p->x.name);
-        } else if (p->sclass == STATIC || Aflag >= 2)
-                print(".lcomm %s,%d\n", p->x.name, p->type->size);
-        else
-                print( ".comm %s,%d\n", p->x.name, p->type->size);
-}
-
-static void segment(int n) {
-        cseg = n;
-        switch (n) {
-        case DATA: print(".sdata\n"); break;
-        case CODE: print(".text\n");  break;
-        case LIT:  print(".rdata\n"); break;
+    }
+    if (varargs && callee[i - 1]) {
+        i = callee[i - 1]->x.offset + roundup(callee[i - 1]->type->size, 8);
+        for (i = (48 + i) / 8; i < 6; i++) {
+            print("stq $%d,%d($sp)\n", i + 16, framesize - 48 + 8 * i);
+            print("stt $f%d,%d($sp)\n", i + 16, framesize - 2 * 48 + 8 * i);
         }
+    }
+    print(".prologue 1\n");
+
+    emitcode();
+    saved = maxargoffset;
+    for (i = 2; i <= 9; i++)
+        if (usedmask[FREG] & (1 << i)) {
+            print("ldt $f%d,%d($sp)\n", i, saved);
+            saved += 8;
+        }
+    for (i = 9; i <= 26; i++)
+        if (usedmask[IREG] & (1 << i)) {
+            print("ldq $%d,%d($sp)\n", i, saved);
+            saved += 8;
+        }
+    if (framesize > 0)
+        print("lda $sp,%d($sp)\n", framesize);
+    print("ret\n");
+    print(".end %s\n", f->x.name);
 }
 
-static void space(int n) {
-        if (cseg != BSS)
-                print(".space %d\n", n);
+static void defconst(int suffix, int size, Value v)
+{
+    if (suffix == F && size == 4) {
+        float f = v.d;
+        print(".long 0x%x\n", *(unsigned *)&f);
+    } else if (suffix == F && size == 8) {
+        double d    = v.d;
+        unsigned *p = (unsigned *)&d;
+        print(".long 0x%x\n.long 0x%x\n", p[swap], p[!swap]);
+    } else if (suffix == P)
+        print(".quad 0x%X\n", v.p);
+    else if (size == 1)
+        print(".byte 0x%x\n", suffix == I ? v.i : v.u);
+    else if (size == 2)
+        print(".word 0x%x\n", suffix == I ? v.i & 0xFFFF : v.u & 0xFFFF);
+    else if (size == 4)
+        print(".long 0x%x\n", suffix == I ? v.i : v.u);
+    else if (size == 8)
+        print(".quad 0x%X\n", suffix == I ? v.i : v.u);
 }
 
-static void blkloop(int dreg, int doff, int sreg, int soff, int size, int tmps[]) {
-        int lab = genlabel(1);
-
-        print("addq $%d,%d,$%d\n",   sreg, size&~7, sreg);
-        print("addq $%d,%d,$%d\n",   dreg, size&~7, tmps[2]);
-        blkcopy(tmps[2], doff, sreg, soff, size&7, tmps);
-        print("L.%d:\n", lab);
-        print("addq $%d,%d,$%d\n",    sreg, -8, sreg);
-        print("addq $%d,%d,$%d\n", tmps[2], -8, tmps[2]);
-        blkcopy(tmps[2], doff, sreg, soff, 8, tmps);
-        print("cmpult $%d,$%d,$23\nbne $23,L.%d\n", dreg, tmps[2], lab);
+static void defaddress(Symbol p)
+{
+    print(".quad %s\n", p->x.name);
 }
 
-static void blkfetch(int size, int off, int reg, int tmp) {
-        assert(size == 1 || size == 2 || size == 4 || size == 8);
-        if (size == 1)
-                print("ldb $%d,%d($%d)\n",  tmp, off, reg);
-        else if (size == 2)
-                print("ldw $%d,%d($%d)\n",  tmp, off, reg);
-        else if (salign >= size && size == 4)
-                print("ldl $%d,%d($%d)\n",  tmp, off, reg);
-        else if (salign >= size && size == 8)
-                print("ldq $%d,%d($%d)\n",  tmp, off, reg);
-        else if (size == 4)
-                print("uldl $%d,%d($%d)\n", tmp, off, reg);
-        else
-                print("uldq $%d,%d($%d)\n", tmp, off, reg);
+static void defstring(int n, char *str)
+{
+    char *s;
+
+    for (s = str; s < str + n; s++)
+        print(".byte %d\n", (*s) & 0377);
 }
 
-static void blkstore(int size, int off, int reg, int tmp) {
-        assert(size == 1 || size == 2 || size == 4 || size == 8);
-        if (size == 1)
-                print("stb $%d,%d($%d)\n",  tmp, off, reg);
-        else if (size == 2)
-                print("stw $%d,%d($%d)\n",  tmp, off, reg);
-        else if (dalign >= size && size == 4)
-                print("stl $%d,%d($%d)\n",  tmp, off, reg);
-        else if (dalign >= size && size == 8)
-                print("stq $%d,%d($%d)\n",  tmp, off, reg);
-        else if (size == 4)
-                print("ustl $%d,%d($%d)\n", tmp, off, reg);
-        else
-                print("ustq $%d,%d($%d)\n", tmp, off, reg);
+static void export(Symbol p)
+{
+    print(".globl %s\n", p->x.name);
+}
+
+static void import(Symbol p)
+{
+    if (!isfunc(p->type))
+        print(".extern %s %d\n", p->name, p->type->size);
+}
+
+static void defsymbol(Symbol p)
+{
+    if (p->scope >= LOCAL && p->sclass == STATIC)
+        p->x.name = stringf("L.%d", genlabel(1));
+    else if (p->generated)
+        p->x.name = stringf("L.%s", p->name);
+    else
+        assert(p->scope != CONSTANTS || isint(p->type) || isptr(p->type)), p->x.name = p->name;
+}
+
+static void address(Symbol q, Symbol p, long n)
+{
+    if (p->scope == GLOBAL || p->sclass == STATIC || p->sclass == EXTERN)
+        q->x.name = stringf("%s%s%D", p->x.name, n >= 0 ? "+" : "", n);
+    else {
+        assert(n <= INT_MAX && n >= INT_MIN);
+        q->x.offset = p->x.offset + n;
+        q->x.name   = stringd(q->x.offset);
+    }
+}
+
+static void global(Symbol p)
+{
+    if (p->u.seg == DATA || p->u.seg == LIT) {
+        assert(p->type->align <= 8);
+        print(".align %c\n", ".01.2...3"[p->type->align]);
+        print("%s:\n", p->x.name);
+    } else if (p->sclass == STATIC || Aflag >= 2)
+        print(".lcomm %s,%d\n", p->x.name, p->type->size);
+    else
+        print(".comm %s,%d\n", p->x.name, p->type->size);
+}
+
+static void segment(int n)
+{
+    cseg = n;
+    switch (n) {
+    case DATA:
+        print(".sdata\n");
+        break;
+    case CODE:
+        print(".text\n");
+        break;
+    case LIT:
+        print(".rdata\n");
+        break;
+    }
+}
+
+static void space(int n)
+{
+    if (cseg != BSS)
+        print(".space %d\n", n);
+}
+
+static void blkloop(int dreg, int doff, int sreg, int soff, int size, int tmps[])
+{
+    int lab = genlabel(1);
+
+    print("addq $%d,%d,$%d\n", sreg, size & ~7, sreg);
+    print("addq $%d,%d,$%d\n", dreg, size & ~7, tmps[2]);
+    blkcopy(tmps[2], doff, sreg, soff, size & 7, tmps);
+    print("L.%d:\n", lab);
+    print("addq $%d,%d,$%d\n", sreg, -8, sreg);
+    print("addq $%d,%d,$%d\n", tmps[2], -8, tmps[2]);
+    blkcopy(tmps[2], doff, sreg, soff, 8, tmps);
+    print("cmpult $%d,$%d,$23\nbne $23,L.%d\n", dreg, tmps[2], lab);
+}
+
+static void blkfetch(int size, int off, int reg, int tmp)
+{
+    assert(size == 1 || size == 2 || size == 4 || size == 8);
+    if (size == 1)
+        print("ldb $%d,%d($%d)\n", tmp, off, reg);
+    else if (size == 2)
+        print("ldw $%d,%d($%d)\n", tmp, off, reg);
+    else if (salign >= size && size == 4)
+        print("ldl $%d,%d($%d)\n", tmp, off, reg);
+    else if (salign >= size && size == 8)
+        print("ldq $%d,%d($%d)\n", tmp, off, reg);
+    else if (size == 4)
+        print("uldl $%d,%d($%d)\n", tmp, off, reg);
+    else
+        print("uldq $%d,%d($%d)\n", tmp, off, reg);
+}
+
+static void blkstore(int size, int off, int reg, int tmp)
+{
+    assert(size == 1 || size == 2 || size == 4 || size == 8);
+    if (size == 1)
+        print("stb $%d,%d($%d)\n", tmp, off, reg);
+    else if (size == 2)
+        print("stw $%d,%d($%d)\n", tmp, off, reg);
+    else if (dalign >= size && size == 4)
+        print("stl $%d,%d($%d)\n", tmp, off, reg);
+    else if (dalign >= size && size == 8)
+        print("stq $%d,%d($%d)\n", tmp, off, reg);
+    else if (size == 4)
+        print("ustl $%d,%d($%d)\n", tmp, off, reg);
+    else
+        print("ustq $%d,%d($%d)\n", tmp, off, reg);
 }
 
 /* stabinit - initialize stab output */
-static void stabinit(char *file, int argc, char *argv[]) {
-        if (file) {
-                print(".file 2,\"%s\"\n", file);
-                currentfile = file;
-        }
+static void stabinit(char *file, int argc, char *argv[])
+{
+    if (file) {
+        print(".file 2,\"%s\"\n", file);
+        currentfile = file;
+    }
 }
 
 /* stabline - emit stab entry for source coordinate *cp */
-static void stabline(Coordinate *cp) {
-        if (cp->file && cp->file != currentfile) {
-                print(".file 2,\"%s\"\n", cp->file);
-                currentfile = cp->file;
-        }
-        print(".loc 2,%d\n", cp->y);
+static void stabline(Coordinate *cp)
+{
+    if (cp->file && cp->file != currentfile) {
+        print(".file 2,\"%s\"\n", cp->file);
+        currentfile = cp->file;
+    }
+    print(".loc 2,%d\n", cp->y);
 }
 
 /* stabsym - output a stab entry for symbol p */
-static void stabsym(Symbol p) {
-        if (p == cfunc && IR->stabline)
-                (*IR->stabline)(&p->src);
+static void stabsym(Symbol p)
+{
+    if (p == cfunc && IR->stabline)
+        (*IR->stabline)(&p->src);
 }
+
 Interface alphaIR = {
-        1, 1, 0,  /* char */
-        2, 2, 0,  /* short */
-        4, 4, 0,  /* int */
-        8, 8, 0,  /* long */
-        8, 8, 0,  /* long long */
-        4, 4, 1,  /* float */
-        8, 8, 1,  /* double */
-        8, 8, 1,  /* long double */
-        8, 8, 0,  /* T * */
-        0, 1, 0,  /* struct */
+    // clang-format off
+    1, 1, 0,    /* char */
+    2, 2, 0,    /* short */
+    4, 4, 0,    /* int */
+    8, 8, 0,    /* long */
+    8, 8, 0,    /* long long */
+    4, 4, 1,    /* float */
+    8, 8, 1,    /* double */
+    8, 8, 1,    /* long double */
+    8, 8, 0,    /* T * */
+    0, 1, 0,    /* struct */
 
-        1,      /* little_endian */
-        0,  /* mulops_calls */
-        0,  /* wants_callb */
-        1,  /* wants_argb */
-        1,  /* left_to_right */
-        0,  /* wants_dag */
-        0,  /* unsigned_char */
-        address,
-        blockbeg,
-        blockend,
-        defaddress,
-        defconst,
-        defstring,
-        defsymbol,
-        emit,
-        export,
-        function,
-        gen,
-        global,
-        import,
-        local,
-        progbeg,
-        progend,
-        segment,
-        space,
-        0, 0, 0, stabinit, stabline, stabsym, 0,
-        {
-                1,      /* max_unaligned_load */
-                rmap,
-                blkfetch, blkstore, blkloop,
-                _label,
-                _rule,
-                _nts,
-                _kids,
-                _string,
-                _templates,
-                _isinstruction,
-                _ntname,
-                emit2,
-                doarg,
-                target,
-                clobber,
-
-        }
-
+    1,          /* little_endian */
+    0,          /* mulops_calls */
+    0,          /* wants_callb */
+    1,          /* wants_argb */
+    1,          /* left_to_right */
+    0,          /* wants_dag */
+    0,          /* unsigned_char */
+    address,
+    blockbeg,
+    blockend,
+    defaddress,
+    defconst,
+    defstring,
+    defsymbol,
+    emit,
+    export,
+    function,
+    gen,
+    global,
+    import,
+    local,
+    progbeg,
+    progend,
+    segment,
+    space,
+    0, 0, 0, stabinit, stabline, stabsym, 0,
+    {
+        1,      /* max_unaligned_load */
+        rmap,
+        blkfetch, blkstore, blkloop,
+        _label,
+        _rule,
+        _nts,
+        _kids,
+        _string,
+        _templates,
+        _isinstruction,
+        _ntname,
+        emit2,
+        doarg,
+        target,
+        clobber,
+    }
+    // clang-format on
 };

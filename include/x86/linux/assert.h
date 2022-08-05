@@ -10,5 +10,5 @@ void assert(int);
 #define assert(ignore) ((void)0)
 #else
 extern int _assert(char *, char *, unsigned);
-#define assert(e) ((void)((e)||_assert(#e, __FILE__, __LINE__)))
+#define assert(e) ((void)((e) || _assert(#e, __FILE__, __LINE__)))
 #endif /* NDEBUG */

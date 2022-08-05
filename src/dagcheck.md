@@ -1,4 +1,5 @@
 %{
+/* clang-format off */
 #include "c.h"
 typedef Node NODEPTR_TYPE;
 #define OP_LABEL(p)     (specific((p)->op))
@@ -161,52 +162,63 @@ V: NEU(U,U) ""
 V: JUMPV(P) ""
 V: LABELV ""
 %%
+/* clang-format on */
 
-static void reduce(NODEPTR_TYPE p, int goalnt) {
-	int i, sz = opsize(p->op), rulenumber = _rule(p->x.state, goalnt);
-	short *nts = _nts[rulenumber];
-	NODEPTR_TYPE kids[10];
+static void reduce(NODEPTR_TYPE p, int goalnt)
+{
+    int i, sz = opsize(p->op), rulenumber = _rule(p->x.state, goalnt);
+    short *nts = _nts[rulenumber];
+    NODEPTR_TYPE kids[10];
 
-	assert(rulenumber);
-	_kids(p, rulenumber, kids);
-	for (i = 0; nts[i]; i++)
-		reduce(kids[i], nts[i]);
-	switch (optype(p->op)) {
-#define xx(ty) if (sz == ty->size) return
-	case I:
-	case U:
-		xx(chartype);
-		xx(shorttype);
-		xx(inttype);
-		xx(longtype);
-		xx(longlong);
-		xx(signedptr);
-		xx(unsignedptr);
-		break;
-	case F:
-		xx(floattype);
-		xx(doubletype);
-		xx(longdouble);
-		break;
-	case P:
-		xx(voidptype);
-		xx(funcptype);
-		break;
-	case V:
-	case B: if (sz == 0) return;
+    assert(rulenumber);
+    _kids(p, rulenumber, kids);
+    for (i = 0; nts[i]; i++)
+        reduce(kids[i], nts[i]);
+    switch (optype(p->op)) {
+
+#define xx(ty)          \
+    if (sz == ty->size) \
+    return
+
+    case I:
+    case U:
+        xx(chartype);
+        xx(shorttype);
+        xx(inttype);
+        xx(longtype);
+        xx(longlong);
+        xx(signedptr);
+        xx(unsignedptr);
+        break;
+    case F:
+        xx(floattype);
+        xx(doubletype);
+        xx(longdouble);
+        break;
+    case P:
+        xx(voidptype);
+        xx(funcptype);
+        break;
+    case V:
+    case B:
+        if (sz == 0)
+            return;
 #undef xx
-	}
-	printdag(p, 2);
-	assert(0);
+    }
+    printdag(p, 2);
+    assert(0);
 }
 
-void check(Node p) {
-	struct _state { short cost[1]; };
+void check(Node p)
+{
+    struct _state {
+        short cost[1];
+    };
 
-	_label(p);
-	if (((struct _state *)p->x.state)->cost[1] > 0) {
-		printdag(p, 2);
-		assert(0);
-	}
-	reduce(p, 1);
+    _label(p);
+    if (((struct _state *)p->x.state)->cost[1] > 0) {
+        printdag(p, 2);
+        assert(0);
+    }
+    reduce(p, 1);
 }

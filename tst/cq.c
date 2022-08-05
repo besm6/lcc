@@ -1,3 +1,4 @@
+// clang-format off
    struct defs {
      int cbits;          /* No. of bits per char           */
      int ibits;          /*                 int            */
@@ -68,7 +69,7 @@ elsewhere, and (c) it was deemed advisable not to check cer-
 tain features like preprocessor or listing control features.
 
      Modules are called by a main program main(). The mod-
-ules that are called, and the sequence in which they are 
+ules that are called, and the sequence in which they are
 called, are determined by two lists in main(), in which the
 module names appear. The first list (an extern statement)
 declares the module names to be external. The second (a stat-
@@ -112,7 +113,7 @@ not the codes returned by the modules are printed by the main
 program is determined by setting "flgs" to 1 (resp. 0).
 
      The entire logic of the main program is contained in the
-half-dozen or so lines at the end. The somewhat cryptic 
+half-dozen or so lines at the end. The somewhat cryptic
 statement:
 
            d0.rrc = (*sec[j])(pd0);
@@ -189,7 +190,7 @@ used for housekeeping, handshaking and module initialization.
    };
 
    static struct defs d0, *pd0;
-    
+
      d0.flgs = 1;          /* These flags dictate            */
      d0.flgm = 1;          /*     the verbosity of           */
      d0.flgd = 1;          /*         the program.           */
@@ -202,7 +203,7 @@ used for housekeeping, handshaking and module initialization.
      d0.crc = d0.crc+d0.rrc;
      if(d0.flgs != 0) printf("Section %s returned %d.\n",d0.rfs,d0.rrc);
    }
-  
+
    if(d0.crc == 0) printf("\nNo errors detected.\n");
    else printf("\nFailed.\n");
    return 0;
@@ -454,7 +455,7 @@ struct defs *pd0;
         special characters:
                    ~!"#%&()_=-^|{}[]+;*:<>,.?/     27
         extra special characters:
-                   newline           \n       
+                   newline           \n
                    horizontal tab    \t
                    backspace         \b
                    carriage return   \r
@@ -494,7 +495,7 @@ struct defs *pd0;
    chars['r'] = 1;   chars['R'] = 1;   chars[']'] = 1;
    chars['s'] = 1;   chars['S'] = 1;   chars['+'] = 1;   chars['\\'] = 1;
    chars['t'] = 1;   chars['T'] = 1;   chars[';'] = 1;   chars['\''] = 1;
-   chars['u'] = 1;   chars['U'] = 1;   chars['*'] = 1;  
+   chars['u'] = 1;   chars['U'] = 1;   chars['*'] = 1;
    chars['v'] = 1;   chars['V'] = 1;   chars[':'] = 1;   chars['\0'] = 1;
    chars['w'] = 1;   chars['W'] = 1;   chars['<'] = 1;   chars[' '] = 1;
    chars['x'] = 1;   chars['X'] = 1;   chars['>'] = 1;
@@ -517,7 +518,7 @@ struct defs *pd0;
     || '\06'   !=   6 || '\07'   !=   7 || '\10'   !=   8
     || '\17'   !=  15 || '\20'   !=  16 || '\77'   !=  63
     || '\100'  !=  64 || '\177'  != 127                 ){
-   
+
      rc = rc+8;
      if(pd0->flgd != 0) printf(s243er,8);
    }
@@ -589,7 +590,7 @@ struct defs *pd0;
      || (sizeof 12500.e-01) != sizeof(double)
      || (sizeof 125000e-2 ) != sizeof(double)
      || (sizeof 1250.     ) != sizeof(double)){
-     
+
      if(pd0->flgd != 0) printf(s244er,2);
      rc = rc+2;
    }
@@ -753,7 +754,7 @@ struct defs *pd0;
      printf(s2,pd0->fprec,"float");
      printf(s2,pd0->dprec,"double");
    }
-          /* Since we are only exploring and perhaps reporting, but not 
+          /* Since we are only exploring and perhaps reporting, but not
              testing any features, we cannot return an error code.  */
 
    return 0;
@@ -806,7 +807,7 @@ unication between functions, even separately compiled functions.
      rc=rc+2;
      if(pd0->flgd != 0) printf(s4er,2);
    }
-/*   
+/*
      Characters have been tested elsewhere (in s243).
 
      Up to three sizes of integer, declared short int, int, and
@@ -828,9 +829,9 @@ implementation                                                  */
 
    target = ~0U;
    mask = 1;
- 
+
    for(j=0; j<(sizeof target)*pd0->cbits; j++){
-   
+
      mask = mask&target;
      target = target>>1;
    }
@@ -889,7 +890,7 @@ struct defs *pd0;
    int j;
    char fromc, charint;
    char *wd, *pc[6];
-   
+
    static char upper_alpha[]             = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
    static char lower_alpha[]             = "abcdefghijklmnopqrstuvwxyz";
    static char numbers[]               = "0123456789";
@@ -939,7 +940,7 @@ acter set is nonnegative.                               */
    }
 
 /*      When a longer integer is converted to a shorter or
-to  a char, it is truncated on the left; excess bits are 
+to  a char, it is truncated on the left; excess bits are
 simply discarded.                                       */
 
    longint = 1048579;           /* =2**20+3 */
@@ -1111,7 +1112,7 @@ struct defs *pd0;
      if(pd0->flgd != 0) printf(s71er,2);
    }
 
-/*   A primary expression followed by an expression in square 
+/*   A primary expression followed by an expression in square
      brackets is a primary expression. The intuitive meaning is
      that of a subscript. The expression E1[E2] is identical
      (by definition) to *((E1)+(E2)).
@@ -1124,7 +1125,7 @@ struct defs *pd0;
    }
 
 /*   If the various flavors of function calls didn't work, we
-     would never have gotten this far; however, we do need to 
+     would never have gotten this far; however, we do need to
      show that functions can be recursive...
                                                                */
 
@@ -1220,7 +1221,7 @@ struct defs *pd0;
         expected values of the results.
 
 
-          =  +=  -=  *=  /=  %=  >>=  <<=  &=  ^=  |=	
+          =  +=  -=  *=  /=  %=  >>=  <<=  &=  ^=  |=
 char      2   7   3  10   2   1   1    20   8   6  14
 short     2   7   3  10   2   1   1    20   8   6  14
 int       2   7   3  10   2   1   1    20   8   6  14
@@ -3636,7 +3637,7 @@ struct defs *pd0;
    }
 
         /* In contexts where the comma is given a special mean-
-        ing, for example in a list of actual arguments to 
+        ing, for example in a list of actual arguments to
         functions (sic) and lists of initializers, the comma
         operator as described in this section can only appear
         in parentheses; for example
@@ -3678,7 +3679,7 @@ struct defs *pd0;
    while (*pt++ = *ps++);
 
         /* The *, denoting indirection, and the &, denoting a
-        pointer, are duals of each other, and ought to behave as 
+        pointer, are duals of each other, and ought to behave as
         such...                                                 */
 
    k = 2;
@@ -3727,7 +3728,7 @@ struct defs *pd0;
         of size one.                                            */
 
    c = 26;  l = 26;  d = 26.;
-   s = 26;  u = 26; 
+   s = 26;  u = 26;
    i = 26;  f = 26.;
 
    lrc = 0;
@@ -3822,7 +3823,7 @@ struct defs *pd0;
    }
 
         /* The relational operators group left-to-right, but this
-        fact is not very useful; a<b<c does not mean what it 
+        fact is not very useful; a<b<c does not mean what it
         seems to...
                                                                 */
 
@@ -3838,7 +3839,7 @@ struct defs *pd0;
         /* In general, we take note of the fact that if we got this
         far the relational operators have to be working. We test only
         that two pointers may be compared; the result depends on
-        the relative locations in the address space of the 
+        the relative locations in the address space of the
         pointed-to objects.
                                                                 */
    if( &x[1] == &x[0] ){
@@ -3849,7 +3850,7 @@ struct defs *pd0;
    if( &x[1] < &x[0] ) if(pd0->flgm != 0)
      printf("Increasing array elements assigned to decreasing locations\n");
 
-        /* a<b == c<d whenever a<b and c<d have the same 
+        /* a<b == c<d whenever a<b and c<d have the same
         truth value.                                            */
 
    lrc = 0;
@@ -4087,7 +4088,7 @@ struct defs *pd0;
         /* The && operator groups left to right. It returns 1
         if both of the operands are nonzero; 0 otherwise.
         It guarantees left to right evaluation; moreover, the
-        second operand is not evaluated if the value of the 
+        second operand is not evaluated if the value of the
         first operand is 0.
                                                                 */
 
@@ -4119,7 +4120,7 @@ struct defs *pd0;
         /* The || operator groups left to right. It returns 1
         if either of its operands is nonzero; 0 otherwise. It
         guarantees left to right evaluation; moreover, the second
-        operand is not evaluated if the value of the first 
+        operand is not evaluated if the value of the first
         operand is nonzero.
                                                                 */
 
@@ -4184,7 +4185,7 @@ struct defs *pd0;
             int nrint;
    static char badtest[] = "Register count for %s is unreliable.\n";
    static char goodtest[] = "%d registers assigned to %s variables.\n";
-   
+
    rc = 0;
    crc = 0;
    prc = 0;
@@ -4203,7 +4204,7 @@ struct defs *pd0;
         typedef
 
       The first three of these were treated earlier, in s4. The last
-   will be checked in s88. "Register" remains. 
+   will be checked in s88. "Register" remains.
 
       There are three flavors of register, viz., char, int and pointer.
    We wish first to ascertain that the representations as register
@@ -4265,11 +4266,11 @@ struct defs *pd0;
 }
 regc() {     /*   char to register assignment   */
 /*   Testing a variable whose storage class has been spec-
-ified as "register" is somewhat tricky, but it can be done in a 
+ified as "register" is somewhat tricky, but it can be done in a
 fairly reliable fashion by taking advantage of our knowledge of the
 ways in which compilers operate. If we declare a collection of vari-
 ables of the same storage class, we would expect that, when storage
-for these variables is actually allocated, the variables will be 
+for these variables is actually allocated, the variables will be
 bunched together and ordered according to one of the following
 criteria:
 
@@ -4290,7 +4291,7 @@ every other variable is specified to be "register", and address
 differences are taken between adjacent nonregister variables, we would
 still expect to find constant differences if the "register" vari-
 ables were actually assigned to registers, and some other diff-
-erences if they were not. Specifically, if we had N variables 
+erences if they were not. Specifically, if we had N variables
 specified as "register" of which the first n were actually ass-
 igned to registers, we would expect the sequence of differences
 to consist of a number of occurrences of some number, followed by
@@ -4406,7 +4407,7 @@ that the test is invalid.                                     */
 
 
 /*   The following FSM analyzes the string of differences. It accepts
-strings of the form a+b+a+ and returns 16 minus the number of bs, 
+strings of the form a+b+a+ and returns 16 minus the number of bs,
 which is the number of variables that actually got into registers.
 Otherwise it signals rejection by returning -1., indicating that the
 test is unreliable.              */
@@ -4442,11 +4443,11 @@ test is unreliable.              */
 }
 regi() {     /*   int to register assignment    */
 /*   Testing a variable whose storage class has been spec-
-ified as "register" is somewhat tricky, but it can be done in a 
+ified as "register" is somewhat tricky, but it can be done in a
 fairly reliable fashion by taking advantage of our knowledge of the
 ways in which compilers operate. If we declare a collection of vari-
 ables of the same storage class, we would expect that, when storage
-for these variables is actually allocated, the variables will be 
+for these variables is actually allocated, the variables will be
 bunched together and ordered according to one of the following
 criteria:
 
@@ -4467,7 +4468,7 @@ every other variable is specified to be "register", and address
 differences are taken between adjacent nonregister variables, we would
 still expect to find constant differences if the "register" vari-
 ables were actually assigned to registers, and some other diff-
-erences if they were not. Specifically, if we had N variables 
+erences if they were not. Specifically, if we had N variables
 specified as "register" of which the first n were actually ass-
 igned to registers, we would expect the sequence of differences
 to consist of a number of occurrences of some number, followed by
@@ -4585,7 +4586,7 @@ that the test is invalid.                                     */
 
 
 /*   The following FSM analyzes the string of differences. It accepts
-strings of the form a+b+a+ and returns 16 minus the number of bs, 
+strings of the form a+b+a+ and returns 16 minus the number of bs,
 which is the number of variables that actually got into registers.
 Otherwise it signals rejection by returning -1., indicating that the
 test is unreliable.              */
@@ -4621,11 +4622,11 @@ test is unreliable.              */
 }
 regp() {     /*   pointer to register assignment   */
 /*   Testing a variable whose storage class has been spec-
-ified as "register" is somewhat tricky, but it can be done in a 
+ified as "register" is somewhat tricky, but it can be done in a
 fairly reliable fashion by taking advantage of our knowledge of the
 ways in which compilers operate. If we declare a collection of vari-
 ables of the same storage class, we would expect that, when storage
-for these variables is actually allocated, the variables will be 
+for these variables is actually allocated, the variables will be
 bunched together and ordered according to one of the following
 criteria:
 
@@ -4646,7 +4647,7 @@ every other variable is specified to be "register", and address
 differences are taken between adjacent nonregister variables, we would
 still expect to find constant differences if the "register" vari-
 ables were actually assigned to registers, and some other diff-
-erences if they were not. Specifically, if we had N variables 
+erences if they were not. Specifically, if we had N variables
 specified as "register" of which the first n were actually ass-
 igned to registers, we would expect the sequence of differences
 to consist of a number of occurrences of some number, followed by
@@ -4764,7 +4765,7 @@ that the test is invalid.                                     */
 
 
 /*   The following FSM analyzes the string of differences. It accepts
-strings of the form a+b+a+ and returns 16 minus the number of bs, 
+strings of the form a+b+a+ and returns 16 minus the number of bs,
 which is the number of variables that actually got into registers.
 Otherwise it signals rejection by returning -1., indicating that the
 test is unreliable.              */
@@ -4849,7 +4850,7 @@ struct defs *pd0;
         /*  static int x3d[3][5][7] declares a static three
         dimensional array of integers, with rank 3x5x7.
         In complete detail, x3d is an array of three items;
-        each item is an array of five arrays, and each of 
+        each item is an array of five arrays, and each of
         the latter arrays is an array of seven integers.
         Any of the expressions x3d, x3d[i], x3d[i][j],
         and x3d[i][j][k] may reasonably appear in an express-
@@ -4868,7 +4869,7 @@ struct defs *pd0;
       +array(x3d[i],35,35)
       +array(x3d[i][j],7,49)
       +      x3d[i][j][k]-52){
- 
+
       if(pd0->flgd != 0) printf(s84er,8);
       rc = rc+8;
    }
@@ -4901,7 +4902,7 @@ struct defs *pd0;
    static char qs85[8] = "s85    ";
    int rc;
    char *ps, *pt;
-   
+
    struct tnode {
      char tword[20];
      int count;
@@ -5144,7 +5145,7 @@ struct defs *pd0;
      rc = rc+8;
    }
 
-        /* y0, y1, and y2, as declared, should define and 
+        /* y0, y1, and y2, as declared, should define and
         initialize identical arrays.
                                                                 */
    lrc = 0;
@@ -5257,7 +5258,7 @@ struct defs *pd0;
 
         /* One would think that the section on statements would
         provide the most variety in the entire sequence of tests.
-        As it turns out, most of the material in this section has 
+        As it turns out, most of the material in this section has
         already been checked in the process of checking out
         everything else, and the section at this point is somewhat
         anticlimactic. For this reason, we restrict ourselves
@@ -5314,3 +5315,4 @@ setev(){                  /* Sets an external variable. Used  */
      int rrc;            /* recent return code             */
      int crc;            /* Cumulative return code         */
      char rfs[8];        /* Return from section            */
+// clang-format on

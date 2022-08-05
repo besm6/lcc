@@ -1,5 +1,4 @@
 %{
-#include <stdio.h>
 #include <stdlib.h>
 #include "lburg.h"
 static int yylineno = 0;
