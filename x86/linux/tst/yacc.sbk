@@ -692,8 +692,8 @@ leal 4(%esi),%esi
 movl (,%esi),%ebx
 leal 1(%ebx),%edx
 movl %edx,(,%esi)
-movb (,%ebx),%bl
-movzbl %bl,%esi
+movsbl (,%ebx),%esi
+andl $255,%esi
 movl %esi,-44(%ebp)
 jmp .LC64
 .LC63:
@@ -1061,8 +1061,8 @@ leal 4(%edi),%edi
 movl (,%edi),%esi
 leal 1(%esi),%ebx
 movl %ebx,(,%edi)
-movb (,%esi),%bl
-movzbl %bl,%edi
+movsbl (,%esi),%edi
+andl $255,%edi
 movl %edi,-44(%ebp)
 jmp .LC121
 .LC120:
@@ -1119,10 +1119,7 @@ movb %bl,(,%esi)
 jmp .LC126
 .LC125:
 pushl yyout
-movl yyprevious,%edi
-movl %edi,%ebx
-movzbl %bl,%edi
-pushl %edi
+pushl yyprevious
 call _flsbuf
 addl $8,%esp
 .LC126:
@@ -1209,8 +1206,8 @@ leal 4(%edi),%edi
 movl (,%edi),%esi
 leal 1(%esi),%ebx
 movl %ebx,(,%edi)
-movb (,%esi),%bl
-movzbl %bl,%edi
+movsbl (,%esi),%edi
+andl $255,%edi
 movl %edi,-16(%ebp)
 jmp .LC149
 .LC148:
@@ -1279,10 +1276,7 @@ movb %bl,(,%esi)
 jmp .LC154
 .LC153:
 pushl yyout
-movl 20(%ebp),%edi
-movl %edi,%ebx
-movzbl %bl,%edi
-pushl %edi
+pushl 20(%ebp)
 call _flsbuf
 addl $8,%esp
 .LC154:
