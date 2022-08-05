@@ -684,11 +684,13 @@ int gettok(void) {
 			}
 			goto id;
 		default:
-			if ((map[cp[-1]]&BLANK) == 0)
-				if (cp[-1] < ' ' || cp[-1] >= 0177)
+			if ((map[cp[-1]]&BLANK) == 0) {
+				if (cp[-1] < ' ' || cp[-1] >= 0177) {
 					error("illegal character `\\0%o'\n", cp[-1]);
-				else
+				} else {
 					error("illegal character `%c'\n", cp[-1]);
+                                }
+                        }
 		}
 	}
 }

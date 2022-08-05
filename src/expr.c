@@ -277,11 +277,13 @@ static Tree postfix(Tree p) {
 				Tree q;
 				t = gettok();
 				q = expr(']');
-				if (YYnull)
-					if (isptr(p->type))
+				if (YYnull) {
+					if (isptr(p->type)) {
 						p = nullcheck(p);
-					else if (isptr(q->type))
+					} else if (isptr(q->type)) {
 						q = nullcheck(q);
+                                        }
+                                }
 				p = (*optree['+'])(ADD, pointer(p), pointer(q));
 				if (isptr(p->type) && isarray(p->type->type))
 					p = retype(p, p->type->type);
@@ -498,11 +500,13 @@ Type binary(Type xty, Type yty) {
 	xx(longlong);
 	xx(unsignedlong);
 	if (xty == longtype     && yty == unsignedtype
-	||  xty == unsignedtype && yty == longtype)
-		if (longtype->size > unsignedtype->size)
+	||  xty == unsignedtype && yty == longtype) {
+		if (longtype->size > unsignedtype->size) {
 			return longtype;
-		else
+		} else {
 			return unsignedlong;
+                }
+        }
 	xx(longtype);
 	xx(unsignedtype);
 	return inttype;

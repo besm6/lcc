@@ -66,11 +66,13 @@ int main(int argc, char *argv[]) {
 		qsort(p->counts, p->count, sizeof *p->counts, compare);
 	if (i < argc) {
 		int nf = i < argc - 1 ? 1 : 0;
-		for ( ; i < argc; i++, nf ? nf++ : 0)
-			if (p = findfile(string(argv[i])))
+		for ( ; i < argc; i++, nf ? nf++ : 0) {
+		        p = findfile(string(argv[i]));
+			if (p)
 				(*f)(p, nf);
 			else
 				fprintf(stderr, "%s: no data for `%s'\n", progname, argv[i]);
+                }
 	} else {
 		int nf = filelist && filelist->link ? 1 : 0;
 		for (p = filelist; p; p = p->link, nf ? nf++ : 0)
@@ -89,19 +91,21 @@ void *alloc(unsigned n) {
 
 /* emitdata - write prof.out data to file */
 void emitdata(char *file) {
-	FILE *fp;
+	FILE *fp = fopen(file, "w");
 
-	if (fp = fopen(file, "w")) {
+	if (fp) {
 		struct file *p;
 		for (p = filelist; p; p = p->link) {
 			int i;
 			struct func *q;
 			struct caller *r;
 			fprintf(fp, "1\n%s\n", p->name);
-			for (i = 0, q = p->funcs; q; i++, q = q->link)
-				if (r = q->callers)
+			for (i = 0, q = p->funcs; q; i++, q = q->link) {
+                                r = q->callers;
+				if (r)
 					for (i--; r; r = r->link)
 						i++;
+                        }
 			fprintf(fp, "%d\n", i);
 			for (q = p->funcs; q; q = q->link)
 				if (q->count.count == 0 || !q->callers)
@@ -130,7 +134,8 @@ FILE *openfile(char *name) {
 		for (i = 0; dirs[i]; i++) {
 			char buf[200];
 			sprintf(buf, "%s/%s", dirs[i], name);
-			if (fp = fopen(buf, "r"))
+			fp = fopen(buf, "r");
+			if (fp)
 				return fp;
 		}
 	return fopen(name, "r");

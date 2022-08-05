@@ -57,15 +57,15 @@ static const char wstab[] = {
 	1,	/* CBRA */
 	1,	/* CKET */
 	0,	/* ASPLUS */
- 	0,	/* ASMINUS */
- 	0,	/* ASSTAR */
- 	0,	/* ASSLASH */
- 	0,	/* ASPCT */
- 	0,	/* ASCIRC */
- 	0,	/* ASLSH */
+	0,	/* ASMINUS */
+	0,	/* ASSTAR */
+	0,	/* ASSLASH */
+	0,	/* ASPCT */
+	0,	/* ASCIRC */
+	0,	/* ASLSH */
 	0,	/* ASRSH */
- 	0,	/* ASOR */
- 	0,	/* ASAND */
+	0,	/* ASOR */
+	0,	/* ASAND */
 	0,	/* ELLIPS */
 	0,	/* DSHARP1 */
 	0,	/* NAME1 */
@@ -267,7 +267,7 @@ peektokens(Tokenrow *trp, char *str)
 	if (str)
 		fprintf(stderr, "%s ", str);
 	if (tp<trp->bp || tp>trp->lp)
-		fprintf(stderr, "(tp offset %d) ", tp-trp->bp);
+		fprintf(stderr, "(tp offset %ld) ", (char*)tp - (char*)trp->bp);
 	for (tp=trp->bp; tp<trp->lp && tp<trp->bp+32; tp++) {
 		if (tp->type!=NL) {
 			int c = tp->t[tp->len];
@@ -308,7 +308,7 @@ puttokens(Tokenrow *trp)
 				fwrite(wbuf, 1, wbp-wbuf, stdout);
 			fwrite((char *)p, 1, len, stdout);
 			wbp = wbuf;
-		} else {	
+		} else {
 			memcpy(wbp, p, len);
 			wbp += len;
 		}

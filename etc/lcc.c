@@ -71,7 +71,8 @@ char *tempdir = TEMPDIR;	/* directory for temporary files */
 static char *progname;
 static List lccinputs;		/* list of input directories */
 
-main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	int i, j, nf;
 
 	progname = argv[0];
@@ -321,7 +322,8 @@ static void compose(char *cmd[], List a, List b, List c) {
 		if (s && isdigit(s[1])) {
 			int k = s[1] - '0';
 			assert(k >=1 && k <= 3);
-			if (b = lists[k-1]) {
+			b = lists[k-1];
+			if (b) {
 				b = b->link;
 				av[j] = alloc(strlen(cmd[i]) + strlen(b->str) - 1);
 				strncpy(av[j], cmd[i], s - cmd[i]);
@@ -452,13 +454,14 @@ static int filename(char *name, char *base) {
 
 /* find - find 1st occurrence of str in list, return list node or 0 */
 static List find(char *str, List list) {
-	List b;
+	List b = list;
 
-	if (b = list)
+	if (b) {
 		do {
 			if (strcmp(str, b->str) == 0)
 				return b;
 		} while ((b = b->link) != list);
+        }
 	return 0;
 }
 
@@ -510,7 +513,7 @@ static void help(void) {
 		if (strncmp("-tempdir", msgs[i], 8) == 0 && tempdir)
 			fprintf(stderr, "; default=%s", tempdir);
 	}
-#define xx(v) if (s = getenv(#v)) fprintf(stderr, #v "=%s\n", s)
+#define xx(v) if ((s = getenv(#v))) fprintf(stderr, #v "=%s\n", s)
 	xx(LCCINPUTS);
 	xx(LCCDIR);
 #ifdef WIN32
@@ -529,7 +532,8 @@ static void initinputs(void) {
 		s = ".";
 	if (s) {
 		lccinputs = path2list(s);
-		if (b = lccinputs)
+		b = lccinputs;
+		if (b) {
 			do {
 				b = b->link;
 				if (strcmp(b->str, ".") != 0) {
@@ -539,6 +543,7 @@ static void initinputs(void) {
 				} else
 					b->str = "";
 			} while (b != lccinputs);
+                }
 	}
 #ifdef WIN32
 	if (list = b = path2list(getenv("include")))
@@ -726,7 +731,8 @@ static List path2list(const char *path) {
 		sep = ';';
 	while (*path) {
 		char *p, buf[512];
-		if (p = strchr(path, sep)) {
+		p = strchr(path, sep);
+		if (p) {
 			assert(p - path < sizeof buf);
 			strncpy(buf, path, p - path);
 			buf[p-path] = '\0';
@@ -791,7 +797,7 @@ int suffix(char *name, char *tails[], int n) {
 
 	for (i = 0; i < n; i++) {
 		char *s = tails[i], *t;
-		for ( ; t = strchr(s, ';'); s = t + 1) {
+		for ( ; (t = strchr(s, ';')); s = t + 1) {
 			int m = t - s;
 			if (len > m && strncmp(&name[len-m], s, m) == 0)
 				return i;

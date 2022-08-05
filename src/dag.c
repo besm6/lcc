@@ -172,12 +172,12 @@ Node listnodes(Tree tp, int tlab, int flab) {
 			p = listnodes(cvtconst(tp), 0, 0);
 		      else
 			p = node(op, NULL, NULL, constant(ty, tp->u.v)); } break;
-	case RIGHT: { if (   tp->kids[0] && tp->kids[1]
-			  &&  generic(tp->kids[1]->op) == ASGN
-			  && (generic(tp->kids[0]->op) == INDIR
-			  && tp->kids[0]->kids[0] == tp->kids[1]->kids[0]
-			  || (tp->kids[0]->op == FIELD
-			  &&  tp->kids[0] == tp->kids[1]->kids[0]))) {
+	case RIGHT: { if (tp->kids[0] && tp->kids[1] &&
+                          generic(tp->kids[1]->op) == ASGN &&
+                          ((generic(tp->kids[0]->op) == INDIR &&
+                            tp->kids[0]->kids[0] == tp->kids[1]->kids[0]) ||
+                           (tp->kids[0]->op == FIELD &&
+                            tp->kids[0] == tp->kids[1]->kids[0]))) {
 			assert(tlab == 0 && flab == 0);
 			if (generic(tp->kids[0]->op) == INDIR) {
 				p = listnodes(tp->kids[0], 0, 0);
@@ -278,11 +278,11 @@ Node listnodes(Tree tp, int tlab, int flab) {
 				unsigned int fmask = fieldmask(f);
 				unsigned int  mask = fmask<<fieldright(f);
 				Tree q = tp->kids[1];
-				if (q->op == CNST+I && q->u.v.i == 0
-				||  q->op == CNST+U && q->u.v.u == 0)
+				if ((q->op == CNST+I && q->u.v.i == 0) ||
+                                    (q->op == CNST+U && q->u.v.u == 0))
 					q = bittree(BAND, x, cnsttree(unsignedtype, (unsigned long)~mask));
-				else if (q->op == CNST+I && (q->u.v.i&fmask) == fmask
-				||       q->op == CNST+U && (q->u.v.u&fmask) == fmask)
+				else if ((q->op == CNST+I && (q->u.v.i&fmask) == fmask) ||
+                                         (q->op == CNST+U && (q->u.v.u&fmask) == fmask))
 					q = bittree(BOR, x, cnsttree(unsignedtype, (unsigned long)mask));
 				else {
 					listnodes(q, 0, 0);
@@ -624,15 +624,15 @@ static Node prune(Node forest) {
 	return forest;
 }
 static Node visit(Node p, int listed) {
-	if (p)
-		if (p->syms[2])
+	if (p) {
+		if (p->syms[2]) {
 			p = tmpnode(p);
-		else if (p->count <= 1 && !iscall(p->op)
-		||       p->count == 0 &&  iscall(p->op)) {
+		}
+                else if ((p->count <= 1 && !iscall(p->op)) ||
+                         (p->count == 0 && iscall(p->op))) {
 			p->kids[0] = visit(p->kids[0], 0);
 			p->kids[1] = visit(p->kids[1], 0);
 		}
-
 		else if (specific(p->op) == ADDRL+P || specific(p->op) == ADDRF+P) {
 			assert(!listed);
 			p = newnode(p->op, NULL, NULL, p->syms[0]);
@@ -656,7 +656,8 @@ static Node visit(Node p, int listed) {
 			tail = &(*tail)->link;
 			if (!listed)
 				p = tmpnode(p);
-		};
+		}
+        }
 	return p;
 }
 static Node tmpnode(Node p) {

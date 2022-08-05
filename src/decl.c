@@ -933,13 +933,12 @@ static Symbol dcllocal(int sclass, char *id, Type ty, Coordinate *pos) {
 	}
 	q = lookup(id, identifiers);
 	if (q && q->scope >= level
-	||  q && q->scope == PARAM && level == LOCAL)
-		if (sclass == EXTERN && q->sclass == EXTERN
-		&& eqtype(q->type, ty, 1))
+	||  q && q->scope == PARAM && level == LOCAL) {
+		if (sclass == EXTERN && q->sclass == EXTERN && eqtype(q->type, ty, 1))
 			ty = compose(ty, q->type);
 		else
 			error("redeclaration of `%s' previously declared at %w\n", q->name, &q->src);
-
+        }
 	assert(level >= LOCAL);
 	p = install(id, &identifiers, level, sclass == STATIC || sclass == EXTERN ? PERM : FUNC);
 	p->type = ty;
@@ -963,13 +962,15 @@ static Symbol dcllocal(int sclass, char *id, Type ty, Coordinate *pos) {
 		       p->u.alias = q; break;
 	case STATIC:   (*IR->defsymbol)(p);
 		       initglobal(p, 0);
-		       if (!p->defined)
+		       if (!p->defined) {
 			if (p->type->size > 0) {
 				defglobal(p, BSS);
 				(*IR->space)(p->type->size);
-			} else
+			} else {
 				error("undefined size for `%t %s'\n",
 					p->type, p->name);
+                        }
+                       }
 		       p->defined = 1; break;
 	case REGISTER: registers = append(p, registers);
 		       regcount++;

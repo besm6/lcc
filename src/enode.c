@@ -63,15 +63,16 @@ Tree call(Tree f, Type fty, Coordinate src) {
 					else
 						q = cast(q, promote(q->type));
 				}
-			if (!IR->wants_argb && isstruct(q->type))
-				if (iscallb(q))
+			if (!IR->wants_argb && isstruct(q->type)) {
+				if (iscallb(q)) {
 					q = addrof(q);
-				else {
+				} else {
 					Symbol t1 = temporary(AUTO, unqual(q->type));
 					q = asgn(t1, q);
 					q = tree(RIGHT, ptr(t1->type),
 						root(q), lvalue(idtree(t1)));
 				}
+                        }
 			if (q->type->size == 0)
 				q->type = inttype;
 			if (hascall(q))
@@ -307,13 +308,14 @@ Tree asgntree(int op, Tree l, Tree r) {
 	if (isptr(aty))
 		aty = unqual(aty)->type;
 	if ( isconst(aty)
-	||  isstruct(aty) && unqual(aty)->u.sym->u.s.cfields)
-		if (isaddrop(l->op)
-		&& !l->u.sym->computed && !l->u.sym->generated)
+	||  isstruct(aty) && unqual(aty)->u.sym->u.s.cfields) {
+		if (isaddrop(l->op) && !l->u.sym->computed && !l->u.sym->generated) {
 			error("assignment to const identifier `%s'\n",
 				l->u.sym->name);
-		else
+		} else {
 			error("assignment to const location\n");
+                }
+        }
 	if (l->op == FIELD) {
 		long n = 8*l->u.field->type->size - fieldsize(l->u.field);
 		if (n > 0 && isunsigned(l->u.field->type))
