@@ -64,8 +64,8 @@ def test_case(case, target):
     # Read stderr output.
     #
     actual_err = compiler.stderr.read().decode('utf-8')
-    #print("--- actual_err=", actual_err)
-
+    #with open(f"{target}/tst/{case}.2", "w") as file:
+    #    file.write(actual_err)
     with open(f"{target}/tst/{case}.2bk") as file:
         expected_err = file.read()
         #print("--- expected_err=", expected_err)

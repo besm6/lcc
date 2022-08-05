@@ -1,6 +1,6 @@
-tst/spill.c:1: warning: missing return value
 tst/spill.c:3: warning: missing return value
-tst/spill.c:5: warning: missing return value
-tst/spill.c:7: warning: missing return value
-tst/spill.c:9: warning: missing return value
-tst/spill.c:17: warning: missing return value
+tst/spill.c:8: warning: missing return value
+tst/spill.c:13: warning: missing return value
+tst/spill.c:19: warning: missing return value
+tst/spill.c:27: warning: missing return value
+tst/spill.c:36: warning: missing return value
