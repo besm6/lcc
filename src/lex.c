@@ -2,8 +2,6 @@
 #include <float.h>
 #include <errno.h>
 
-static char rcsid[] = "$Id$";
-
 #define MAXTOKEN 32
 
 enum { BLANK=01,  NEWLINE=02, LETTER=04,
@@ -169,24 +167,24 @@ int gettok(void) {
 		cp = rcp + 1;
 		switch (*rcp++) {
 		case '/': if (*rcp == '*') {
-			  	int c = 0;
-			  	for (rcp++; *rcp != '/' || c != '*'; )
-			  		if (map[*rcp]&NEWLINE) {
-			  			if (rcp < limit)
-			  				c = *rcp;
-			  			cp = rcp + 1;
-			  			nextline();
-			  			rcp = cp;
-			  			if (rcp == limit)
-			  				break;
-			  		} else
-			  			c = *rcp++;
-			  	if (rcp < limit)
-			  		rcp++;
-			  	else
-			  		error("unclosed comment\n");
-			  	cp = rcp;
-			  	continue;
+				int c = 0;
+				for (rcp++; *rcp != '/' || c != '*'; )
+					if (map[*rcp]&NEWLINE) {
+						if (rcp < limit)
+							c = *rcp;
+						cp = rcp + 1;
+						nextline();
+						rcp = cp;
+						if (rcp == limit)
+							break;
+					} else
+						c = *rcp++;
+				if (rcp < limit)
+					rcp++;
+				else
+					error("unclosed comment\n");
+				cp = rcp;
+				continue;
 			  }
 			  return '/';
 		case '<':
@@ -208,7 +206,7 @@ int gettok(void) {
 		case '+': return *rcp == '+' ? cp++, INCR   : '+';
 		case ';': case ',': case ':':
 		case '*': case '~': case '%': case '^': case '?':
-		case '[': case ']': case '{': case '}': case '(': case ')': 
+		case '[': case ']': case '{': case '}': case '(': case ')':
 			return rcp[-1];
 		case '\n': case '\v': case '\r': case '\f':
 			nextline();

@@ -1,7 +1,5 @@
 #include "c.h"
 
-static char rcsid[] = "$Id$";
-
 #define iscall(op) (generic(op) == CALL \
 	|| IR->mulops_calls \
 	&& (generic(op)==DIV||generic(op)==MOD||generic(op)==MUL) \
@@ -115,24 +113,24 @@ Node listnodes(Tree tp, int tlab, int flab) {
 	switch (generic(tp->op)) {
 	case AND:   { if (depth++ == 0) reset();
 		      if (flab) {
-		      	listnodes(tp->kids[0], 0, flab);
-		      	listnodes(tp->kids[1], 0, flab);
+			listnodes(tp->kids[0], 0, flab);
+			listnodes(tp->kids[1], 0, flab);
 		      } else {
-		      	listnodes(tp->kids[0], 0, flab = genlabel(1));
-		      	listnodes(tp->kids[1], tlab, 0);
-		      	labelnode(flab);
+			listnodes(tp->kids[0], 0, flab = genlabel(1));
+			listnodes(tp->kids[1], tlab, 0);
+			labelnode(flab);
 		      }
 		      depth--; } break;
 	case OR:    { if (depth++ == 0)
-		      	reset();
+			reset();
 		      if (tlab) {
-		      	listnodes(tp->kids[0], tlab, 0);
-		      	listnodes(tp->kids[1], tlab, 0);
+			listnodes(tp->kids[0], tlab, 0);
+			listnodes(tp->kids[1], tlab, 0);
 		      } else {
-		      	tlab = genlabel(1);
-		      	listnodes(tp->kids[0], tlab, 0);
-		      	listnodes(tp->kids[1], 0, flab);
-		      	labelnode(tlab);
+			tlab = genlabel(1);
+			listnodes(tp->kids[0], tlab, 0);
+			listnodes(tp->kids[1], 0, flab);
+			labelnode(tlab);
 		      }
 		      depth--;
  } break;
@@ -140,47 +138,47 @@ Node listnodes(Tree tp, int tlab, int flab) {
 	case COND:  { Tree q = tp->kids[1];
 		      assert(tlab == 0 && flab == 0);
 		      if (tp->u.sym)
-		      	addlocal(tp->u.sym);
+			addlocal(tp->u.sym);
 		      flab = genlabel(2);
 		      listnodes(tp->kids[0], 0, flab);
 		      assert(q && q->op == RIGHT);
 		      reset();
 		      listnodes(q->kids[0], 0, 0);
 		      if (forest->op == LABEL+V) {
-		      	equatelab(forest->syms[0], findlabel(flab + 1));
-		      	unlist();
+			equatelab(forest->syms[0], findlabel(flab + 1));
+			unlist();
 		      }
 		      list(jump(flab + 1));
 		      labelnode(flab);
 		      listnodes(q->kids[1], 0, 0);
 		      if (forest->op == LABEL+V) {
-		      	equatelab(forest->syms[0], findlabel(flab + 1));
-		      	unlist();
+			equatelab(forest->syms[0], findlabel(flab + 1));
+			unlist();
 		      }
 		      labelnode(flab + 1);
 
 		      if (tp->u.sym)
-		      	p = listnodes(idtree(tp->u.sym), 0, 0); } break;
+			p = listnodes(idtree(tp->u.sym), 0, 0); } break;
 	case CNST:  { Type ty = unqual(tp->type);
 		      assert(ty->u.sym);
 		      if (tlab || flab) {
-		      	assert(ty == inttype);
-		      	if (tlab && tp->u.v.i != 0)
-		      		list(jump(tlab));
-		      	else if (flab && tp->u.v.i == 0)
-		      		list(jump(flab));
+			assert(ty == inttype);
+			if (tlab && tp->u.v.i != 0)
+				list(jump(tlab));
+			else if (flab && tp->u.v.i == 0)
+				list(jump(flab));
 		      }
 		      else if (ty->u.sym->addressed)
-		      	p = listnodes(cvtconst(tp), 0, 0);
+			p = listnodes(cvtconst(tp), 0, 0);
 		      else
-		      	p = node(op, NULL, NULL, constant(ty, tp->u.v)); } break;
+			p = node(op, NULL, NULL, constant(ty, tp->u.v)); } break;
 	case RIGHT: { if (   tp->kids[0] && tp->kids[1]
 			  &&  generic(tp->kids[1]->op) == ASGN
 			  && (generic(tp->kids[0]->op) == INDIR
 			  && tp->kids[0]->kids[0] == tp->kids[1]->kids[0]
 			  || (tp->kids[0]->op == FIELD
 			  &&  tp->kids[0] == tp->kids[1]->kids[0]))) {
-		      	assert(tlab == 0 && flab == 0);
+			assert(tlab == 0 && flab == 0);
 			if (generic(tp->kids[0]->op) == INDIR) {
 				p = listnodes(tp->kids[0], 0, 0);
 				list(p);
@@ -193,10 +191,10 @@ Node listnodes(Tree tp, int tlab, int flab) {
 				listnodes(tp->kids[1], 0, 0);
 			}
 		      } else if (tp->kids[1]) {
-		      	listnodes(tp->kids[0], 0, 0);
-		      	p = listnodes(tp->kids[1], tlab, flab);
+			listnodes(tp->kids[0], 0, 0);
+			p = listnodes(tp->kids[1], tlab, flab);
 		      } else
-		      	p = listnodes(tp->kids[0], tlab, flab); } break;
+			p = listnodes(tp->kids[0], tlab, flab); } break;
 	case JUMP:  { assert(tlab == 0 && flab == 0);
 		      assert(tp->u.sym == 0);
 		      assert(tp->kids[0]);
@@ -207,7 +205,7 @@ Node listnodes(Tree tp, int tlab, int flab) {
 		      firstarg = NULL;
 		      assert(tlab == 0 && flab == 0);
 		      if (tp->op == CALL+B && !IR->wants_callb) {
-		      	Tree arg0 = tree(ARG+P, tp->kids[1]->type,
+			Tree arg0 = tree(ARG+P, tp->kids[1]->type,
 				tp->kids[1], NULL);
 			if (IR->left_to_right)
 				firstarg = arg0;
@@ -216,11 +214,11 @@ Node listnodes(Tree tp, int tlab, int flab) {
 				firstarg = NULL;
 				listnodes(arg0, 0, 0);
 			}
-		      	p = newnode(CALL+V, l, NULL, NULL);
+			p = newnode(CALL+V, l, NULL, NULL);
 		      } else {
-		      	l = listnodes(tp->kids[0], 0, 0);
-		      	r = listnodes(tp->kids[1], 0, 0);
-		      	p = newnode(tp->op == CALL+B ? tp->op : op, l, r, NULL);
+			l = listnodes(tp->kids[0], 0, 0);
+			r = listnodes(tp->kids[1], 0, 0);
+			p = newnode(tp->op == CALL+B ? tp->op : op, l, r, NULL);
 		      }
 		      NEW0(p->syms[0], FUNC);
 		      assert(isptr(tp->kids[0]->type));
@@ -233,18 +231,18 @@ Node listnodes(Tree tp, int tlab, int flab) {
  } break;
 	case ARG:   { assert(tlab == 0 && flab == 0);
 		      if (IR->left_to_right)
-		      	listnodes(tp->kids[1], 0, 0);
+			listnodes(tp->kids[1], 0, 0);
 		      if (firstarg) {
-		      	Tree arg = firstarg;
-		      	firstarg = NULL;
-		      	listnodes(arg, 0, 0);
+			Tree arg = firstarg;
+			firstarg = NULL;
+			listnodes(arg, 0, 0);
 		      }
 		      l = listnodes(tp->kids[0], 0, 0);
 		      list(newnode(tp->op == ARG+B ? tp->op : op, l, NULL, NULL));
 		      forest->syms[0] = intconst(tp->type->size);
 		      forest->syms[1] = intconst(tp->type->align);
 		      if (!IR->left_to_right)
-		      	listnodes(tp->kids[1], 0, 0); } break;
+			listnodes(tp->kids[1], 0, 0); } break;
 	case EQ:  case NE: case GT: case GE: case LE:
 	case LT:    { assert(tp->u.sym == 0);
 		      assert(errcnt || tlab || flab);
@@ -253,25 +251,25 @@ Node listnodes(Tree tp, int tlab, int flab) {
 		      assert(errcnt || opkind(l->op) == opkind(r->op));
 		      assert(errcnt || optype(op) == optype(l->op));
 		      if (tlab)
-		      	assert(flab == 0),
-		      	list(newnode(generic(tp->op) + opkind(l->op), l, r, findlabel(tlab)));
+			assert(flab == 0),
+			list(newnode(generic(tp->op) + opkind(l->op), l, r, findlabel(tlab)));
 		      else if (flab) {
-		      	switch (generic(tp->op)) {
-		      	case EQ: op = NE; break;
-		      	case NE: op = EQ; break;
-		      	case GT: op = LE; break;
-		      	case LT: op = GE; break;
-		      	case GE: op = LT; break;
-		      	case LE: op = GT; break;
-		      	default: assert(0);
-		      	}
-		      	list(newnode(op + opkind(l->op), l, r, findlabel(flab)));
+			switch (generic(tp->op)) {
+			case EQ: op = NE; break;
+			case NE: op = EQ; break;
+			case GT: op = LE; break;
+			case LT: op = GE; break;
+			case GE: op = LT; break;
+			case LE: op = GT; break;
+			default: assert(0);
+			}
+			list(newnode(op + opkind(l->op), l, r, findlabel(flab)));
 		      }
 		      if (forest && forest->syms[0])
-		      	forest->syms[0]->ref++; } break;
+			forest->syms[0]->ref++; } break;
 	case ASGN:  { assert(tlab == 0 && flab == 0);
 		      if (tp->kids[0]->op == FIELD) {
-		      	Tree  x = tp->kids[0]->kids[0];
+			Tree  x = tp->kids[0]->kids[0];
 			Field f = tp->kids[0]->u.field;
 			assert(generic(x->op) == INDIR);
 			reset();
@@ -302,17 +300,17 @@ Node listnodes(Tree tp, int tlab, int flab) {
 				op = ASGN + ttob(tp->kids[1]->type);
 			}
 		      } else {
-		      	l = listnodes(tp->kids[0], 0, 0);
-		      	r = listnodes(tp->kids[1], 0, 0);
+			l = listnodes(tp->kids[0], 0, 0);
+			r = listnodes(tp->kids[1], 0, 0);
 		      }
 		      list(newnode(tp->op == ASGN+B ? tp->op : op, l, r, NULL));
 		      forest->syms[0] = intconst(tp->kids[1]->type->size);
 		      forest->syms[1] = intconst(tp->kids[1]->type->align);
 		      if (isaddrop(tp->kids[0]->op)
 		      && !tp->kids[0]->u.sym->computed)
-		      	killnodes(tp->kids[0]->u.sym);
+			killnodes(tp->kids[0]->u.sym);
 		      else
-		      	reset();
+			reset();
 		      p = listnodes(tp->kids[1], 0, 0); } break;
 	case BOR: case BAND: case BXOR:
 	case ADD: case SUB:  case RSH:
@@ -326,8 +324,8 @@ Node listnodes(Tree tp, int tlab, int flab) {
 		      r = listnodes(tp->kids[1], 0, 0);
 		      p = node(op, l, r, NULL);
 		      if (IR->mulops_calls && isint(tp->type)) {
-		      	list(p);
-		      	cfunc->u.f.ncalls++;
+			list(p);
+			cfunc->u.f.ncalls++;
 		      } } break;
 	case RET:   { assert(tlab == 0 && flab == 0);
 		      l = listnodes(tp->kids[0], 0, 0);
@@ -346,22 +344,22 @@ Node listnodes(Tree tp, int tlab, int flab) {
 		      assert(tlab == 0 && flab == 0);
 		      l = listnodes(tp->kids[0], 0, 0);
 		      if (isptr(ty))
-		      	ty = unqual(ty)->type;
+			ty = unqual(ty)->type;
 		      if (isvolatile(ty)
 		      || (isstruct(ty) && unqual(ty)->u.sym->u.s.vfields))
-		      	p = newnode(tp->op == INDIR+B ? tp->op : op, l, NULL, NULL);
+			p = newnode(tp->op == INDIR+B ? tp->op : op, l, NULL, NULL);
 		      else
-		      	p = node(tp->op == INDIR+B ? tp->op : op, l, NULL, NULL); } break;
+			p = node(tp->op == INDIR+B ? tp->op : op, l, NULL, NULL); } break;
 	case FIELD: { Tree q = tp->kids[0];
 		      if (tp->type == inttype) {
-		      	long n = fieldleft(tp->u.field);
-		      	q = shtree(RSH,
-		      		shtree(LSH, q, cnsttree(inttype, n)),
-		      		cnsttree(inttype, n + fieldright(tp->u.field)));
+			long n = fieldleft(tp->u.field);
+			q = shtree(RSH,
+				shtree(LSH, q, cnsttree(inttype, n)),
+				cnsttree(inttype, n + fieldright(tp->u.field)));
 		      } else if (fieldsize(tp->u.field) < 8*tp->u.field->type->size)
-		      	q = bittree(BAND,
-		      		shtree(RSH, q, cnsttree(inttype, (long)fieldright(tp->u.field))),
-		      		cnsttree(unsignedtype, (unsigned long)fieldmask(tp->u.field)));
+			q = bittree(BAND,
+				shtree(RSH, q, cnsttree(inttype, (long)fieldright(tp->u.field))),
+				cnsttree(unsignedtype, (unsigned long)fieldmask(tp->u.field)));
 		      assert(tlab == 0 && flab == 0);
 		      p = listnodes(q, 0, 0); } break;
 	case ADDRG:
@@ -370,7 +368,7 @@ Node listnodes(Tree tp, int tlab, int flab) {
  } break;
 	case ADDRL: { assert(tlab == 0 && flab == 0);
 		      if (tp->u.sym->generated)
-		      	addlocal(tp->u.sym);
+			addlocal(tp->u.sym);
 		      p = node(tp->op + sizeop(voidptype->size), NULL, NULL, tp->u.sym); } break;
 	default:assert(0);
 	}
@@ -454,21 +452,21 @@ void gencode(Symbol caller[], Symbol callee[]) {
 		switch (cp->kind) {
 		case Address:  assert(IR->address);
 			       (*IR->address)(cp->u.addr.sym, cp->u.addr.base,
-			       	cp->u.addr.offset); break;
+				cp->u.addr.offset); break;
 		case Blockbeg: {
-			       	Symbol *p = cp->u.block.locals;
-			       	(*IR->blockbeg)(&cp->u.block.x);
-			       	for ( ; *p; p++)
-			       		if ((*p)->ref != 0.0)
-			       			(*IR->local)(*p);
-			       		else if (glevel) (*IR->local)(*p);
+				Symbol *p = cp->u.block.locals;
+				(*IR->blockbeg)(&cp->u.block.x);
+				for ( ; *p; p++)
+					if ((*p)->ref != 0.0)
+						(*IR->local)(*p);
+					else if (glevel) (*IR->local)(*p);
 			       }
  break;
 		case Blockend: (*IR->blockend)(&cp->u.begin->u.block.x); break;
 		case Defpoint: src = cp->u.point.src; break;
 		case Gen: case Jump:
 		case Label:    if (prunetemps)
-			       	cp->u.forest = prune(cp->u.forest);
+				cp->u.forest = prune(cp->u.forest);
 			       fixup(cp->u.forest);
 			       cp->u.forest = (*IR->gen)(cp->u.forest); break;
 		case Local:    (*IR->local)(cp->u.var); break;
@@ -507,39 +505,39 @@ void emitcode(void) {
 		switch (cp->kind) {
 		case Address: break;
 		case Blockbeg: if (glevel && IR->stabblock) {
-			       	(*IR->stabblock)('{',  cp->u.block.level - LOCAL, cp->u.block.locals);
-			       	swtoseg(CODE);
+				(*IR->stabblock)('{',  cp->u.block.level - LOCAL, cp->u.block.locals);
+				swtoseg(CODE);
 			       }
  break;
 		case Blockend: if (glevel && IR->stabblock) {
-			       	Code bp = cp->u.begin;
-			       	foreach(bp->u.block.identifiers, bp->u.block.level, typestab, NULL);
-			       	foreach(bp->u.block.types,       bp->u.block.level, typestab, NULL);
-			       	(*IR->stabblock)('}', bp->u.block.level - LOCAL, bp->u.block.locals);
-			       	swtoseg(CODE);
+				Code bp = cp->u.begin;
+				foreach(bp->u.block.identifiers, bp->u.block.level, typestab, NULL);
+				foreach(bp->u.block.types,       bp->u.block.level, typestab, NULL);
+				(*IR->stabblock)('}', bp->u.block.level - LOCAL, bp->u.block.locals);
+				swtoseg(CODE);
 			       }
  break;
 		case Defpoint: src = cp->u.point.src;
 			       if (glevel > 0 && IR->stabline) {
-			       	(*IR->stabline)(&cp->u.point.src); swtoseg(CODE); } break;
+				(*IR->stabline)(&cp->u.point.src); swtoseg(CODE); } break;
 		case Gen: case Jump:
 		case Label:    if (cp->u.forest)
-			       	(*IR->emit)(cp->u.forest); break;
+				(*IR->emit)(cp->u.forest); break;
 		case Local:    if (glevel && IR->stabsym) {
-			       	(*IR->stabsym)(cp->u.var);
-			       	swtoseg(CODE);
+				(*IR->stabsym)(cp->u.var);
+				swtoseg(CODE);
 			       } break;
 		case Switch:   {	int i;
-			       	defglobal(cp->u.swtch.table, LIT);
-			       	(*IR->defaddress)(equated(cp->u.swtch.labels[0]));
-			       	for (i = 1; i < cp->u.swtch.size; i++) {
-			       		long k = cp->u.swtch.values[i-1];
-			       		while (++k < cp->u.swtch.values[i])
-			       			assert(k < LONG_MAX),
-			       			(*IR->defaddress)(equated(cp->u.swtch.deflab));
-			       		(*IR->defaddress)(equated(cp->u.swtch.labels[i]));
-			       	}
-			       	swtoseg(CODE);
+				defglobal(cp->u.swtch.table, LIT);
+				(*IR->defaddress)(equated(cp->u.swtch.labels[0]));
+				for (i = 1; i < cp->u.swtch.size; i++) {
+					long k = cp->u.swtch.values[i-1];
+					while (++k < cp->u.swtch.values[i])
+						assert(k < LONG_MAX),
+						(*IR->defaddress)(equated(cp->u.swtch.deflab));
+					(*IR->defaddress)(equated(cp->u.swtch.labels[i]));
+				}
+				swtoseg(CODE);
 			       } break;
 		default: assert(0);
 		}
@@ -737,4 +735,3 @@ static void typestab(Symbol p, void *cl) {
 	else if ((p->sclass == TYPEDEF || p->sclass == 0) && IR->stabtype)
 		(*IR->stabtype)(p);
 }
-

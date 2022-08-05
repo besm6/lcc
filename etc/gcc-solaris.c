@@ -3,8 +3,6 @@
 
 #include <string.h>
 
-static char rcsid[] = "$Id$";
-
 #ifndef LCCDIR
 #define LCCDIR "/usr/local/lib/lcc/"
 #endif

@@ -9,8 +9,6 @@
  * annotate listings of files with prof.out data
  */
 
-static char rcsid2[] = "$Id$";
-
 #define NDIRS (sizeof dirs/sizeof dirs[0] - 1)
 #define NELEMS(a) ((int)(sizeof (a)/sizeof ((a)[0])))
 
@@ -43,7 +41,7 @@ int main(int argc, char *argv[]) {
 	}
 	for (i = 1; i < argc && *argv[i] == '-'; i++)
 		if (strcmp(argv[i], "-c") == 0) {
-			emitdata("prof.out"); 
+			emitdata("prof.out");
 			exit(0);
 		} else if (strcmp(argv[i], "-b") == 0)
 			f = printfile;
@@ -128,7 +126,7 @@ FILE *openfile(char *name) {
 	int i;
 	FILE *fp;
 
-	if (*name != '/')	
+	if (*name != '/')
 		for (i = 0; dirs[i]; i++) {
 			char buf[200];
 			sprintf(buf, "%s/%s", dirs[i], name);
@@ -195,7 +193,7 @@ void printfuncs(struct file *p, int nf) {
 				printf("%d\t%s\tfrom %s\tin %s:%d.%d\n", r->count, q->name, r->name,
 					r->file, r->y, r->x + 1);
 		}
-		
+
 }
 
 /* string - save a copy of str, if necessary */

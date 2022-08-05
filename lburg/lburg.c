@@ -7,7 +7,8 @@
 #include <time.h>
 #include "lburg.h"
 
-static char rcsid[] = "$Id$";
+#define VERSION "lburg v0.0" /* TODO */
+
 static char *prefix = "";
 static int Tflag = 0;
 static int ntnumber = 0;
@@ -40,7 +41,7 @@ static void emittest(Tree t, char *v, char *suffix);
 int main(int argc, char *argv[]) {
 	int c, i;
 	Nonterm p;
-	
+
 	for (i = 1; i < argc; i++)
 		if (strcmp(argv[i], "-T") == 0)
 			Tflag = 1;
@@ -123,7 +124,7 @@ static char *stringf(char *fmt, ...) {
 	vsprintf(buf, fmt, ap);
 	va_end(ap);
 	return strcpy(alloc(strlen(buf) + 1), buf);
-}	
+}
 
 struct entry {
 	union {
@@ -313,7 +314,7 @@ static void print(char *fmt, ...) {
 					putc('\t', outfp);
 				break;
 				}
-			default: putc(*fmt, outfp); break;			
+			default: putc(*fmt, outfp); break;
 			}
 		else
 			putc(*fmt, outfp);
@@ -461,7 +462,7 @@ static void emitdefs(Nonterm nts, int ntnumber) {
 static void emitheader(void) {
 	time_t timer = time(NULL);
 
-	print("/*\ngenerated at %sby %s\n*/\n", ctime(&timer), rcsid);
+	print("/*\ngenerated at %sby %s\n*/\n", ctime(&timer), VERSION);
 	print("static void %Pkids(NODEPTR_TYPE, int, NODEPTR_TYPE[]);\n");
 	print("static void %Plabel(NODEPTR_TYPE);\n");
 	print("static int %Prule(void*, int);\n\n");
@@ -652,7 +653,7 @@ static void emitstruct(Nonterm nts, int ntnumber) {
 	for ( ; nts; nts = nts->link) {
 		int n = 1, m = nts->lhscount;
 		while ((m >>= 1) != 0)
-			n++;		
+			n++;
 		print("%2unsigned int %P%S:%d;\n", nts, n);
 	}
 	print("%1} rule;\n};\n\n");

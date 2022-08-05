@@ -4,8 +4,6 @@
 #define EXPORT
 #endif
 
-static char rcsid[] = "$Id$";
-
 EXPORT int _assert(char *e, char *file, int line) {
 	fprintf(stderr, "assertion failed:");
 	if (e)

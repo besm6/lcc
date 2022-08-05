@@ -1,7 +1,5 @@
 #include "c.h"
 
-static char rcsid[] = "$Id$";
-
 #define SWSIZE 512
 
 #define den(i,j) ((j-buckets[i]+1.0)/(v[j]-v[buckets[i]]+1))
@@ -91,81 +89,81 @@ void statement(int loop, Swtch swp, int lev) {
 	case BREAK:    walk(NULL, 0, 0);
 		       definept(NULL);
 		       if (swp && swp->lab > loop)
-		       	branch(swp->lab + 1);
+			branch(swp->lab + 1);
 		       else if (loop)
-		       	branch(loop + 2);
+			branch(loop + 2);
 		       else
-		       	error("illegal break statement\n");
+			error("illegal break statement\n");
 		       t = gettok(); expect(';');
 					   break;
 
 	case CONTINUE: walk(NULL, 0, 0);
 		       definept(NULL);
 		       if (loop)
-		       	branch(loop + 1);
+			branch(loop + 1);
 		       else
-		       	error("illegal continue statement\n");
+			error("illegal continue statement\n");
 		       t = gettok(); expect(';');
 					      break;
 
 	case SWITCH:   swstmt(loop, genlabel(2), lev + 1);
  break;
 	case CASE:     {
-		       	int lab = genlabel(1);
-		       	if (swp == NULL)
-		       		error("illegal case label\n");
-		       	definelab(lab);
-		       	while (t == CASE) {
-		       		static char stop[] = { IF, ID, 0 };
-		       		Tree p;
-		       		t = gettok();
-		       		p = constexpr(0);
-		       		if (generic(p->op) == CNST && isint(p->type)) {
-		       			if (swp) {
-		       				needconst++;
-		       				p = cast(p, swp->sym->type);
-		       				if (p->type->op == UNSIGNED)
-		       					p->u.v.i = extend(p->u.v.u, p->type);
-		       				needconst--;
-		       				caselabel(swp, p->u.v.i, lab);
-		       			}
-		       		} else
-		       			error("case label must be a constant integer expression\n");
+			int lab = genlabel(1);
+			if (swp == NULL)
+				error("illegal case label\n");
+			definelab(lab);
+			while (t == CASE) {
+				static char stop[] = { IF, ID, 0 };
+				Tree p;
+				t = gettok();
+				p = constexpr(0);
+				if (generic(p->op) == CNST && isint(p->type)) {
+					if (swp) {
+						needconst++;
+						p = cast(p, swp->sym->type);
+						if (p->type->op == UNSIGNED)
+							p->u.v.i = extend(p->u.v.u, p->type);
+						needconst--;
+						caselabel(swp, p->u.v.i, lab);
+					}
+				} else
+					error("case label must be a constant integer expression\n");
 
-		       		test(':', stop);
-		       	}
-		       	statement(loop, swp, lev);
+				test(':', stop);
+			}
+			statement(loop, swp, lev);
 		       } break;
 	case DEFAULT:  if (swp == NULL)
-		       	error("illegal default label\n");
+			error("illegal default label\n");
 		       else if (swp->deflab)
-		       	error("extra default label\n");
+			error("extra default label\n");
 		       else {
-		       	swp->deflab = findlabel(swp->lab);
-		       	definelab(swp->deflab->u.l.label);
+			swp->deflab = findlabel(swp->lab);
+			definelab(swp->deflab->u.l.label);
 		       }
 		       t = gettok();
 		       expect(':');
 		       statement(loop, swp, lev); break;
 	case RETURN:   {
-		       	Type rty = freturn(cfunc->type);
-		       	t = gettok();
-		       	definept(NULL);
-		       	if (t != ';')
-		       		if (rty == voidtype) {
-		       			error("extraneous return value\n");
-		       			expr(0);
-		       			retcode(NULL);
-		       		} else
-		       			retcode(expr(0));
-		       	else {
-		       		if (rty != voidtype) {
-		       			warning("missing return value\n");
-		       			retcode(cnsttree(inttype, 0L));
-		       		} else
-		       			retcode(NULL);
-		       	}
-		       	branch(cfunc->u.f.label);
+			Type rty = freturn(cfunc->type);
+			t = gettok();
+			definept(NULL);
+			if (t != ';')
+				if (rty == voidtype) {
+					error("extraneous return value\n");
+					expr(0);
+					retcode(NULL);
+				} else
+					retcode(expr(0));
+			else {
+				if (rty != voidtype) {
+					warning("missing return value\n");
+					retcode(cnsttree(inttype, 0L));
+				} else
+					retcode(NULL);
+			}
+			branch(cfunc->u.f.label);
 		       } expect(';');
 					    break;
 
@@ -175,36 +173,36 @@ void statement(int loop, Swtch swp, int lev) {
 		       definept(NULL);
 		       t = gettok();
 		       if (t == ID) {
-		       	Symbol p = lookup(token, stmtlabs);
-		       	if (p == NULL) {
+			Symbol p = lookup(token, stmtlabs);
+			if (p == NULL) {
 				p = install(token, &stmtlabs, 0, FUNC);
 				p->scope = LABELS;
 				p->u.l.label = genlabel(1);
 				p->src = src;
 			}
-		       	use(p, src);
-		       	branch(p->u.l.label);
-		       	t = gettok();
+			use(p, src);
+			branch(p->u.l.label);
+			t = gettok();
 		       } else
-		       	error("missing label in goto\n"); expect(';');
+			error("missing label in goto\n"); expect(';');
 					  break;
 
 	case ID:       if (getchr() == ':') {
-		       	stmtlabel();
-		       	statement(loop, swp, lev);
-		       	break;
+			stmtlabel();
+			statement(loop, swp, lev);
+			break;
 		       }
 	default:       definept(NULL);
 		       if (kind[t] != ID) {
-		       	error("unrecognized statement\n");
-		       	t = gettok();
+			error("unrecognized statement\n");
+			t = gettok();
 		       } else {
-		       	Tree e = expr0(0);
-		       	listnodes(e, 0, 0);
-		       	if (nodecount == 0 || nodecount > 200)
-		       		walk(NULL, 0, 0);
-		       	else if (glevel) walk(NULL, 0, 0);
-		       	deallocate(STMT);
+			Tree e = expr0(0);
+			listnodes(e, 0, 0);
+			if (nodecount == 0 || nodecount > 200)
+				walk(NULL, 0, 0);
+			else if (glevel) walk(NULL, 0, 0);
+			deallocate(STMT);
 		       } expect(';');
 						break;
 
@@ -264,7 +262,7 @@ static void forstmt(int lab, Swtch swp, int lev) {
 	int once = 0;
 	Tree e1 = NULL, e2 = NULL, e3 = NULL;
 	Coordinate pt2, pt3;
-	
+
 	t = gettok();
 	expect('(');
 	definept(NULL);

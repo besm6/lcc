@@ -1,7 +1,5 @@
 #include "c.h"
 
-static char rcsid[] = "$Id$";
-
 static struct string {
 	char *str;
 	int len;

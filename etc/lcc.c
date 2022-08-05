@@ -2,8 +2,6 @@
  * lcc [ option ]... [ file | -llib ]...
  * front end for the ANSI C compiler
  */
-static char rcsid[] = "$Id$";
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -15,6 +13,8 @@ static char rcsid[] = "$Id$";
 #ifndef TEMPDIR
 #define TEMPDIR "/tmp"
 #endif
+
+#define VERSION "0.0" /* TODO */
 
 typedef struct list *List;
 struct list {		/* circular list nodes: */
@@ -73,7 +73,7 @@ static List lccinputs;		/* list of input directories */
 
 main(int argc, char *argv[]) {
 	int i, j, nf;
-	
+
 	progname = argv[0];
 	ac = argc + 50;
 	av = alloc(ac*sizeof(char *));
@@ -164,14 +164,14 @@ main(int argc, char *argv[]) {
 		if (callsys(av))
 			errcnt++;
 	}
-	rm(rmlist);	
+	rm(rmlist);
 	return errcnt ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 /* alloc - allocate n bytes or die */
 static void *alloc(int n) {
 	static char *avail, *limit;
-	
+
 	n = (n + sizeof(char *) - 1)&~(sizeof(char *) - 1);
 	if (n >= limit - avail) {
 		avail = malloc(n + 4*1024);
@@ -182,7 +182,7 @@ static void *alloc(int n) {
 	return avail - n;
 }
 
-/* append - append a node with string str onto list, return new list */	
+/* append - append a node with string str onto list, return new list */
 static List append(char *str, List list) {
 	List p = alloc(sizeof *p);
 
@@ -358,7 +358,7 @@ static char *exists(char *name) {
 	&& access(name, 4) == 0)
 		return name;
 	if (!(name[0] == '/' || name[0] == '\\' || name[2] == ':')
-	&& (b = lccinputs))		
+	&& (b = lccinputs))
 		do {
 			b = b->link;
 			if (b->str[0]) {
@@ -453,7 +453,7 @@ static int filename(char *name, char *base) {
 /* find - find 1st occurrence of str in list, return list node or 0 */
 static List find(char *str, List list) {
 	List b;
-	
+
 	if (b = list)
 		do {
 			if (strcmp(str, b->str) == 0)
@@ -480,7 +480,7 @@ static void help(void) {
 "-E	run only the preprocessor on the named C programs and unsuffixed files\n",
 "-g	produce symbol table information for debuggers\n",
 "-help or -?	print this message on standard error\n",
-"-Idir	add `dir' to the beginning of the list of #include directories\n",	
+"-Idir	add `dir' to the beginning of the list of #include directories\n",
 "-lx	search library `x'\n",
 "-M	emit makefile dependencies; implies -E\n",
 "-N	do not search the standard directories for #include files\n",
@@ -628,7 +628,7 @@ xx(unsigned_int,4)
 		if (strcmp(arg, "-Bstatic") == 0 || strcmp(arg, "-Bdynamic") == 0)
 			llist[1] = append(arg, llist[1]);
 		else
-#endif	
+#endif
 		{
 		static char *path;
 		if (path)
@@ -705,7 +705,7 @@ xx(unsigned_int,4)
 				if (strcmp(basepath(cpp[0]), "gcc-cpp") == 0)
 					plist = append(arg, plist);
 				clist = append(arg, clist);
-				fprintf(stderr, "%s %s\n", progname, rcsid);
+				fprintf(stderr, "%s %s\n", progname, VERSION);
 			}
 			return;
 		}

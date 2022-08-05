@@ -4,8 +4,6 @@
 #define EXPORT
 #endif
 
-static char rcsid[] = "$Id$";
-
 EXPORT void _YYnull(char *file, int line) {
 	fprintf(stderr, "null pointer dereferenced:");
 	if (file)

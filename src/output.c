@@ -1,7 +1,5 @@
 #include "c.h"
 
-static char rcsid[] = "$Id$";
-
 static char *outs(const char *str, FILE *f, char *bp) {
 	if (f)
 		fputs(str, f);
@@ -78,11 +76,11 @@ void vfprint(FILE *f, char *bp, const char *fmt, va_list ap) {
 			case 'x': bp = outu(va_arg(ap, unsigned), 16, f, bp); break;
 			case 'f': case 'e':
 			case 'g': {
-				  	static char format[] = "%f";
-				  	char buf[128];
-				  	format[1] = *fmt;
-				  	sprintf(buf, format, va_arg(ap, double));
-				  	bp = outs(buf, f, bp);
+					static char format[] = "%f";
+					char buf[128];
+					format[1] = *fmt;
+					sprintf(buf, format, va_arg(ap, double));
+					bp = outs(buf, f, bp);
 				  }
 ; break;
 			case 's': bp = outs(va_arg(ap, char *), f, bp); break;
@@ -97,8 +95,8 @@ void vfprint(FILE *f, char *bp, const char *fmt, va_list ap) {
 			case 'S': { char *s = va_arg(ap, char *);
 				    int n = va_arg(ap, int);
 				    if (s)
-				    	for ( ; n-- > 0; s++)
-				    		if (f) (void)putc(*s, f); else *bp++ = *s;
+					for ( ; n-- > 0; s++)
+						if (f) (void)putc(*s, f); else *bp++ = *s;
  } break;
 			case 'k': { int t = va_arg(ap, int);
 				    static char *tokens[] = {
@@ -115,14 +113,14 @@ void vfprint(FILE *f, char *bp, const char *fmt, va_list ap) {
  } break;
 			case 'w': { Coordinate *p = va_arg(ap, Coordinate *);
 				    if (p->file && *p->file) {
-				    	bp = outs(p->file, f, bp);
-				    	bp = outs(":", f, bp);
+					bp = outs(p->file, f, bp);
+					bp = outs(":", f, bp);
 				    }
 				    bp = outd(p->y, f, bp);
  } break;
 			case 'I': { int n = va_arg(ap, int);
 				    while (--n >= 0)
-				    	if (f) (void)putc(' ', f); else *bp++ = ' ';
+					if (f) (void)putc(' ', f); else *bp++ = ' ';
  } break;
 			default:  if (f) (void)putc(*fmt, f); else *bp++ = *fmt; break;
 			}

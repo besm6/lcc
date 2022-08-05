@@ -1,6 +1,6 @@
 #include "c.h"
 
-static char rcsid[] = "$Name$($Id$)";
+#define VERSION "0.0" /* TODO */
 
 static void typestab(Symbol, void *);
 
@@ -127,7 +127,7 @@ void main_init(int argc, char *argv[]) {
 					IR->stabline = stabline;
 					IR->stabend = stabend;
 				}
-			}	
+			}
 		} else if (strcmp(argv[i], "-x") == 0)
 			xref++;
 		else if (strcmp(argv[i], "-A") == 0) {
@@ -137,7 +137,7 @@ void main_init(int argc, char *argv[]) {
 		else if (strcmp(argv[i], "-w") == 0)
 			wflag++;
 		else if (strcmp(argv[i], "-v") == 0)
-			fprint(stderr, "%s %s\n", argv[0], rcsid);
+			fprint(stderr, "%s %s\n", argv[0], VERSION);
 		else if (strncmp(argv[i], "-s", 2) == 0)
 			density = strtod(&argv[i][2], NULL);
 		else if (strncmp(argv[i], "-errout=", 8) == 0) {

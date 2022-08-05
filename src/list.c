@@ -1,7 +1,5 @@
 #include "c.h"
 
-static char rcsid[] = "$Id$";
-
 static List freenodes;		/* free list nodes */
 
 /* append - append x to list, return new list */

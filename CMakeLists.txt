@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(lcc)
 
+set(CMAKE_C_FLAGS "-Wall -Werror") # TODO: add -Wshadow
+
 find_package(BISON REQUIRED)
 bison_target(grammar "${CMAKE_SOURCE_DIR}/lburg/gram.y" "${CMAKE_CURRENT_BINARY_DIR}/gram.c")
 

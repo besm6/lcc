@@ -17,8 +17,6 @@ int	ifdepth;
 int	ifsatisfied[NIF];
 int	skipping;
 
-char rcsid[] = "$Revision$ $Date$";
-
 int
 main(int argc, char **argv)
 {
@@ -84,7 +82,7 @@ process(Tokenrow *trp)
 		}
 	}
 }
-	
+
 void
 control(Tokenrow *trp)
 {

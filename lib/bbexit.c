@@ -4,8 +4,6 @@
 #define EXPORT
 #endif
 
-static char rcsid[] = "$Id$";
-
 EXPORT struct callsite {
 	char *file, *name;
 	union coordinate {
@@ -50,7 +48,7 @@ static void unpack(unsigned int coord, int *index, int *x, int *y) {
 		*x = u.be.x;
 		*y = u.be.y;
 	}
-}				
+}
 
 static void profout(struct _bbdata *p, FILE *fp) {
 	int i, index, x, y;
@@ -82,7 +80,7 @@ static void profout(struct _bbdata *p, FILE *fp) {
 			unpack(f->src.coord, &index, &x, &y);
 			fprintf(fp, "%s %d %d %d 0 ? ? 0 0\n", f->name, index, x, y);
 		}
-	}		
+	}
 	fprintf(fp, "%d\n", p->npoints);
 	for (i = 0; i < p->npoints; i++) {
 		unpack(p->coords[i].coord, &index, &x, &y);

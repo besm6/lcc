@@ -1,8 +1,6 @@
 #include "c.h"
 #include <float.h>
 
-static char rcsid[] = "$Id$";
-
 static Field isfield(const char *, Field);
 static Type type(int, Type, int, int, void *);
 
@@ -323,24 +321,24 @@ int eqtype(Type ty1, Type ty2, int ret) {
 	case VOLATILE: case CONST+VOLATILE:
 	case CONST:    return eqtype(ty1->type, ty2->type, 1);
 	case ARRAY:    if (eqtype(ty1->type, ty2->type, 1)) {
-		       	if (ty1->size == ty2->size)
-		       		return 1;
-		       	if (ty1->size == 0 || ty2->size == 0)
-		       		return ret;
+			if (ty1->size == ty2->size)
+				return 1;
+			if (ty1->size == 0 || ty2->size == 0)
+				return ret;
 		       }
 		       return 0;
 	case FUNCTION: if (eqtype(ty1->type, ty2->type, 1)) {
-		       	Type *p1 = ty1->u.f.proto, *p2 = ty2->u.f.proto;
-		       	if (p1 == p2)
-		       		return 1;
-		       	if (p1 && p2) {
-		       		for ( ; *p1 && *p2; p1++, p2++)
+			Type *p1 = ty1->u.f.proto, *p2 = ty2->u.f.proto;
+			if (p1 == p2)
+				return 1;
+			if (p1 && p2) {
+				for ( ; *p1 && *p2; p1++, p2++)
 					if (eqtype(unqual(*p1), unqual(*p2), 1) == 0)
 						return 0;
 				if (*p1 == NULL && *p2 == NULL)
 					return 1;
-		       	} else {
-		       		if (variadic(p1 ? ty1 : ty2))
+			} else {
+				if (variadic(p1 ? ty1 : ty2))
 					return 0;
 				if (p1 == NULL)
 					p1 = p2;
@@ -350,7 +348,7 @@ int eqtype(Type ty1, Type ty2, int ret) {
 						return 0;
 				}
 				return 1;
-		       	}
+			}
 		       }
 		       return 0;
 	}
@@ -402,26 +400,26 @@ Type compose(Type ty1, Type ty2) {
 		return qual(ty1->op, compose(ty1->type, ty2->type));
 	case ARRAY:    { Type ty = compose(ty1->type, ty2->type);
 			 if (ty1->size && (ty1->type->size && ty2->size == 0 || ty1->size == ty2->size))
-			 	return array(ty, ty1->size/ty1->type->size, ty1->align);
+				return array(ty, ty1->size/ty1->type->size, ty1->align);
 			 if (ty2->size && ty2->type->size && ty1->size == 0)
-			 	return array(ty, ty2->size/ty2->type->size, ty2->align);
+				return array(ty, ty2->size/ty2->type->size, ty2->align);
 			 return array(ty, 0, 0);    }
 	case FUNCTION: { Type *p1  = ty1->u.f.proto, *p2 = ty2->u.f.proto;
 			 Type ty   = compose(ty1->type, ty2->type);
 			 List tlist = NULL;
 			 if (p1 == NULL && p2 == NULL)
-			 	return func(ty, NULL, 1);
+				return func(ty, NULL, 1);
 			 if (p1 && p2 == NULL)
-			 	return func(ty, p1, ty1->u.f.oldstyle);
+				return func(ty, p1, ty1->u.f.oldstyle);
 			 if (p2 && p1 == NULL)
-			 	return func(ty, p2, ty2->u.f.oldstyle);
+				return func(ty, p2, ty2->u.f.oldstyle);
 			 for ( ; *p1 && *p2; p1++, p2++) {
-			 	Type ty = compose(unqual(*p1), unqual(*p2));
-			 	if (isconst(*p1)    || isconst(*p2))
-			 		ty = qual(CONST, ty);
-			 	if (isvolatile(*p1) || isvolatile(*p2))
-			 		ty = qual(VOLATILE, ty);
-			 	tlist = append(ty, tlist);
+				Type ty = compose(unqual(*p1), unqual(*p2));
+				if (isconst(*p1)    || isconst(*p2))
+					ty = qual(CONST, ty);
+				if (isvolatile(*p1) || isvolatile(*p2))
+					ty = qual(VOLATILE, ty);
+				tlist = append(ty, tlist);
 			 }
 			 assert(*p1 == NULL && *p2 == NULL);
 			 return func(ty, ltov(&tlist, PERM), 0); }
@@ -752,4 +750,3 @@ char *typestring(Type ty, char *str) {
 	}
 	assert(0); return 0;
 }
-

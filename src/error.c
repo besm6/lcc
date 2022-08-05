@@ -1,7 +1,5 @@
 #include "c.h"
 
-static char rcsid[] = "$Id$";
-
 static void printtoken(void);
 int errcnt   = 0;
 int errlimit = 20;

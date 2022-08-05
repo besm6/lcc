@@ -1,7 +1,5 @@
 #include "c.h"
 
-static char rcsid[] = "$Id$";
-
 #define add(x,n) (x > inttype->u.sym->u.limits.max.i-(n) ? (overflow=1,x) : x+(n))
 #define chkoverflow(x,n) ((void)add(x,n))
 #define bits2bytes(n) (((n) + 7)/8)
@@ -32,7 +30,7 @@ static Type structdcl(int);
 static Type tnode(int, Type);
 void program(void) {
 	int n;
-	
+
 	level = GLOBAL;
 	for (n = 0; t != EOI; n++)
 		if (kind[t] == CHAR || kind[t] == STATIC
@@ -63,7 +61,7 @@ static Type specifier(int *sclass) {
 		switch (t) {
 		case AUTO:
 		case REGISTER: if (level <= GLOBAL && cls == 0)
-		               	error("invalid use of `%k'\n", t);
+				error("invalid use of `%k'\n", t);
 		               p = &cls;  t = gettok();      break;
 		case STATIC: case EXTERN:
 		case TYPEDEF:  p = &cls;  t = gettok();      break;
@@ -367,23 +365,23 @@ static Type dclr1(char **id, Symbol **params, int abstract) {
 					  ty = tnode(FUNCTION, ty);
 					  enterscope();
 					  if (level > PARAM)
-					  	enterscope();
+						enterscope();
 					  args = parameters(ty);
 					  if (params && *params == NULL)
-					  	*params = args;
+						*params = args;
 					  else
-					  	exitparams(args);
+						exitparams(args);
  }
 		          break;
 		case '[': t = gettok(); { int n = 0;
 					  if (kind[t] == ID) {
-					  	n = intexpr(']', 1);
-					  	if (n <= 0) {
-					  		error("`%d' is an illegal array size\n", n);
-					  		n = 1;
-					  	}
+						n = intexpr(']', 1);
+						if (n <= 0) {
+							error("`%d' is an illegal array size\n", n);
+							n = 1;
+						}
 					  } else
-					  	expect(']');
+						expect(']');
 					  ty = tnode(ARRAY, ty);
 					  ty->size = n; } break;
 		default: assert(0);
@@ -556,12 +554,12 @@ static Type structdcl(int op) {
 static void fields(Type ty) {
 	{ int n = 0;
 	  while (istypename(t, tsym)) {
-	  	static char stop[] = { IF, CHAR, '}', 0 };
-	  	Type ty1 = specifier(NULL);
-	  	for (;;) {
-	  		Field p;
-	  		char *id = NULL;
-	  		Type fty = dclr(ty1, &id, NULL, 0);
+		static char stop[] = { IF, CHAR, '}', 0 };
+		Type ty1 = specifier(NULL);
+		for (;;) {
+			Field p;
+			char *id = NULL;
+			Type fty = dclr(ty1, &id, NULL, 0);
 			p = newfield(id, ty, fty);
 			if (Aflag >= 1 && !hasproto(p->type))
 				warning("missing prototype\n");
@@ -598,20 +596,20 @@ static void fields(Type ty) {
 				ty->u.sym->u.s.cfields = 1;
 			if (isvolatile(p->type))
 				ty->u.sym->u.s.vfields = 1;
-	  		n++;
-	  		if (Aflag >= 2 && n == 128)
-	  			warning("more than 127 fields in `%t'\n", ty);
-	  		if (t != ',')
-	  			break;
-	  		t = gettok();
-	  	}
-	  	test(';', stop);
+			n++;
+			if (Aflag >= 2 && n == 128)
+				warning("more than 127 fields in `%t'\n", ty);
+			if (t != ',')
+				break;
+			t = gettok();
+		}
+		test(';', stop);
 	  } }
 	{ int bits = 0, off = 0, overflow = 0;
 	  Field p, *q = &ty->u.sym->u.s.flist;
 	  ty->align = IR->structmetric.align;
 	  for (p = *q; p; p = p->link) {
-	  	int a = p->type->align ? p->type->align : 1;
+		int a = p->type->align ? p->type->align : 1;
 		if (p->lsb)
 			a = unsignedtype->align;
 		if (ty->op == UNION)
@@ -640,18 +638,18 @@ static void fields(Type ty) {
 			off = add(off, p->type->size);
 		if (off + bits2bytes(bits-1) > ty->size)
 			ty->size = off + bits2bytes(bits-1);
-	  	if (p->name == NULL
-	  	|| !('1' <= *p->name && *p->name <= '9')) {
-	  		*q = p;
-	  		q = &p->link;
-	  	}
+		if (p->name == NULL
+		|| !('1' <= *p->name && *p->name <= '9')) {
+			*q = p;
+			q = &p->link;
+		}
 	  }
 	  *q = NULL;
 	  chkoverflow(ty->size, ty->align - 1);
 	  ty->size = roundup(ty->size, ty->align);
 	  if (overflow) {
-	  	error("size of `%t' exceeds %d bytes\n", ty, inttype->u.sym->u.limits.max.i);
-	  	ty->size = inttype->u.sym->u.limits.max.i&(~(ty->align - 1));
+		error("size of `%t' exceeds %d bytes\n", ty, inttype->u.sym->u.limits.max.i);
+		ty->size = inttype->u.sym->u.limits.max.i&(~(ty->align - 1));
 	  } }
 }
 static void funcdefn(int sclass, char *id, Type ty, Symbol params[], Coordinate pt) {
@@ -950,28 +948,28 @@ static Symbol dcllocal(int sclass, char *id, Type ty, Coordinate *pos) {
 	switch (sclass) {
 	case EXTERN:   q = lookup(id, globals);
 		       if (q == NULL || q->sclass == TYPEDEF || q->sclass == ENUM) {
-		       	q = lookup(id, externals);
-		       	if (q == NULL) {
-		       		q = install(p->name, &externals, GLOBAL, PERM);
-		       		q->type = p->type;
-		       		q->sclass = EXTERN;
-		       		q->src = src;
-		       		(*IR->defsymbol)(q);
-		       	}
+			q = lookup(id, externals);
+			if (q == NULL) {
+				q = install(p->name, &externals, GLOBAL, PERM);
+				q->type = p->type;
+				q->sclass = EXTERN;
+				q->src = src;
+				(*IR->defsymbol)(q);
+			}
 		       }
 		       if (!eqtype(p->type, q->type, 1))
-		       	warning("declaration of `%s' does not match previous declaration at %w\n", q->name, &q->src);
+			warning("declaration of `%s' does not match previous declaration at %w\n", q->name, &q->src);
 
 		       p->u.alias = q; break;
 	case STATIC:   (*IR->defsymbol)(p);
 		       initglobal(p, 0);
 		       if (!p->defined)
-		       	if (p->type->size > 0) {
-		       		defglobal(p, BSS);
-		       		(*IR->space)(p->type->size);
-		       	} else
-		       		error("undefined size for `%t %s'\n",
-		       			p->type, p->name);
+			if (p->type->size > 0) {
+				defglobal(p, BSS);
+				(*IR->space)(p->type->size);
+			} else
+				error("undefined size for `%t %s'\n",
+					p->type, p->name);
 		       p->defined = 1; break;
 	case REGISTER: registers = append(p, registers);
 		       regcount++;
@@ -980,7 +978,7 @@ static Symbol dcllocal(int sclass, char *id, Type ty, Coordinate *pos) {
 	case AUTO:     autos = append(p, autos);
 		       p->defined = 1;
 		       if (isarray(ty))
-		       	p->addressed = 1; break;
+			p->addressed = 1; break;
 	default: assert(0);
 	}
 	if (t == '=') {
@@ -1054,7 +1052,7 @@ static void doglobal(Symbol p, void *cl) {
 }
 void doconst(Symbol p, void *cl) {
 	if (p->u.c.loc) {
-		assert(p->u.c.loc->u.seg == 0); 
+		assert(p->u.c.loc->u.seg == 0);
 		defglobal(p->u.c.loc, LIT);
 		if (isarray(p->type) && p->type->type == widechar) {
 			unsigned int *s = p->u.c.v.p;
@@ -1160,4 +1158,3 @@ Type typename(void) {
 	}
 	return ty;
 }
-

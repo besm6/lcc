@@ -4,8 +4,10 @@
 #include <string.h>
 #include "cpp.h"
 
+#define VERSION "0.0" /* TODO */
+
 extern	int getopt(int, char *const *, const char *);
-extern	char	*optarg, rcsid[];
+extern	char	*optarg;
 extern	int	optind;
 int	verbose;
 int	Mflag;	/* only print active include files */
@@ -52,7 +54,7 @@ setup(int argc, char **argv)
 			Mflag++;
 			break;
 		case 'v':
-			fprintf(stderr, "%s %s\n", argv[0], rcsid);
+			fprintf(stderr, "%s %s\n", argv[0], VERSION);
 			break;
 		case 'V':
 			verbose++;

@@ -2,8 +2,6 @@
 
 #include <string.h>
 
-static char rcsid[] = "$Id$";
-
 #ifndef LCCDIR
 #define LCCDIR "/usr/local/lib/lcc/"
 #endif
@@ -22,7 +20,7 @@ char *ld[] = {
 	/*  0 */ "/usr/bin/ld", "-m", "elf_i386", "-dynamic-linker",
 	/*  4 */ "/lib/ld-linux.so.2", "-o", "$3",
 	/*  7 */ "/usr/lib/crt1.o", "/usr/lib/crti.o",
-	/*  9 */ LCCDIR "/gcc/crtbegin.o", 
+	/*  9 */ LCCDIR "/gcc/crtbegin.o",
                  "$1", "$2",
 	/* 12 */ "-L" LCCDIR,
 	/* 13 */ "-llcc",
@@ -34,7 +32,7 @@ char *ld[] = {
 extern char *concat(char *, char *);
 
 int option(char *arg) {
-  	if (strncmp(arg, "-lccdir=", 8) == 0) {
+	if (strncmp(arg, "-lccdir=", 8) == 0) {
 		if (strcmp(cpp[0], LCCDIR "gcc/cpp") == 0)
 			cpp[0] = concat(&arg[8], "/gcc/cpp");
 		include[0] = concat("-I", concat(&arg[8], "/include"));
@@ -47,7 +45,7 @@ int option(char *arg) {
 	} else if (strcmp(arg, "-p") == 0 || strcmp(arg, "-pg") == 0) {
 		ld[7] = "/usr/lib/gcrt1.o";
 		ld[18] = "-lgmon";
-	} else if (strcmp(arg, "-b") == 0) 
+	} else if (strcmp(arg, "-b") == 0)
 		;
 	else if (strcmp(arg, "-g") == 0)
 		;

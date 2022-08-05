@@ -1,8 +1,6 @@
 #include "c.h"
 #define I(f) b_##f
 
-static char rcsid[] = "$Id$";
-
 static void I(segment)(int n) {
 	static int cseg;
 
