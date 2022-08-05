@@ -23,7 +23,7 @@ popl %edi
 popl %esi
 popl %ebx
 popl %ebp
-ret
+ret $4
 .Lf5:
 .size addpoint,.Lf5-addpoint
 .globl canonrect
@@ -95,7 +95,7 @@ popl %edi
 popl %esi
 popl %ebx
 popl %ebp
-ret
+ret $4
 .Lf40:
 .size canonrect,.Lf40-canonrect
 .globl makepoint
@@ -123,7 +123,7 @@ popl %edi
 popl %esi
 popl %ebx
 popl %ebp
-ret
+ret $4
 .Lf44:
 .size makepoint,.Lf44-makepoint
 .globl makerect
@@ -154,14 +154,14 @@ rep
 movsb
 pushl 20(%ebp)
 call canonrect
-addl $20,%esp
+addl $20-4,%esp
 .LC45:
 movl %ebp,%esp
 popl %edi
 popl %esi
 popl %ebx
 popl %ebp
-ret
+ret $4
 .Lf48:
 .size makerect,.Lf48-makerect
 .globl ptinrect
@@ -290,7 +290,7 @@ pushl $-10
 leal -84(%ebp),%edi
 pushl %edi
 call makepoint
-addl $12,%esp
+addl $12-4,%esp
 leal -84(%ebp),%esi
 subl $8,%esp
 movl %esp,%edi
@@ -306,13 +306,13 @@ movsb
 leal -92(%ebp),%edi
 pushl %edi
 call addpoint
-addl $20,%esp
+addl $20-4,%esp
 pushl $10
 pushl $10
 leal -100(%ebp),%edi
 pushl %edi
 call makepoint
-addl $12,%esp
+addl $12-4,%esp
 leal -100(%ebp),%esi
 subl $8,%esp
 movl %esp,%edi
@@ -328,7 +328,7 @@ movsb
 leal -108(%ebp),%edi
 pushl %edi
 call addpoint
-addl $20,%esp
+addl $20-4,%esp
 leal -108(%ebp),%esi
 subl $8,%esp
 movl %esp,%edi
@@ -344,7 +344,7 @@ movsb
 leal -52(%ebp),%edi
 pushl %edi
 call makerect
-addl $20,%esp
+addl $20-4,%esp
 movl $0,-4(%ebp)
 jmp .LC70
 .LC67:
@@ -357,7 +357,7 @@ pushl (%esi,%edi)
 leal -60(%ebp),%edi
 pushl %edi
 call makepoint
-addl $12,%esp
+addl $12-4,%esp
 pushl -56(%ebp)
 movl -4(%ebp),%edi
 leal -36(%ebp),%esi
@@ -473,4 +473,4 @@ ret
 .byte 10
 .byte 0
 .text
-.ident "LCC: 4.1"
+.ident "LCC: 4.2"

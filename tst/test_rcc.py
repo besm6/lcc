@@ -29,18 +29,23 @@ import pathlib
 def test_case(case, target):
     # Go to parent directory.
     os.chdir(pathlib.Path(__file__).parent / "..")
-    #print("---", target, case)
 
     #
     # Run preprocessor.
     #
-    preproc = subprocess.Popen(["build/cpp", f"tst/{case}.c"], stdout=subprocess.PIPE)
+    preproc = subprocess.Popen(["build/cpp",
+                               f"-Iinclude/{target}",
+                               f"-I{target}",
+                               f"tst/{case}.c"],
+                               stdout=subprocess.PIPE)
     c_code = preproc.stdout.read().decode('utf-8')
 
     #
     # Run compiler.
     #
-    compiler = subprocess.Popen(["build/rcc", f"-target={target}", "-g0"],
+    compiler = subprocess.Popen(["build/rcc",
+                                f"-target={target}",
+                                "-g0"],
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     compiler.stdin.write(c_code.encode('utf-8'))
     compiler.stdin.close()
@@ -49,12 +54,10 @@ def test_case(case, target):
     # Read asm output.
     #
     actual_asm = compiler.stdout.read().decode('utf-8')
-    #print("--- actual_asm=", actual_asm)
+    #with open(f"{target}/tst/{case}.s", "w") as file:
+    #    file.write(actual_asm)
     with open(f"{target}/tst/{case}.sbk") as file:
         expected_asm = file.read()
-        #print("--- expected_asm=", expected_asm)
-
-    assert actual_asm == expected_asm
 
     #
     # Read stderr output.
@@ -67,3 +70,4 @@ def test_case(case, target):
         #print("--- expected_err=", expected_err)
 
     assert actual_err == expected_err
+    assert actual_asm == expected_asm

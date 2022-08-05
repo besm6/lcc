@@ -682,18 +682,18 @@ movl %esi,-40(%ebp)
 jmp .LC62
 .LC61:
 movl yyin,%esi
-leal 4(%esi),%esi
 movl (,%esi),%ebx
 subl $1,%ebx
 movl %ebx,(,%esi)
 cmpl $0,%ebx
 jl .LC63
 movl yyin,%esi
+leal 4(%esi),%esi
 movl (,%esi),%ebx
 leal 1(%ebx),%edx
 movl %edx,(,%esi)
-movsbl (,%ebx),%esi
-andl $255,%esi
+movb (,%ebx),%bl
+movzbl %bl,%esi
 movl %esi,-44(%ebp)
 jmp .LC64
 .LC63:
@@ -1051,18 +1051,18 @@ movl %edi,-40(%ebp)
 jmp .LC119
 .LC118:
 movl yyin,%edi
-leal 4(%edi),%edi
 movl (,%edi),%esi
 subl $1,%esi
 movl %esi,(,%edi)
 cmpl $0,%esi
 jl .LC120
 movl yyin,%edi
+leal 4(%edi),%edi
 movl (,%edi),%esi
 leal 1(%esi),%ebx
 movl %ebx,(,%edi)
-movsbl (,%esi),%edi
-andl $255,%edi
+movb (,%esi),%bl
+movzbl %bl,%edi
 movl %edi,-44(%ebp)
 jmp .LC121
 .LC120:
@@ -1103,13 +1103,13 @@ movl %edi,yyprevious
 cmpl $0,yyprevious
 jle .LC122
 movl yyout,%edi
-leal 4(%edi),%edi
 movl (,%edi),%esi
 subl $1,%esi
 movl %esi,(,%edi)
 cmpl $0,%esi
 jl .LC125
 movl yyout,%edi
+leal 4(%edi),%edi
 movl (,%edi),%esi
 leal 1(%esi),%ebx
 movl %ebx,(,%edi)
@@ -1119,7 +1119,10 @@ movb %bl,(,%esi)
 jmp .LC126
 .LC125:
 pushl yyout
-pushl yyprevious
+movl yyprevious,%edi
+movl %edi,%ebx
+movzbl %bl,%edi
+pushl %edi
 call _flsbuf
 addl $8,%esp
 .LC126:
@@ -1196,18 +1199,18 @@ movl %edi,-12(%ebp)
 jmp .LC147
 .LC146:
 movl yyin,%edi
-leal 4(%edi),%edi
 movl (,%edi),%esi
 subl $1,%esi
 movl %esi,(,%edi)
 cmpl $0,%esi
 jl .LC148
 movl yyin,%edi
+leal 4(%edi),%edi
 movl (,%edi),%esi
 leal 1(%esi),%ebx
 movl %ebx,(,%edi)
-movsbl (,%esi),%edi
-andl $255,%edi
+movb (,%esi),%bl
+movzbl %bl,%edi
 movl %edi,-16(%ebp)
 jmp .LC149
 .LC148:
@@ -1260,13 +1263,13 @@ pushl %esi
 pushl %edi
 movl %esp,%ebp
 movl yyout,%edi
-leal 4(%edi),%edi
 movl (,%edi),%esi
 subl $1,%esi
 movl %esi,(,%edi)
 cmpl $0,%esi
 jl .LC153
 movl yyout,%edi
+leal 4(%edi),%edi
 movl (,%edi),%esi
 leal 1(%esi),%ebx
 movl %ebx,(,%edi)
@@ -1276,7 +1279,10 @@ movb %bl,(,%esi)
 jmp .LC154
 .LC153:
 pushl yyout
-pushl 20(%ebp)
+movl 20(%ebp),%edi
+movl %edi,%ebx
+movzbl %bl,%edi
+pushl %edi
 call _flsbuf
 addl $8,%esp
 .LC154:
