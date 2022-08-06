@@ -13,7 +13,7 @@
 #define MAXLINE 512
 #define BUFSIZE 4096
 
-#define istypename(t, tsym) (kind[t] == CHAR || t == ID && tsym && tsym->sclass == TYPEDEF)
+#define istypename(t, tsym) (kind[t] == CHAR || (t == ID && tsym && tsym->sclass == TYPEDEF))
 #define sizeop(n)           ((n) << 10)
 #define generic(op)         ((op)&0x3F0)
 #define specific(op)        ((op)&0x3FF)

@@ -47,9 +47,6 @@ extern char *stringf(const char *, ...);
 extern int suffix(char *, char *[], int);
 extern char *tempname(char *);
 
-extern int access(char *, int);
-extern int getpid(void);
-
 extern char *cpp[], *include[], *com[], *as[], *ld[], inputs[], *suffixes[];
 extern int option(char *);
 
@@ -220,9 +217,8 @@ char *basepath(char *name)
 #include <process.h>
 #else
 #define _P_WAIT 0
-extern int fork(void);
-extern int wait(int *);
-extern void execv(const char *, char *[]);
+#include <unistd.h>
+#include <sys/wait.h>
 
 static int _spawnvp(int mode, const char *cmdname, const char *const argv[])
 {

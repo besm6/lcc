@@ -245,12 +245,13 @@ static Symbol dclglobal(int sclass, char *id, Type ty, Coordinate *pos)
 {
     Symbol p;
 
-    if (sclass == 0)
+    if (sclass == 0) {
         sclass = AUTO;
-    else if (sclass != EXTERN && sclass != STATIC) {
+    } else if (sclass != EXTERN && sclass != STATIC) {
         error("invalid storage class `%k' for `%t %s'\n", sclass, ty, id);
         sclass = AUTO;
     }
+
     p = lookup(id, identifiers);
     if (p && p->scope == GLOBAL) {
         if (p->sclass != TYPEDEF && eqtype(ty, p->type, 1))
@@ -268,6 +269,7 @@ static Symbol dclglobal(int sclass, char *id, Type ty, Coordinate *pos)
     }
     if (p == NULL || p->scope != GLOBAL) {
         Symbol q = lookup(id, externals);
+
         if (q) {
             if (sclass == STATIC || !eqtype(ty, q->type, 1))
                 warning("declaration of `%s' does not match previous declaration at %w\n", id,
@@ -280,16 +282,20 @@ static Symbol dclglobal(int sclass, char *id, Type ty, Coordinate *pos)
             p->sclass = sclass;
             (*IR->defsymbol)(p);
         }
+
         if (p->sclass != STATIC) {
             static int nglobals;
             nglobals++;
             if (Aflag >= 2 && nglobals == 512)
                 warning("more than 511 external identifiers\n");
         }
-    } else if (p->sclass == EXTERN)
+    } else if (p->sclass == EXTERN) {
         p->sclass = sclass;
+    }
+
     p->type = ty;
     p->src  = *pos;
+
     if (curtok == '=' && isfunc(p->type)) {
         error("illegal initialization for `%s'\n", p->name);
         curtok = gettok();
@@ -300,8 +306,9 @@ static Symbol dclglobal(int sclass, char *id, Type ty, Coordinate *pos)
             (*IR->stabsym)(p);
             swtoseg(p->u.seg);
         }
-    } else if (p->sclass == STATIC && !isfunc(p->type) && p->type->size == 0)
+    } else if (p->sclass == STATIC && !isfunc(p->type) && p->type->size == 0) {
         error("undefined size for `%t %s'\n", p->type, p->name);
+    }
     return p;
 }
 
@@ -1185,7 +1192,7 @@ Type enumdcl(void)
 {
     char *tag;
     Type ty;
-    Symbol p;
+    Symbol p = 0;
     Coordinate pos;
 
     curtok = gettok();

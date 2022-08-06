@@ -1,4 +1,5 @@
 #include "c.h"
+#include <stdint.h>
 #define I(f) b_##f
 
 static void I(segment)(int n)
@@ -54,13 +55,20 @@ static void I(defconst)(int suffix, int size, Value v)
         return;
     case F:
         if (size == 4) {
-            float f = v.d;
-            print("byte 4 %u\n", *(unsigned *)&f);
+            union {
+                float f;
+                uint32_t u;
+            } u;
+            u.f = v.d;
+            print("byte 4 %u\n", u.u);
         } else {
-            double d    = v.d;
-            unsigned *p = (unsigned *)&d;
-            print("byte 4 %u\n", p[swap]);
-            print("byte 4 %u\n", p[1 - swap]);
+            union {
+                double d;
+                uint32_t u[2];
+            } u;
+            u.d = v.d;
+            print("byte 4 %u\n", u.u[swap]);
+            print("byte 4 %u\n", u.u[1 - swap]);
         }
         return;
     }

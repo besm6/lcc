@@ -5,8 +5,12 @@ Marcos Ramirez <marcos@inf.utfsm.cl>
 Horst von Brand <vonbrand@sleipnir.valparaiso.cl>
 Jacob Navia <jacob@jacob.remcomp.fr>
 */
+
 enum { EAX=0, ECX=1, EDX=2, EBX=3, ESI=6, EDI=7 };
+
 #include "c.h"
+#include <stdint.h>
+
 #define NODEPTR_TYPE Node
 #define OP_LABEL(p) ((p)->op)
 #define LEFT_CHILD(p) ((p)->kids[0])
@@ -1009,12 +1013,19 @@ static void defconst(int suffix, int size, Value v)
     else if (suffix == P && size == 4)
         print(".long %p\n", v.p);
     else if (suffix == F && size == 4) {
-        float f = v.d;
-        print(".long %d\n", (int)(*(unsigned *)&f));
+        union {
+            float f;
+            uint32_t u;
+        } u;
+        u.f = v.d;
+        print(".long %d\n", u.u);
     } else if (suffix == F && size == 8) {
-        double d    = v.d;
-        unsigned *p = (unsigned *)&d;
-        print(".long %d\n.long %d\n", (int)p[swap], (int)p[!swap]);
+        union {
+            double d;
+            uint32_t u[2];
+        } u;
+        u.d = v.d;
+        print(".long %d\n.long %d\n", (int)u.u[swap], (int)u.u[!swap]);
     } else
         unreachable();
 }

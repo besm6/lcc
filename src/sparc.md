@@ -1,6 +1,8 @@
 %{
 /* clang-format off */
 #include "c.h"
+#include <stdint.h>
+
 #define NODEPTR_TYPE Node
 #define OP_LABEL(p) ((p)->op)
 #define LEFT_CHILD(p) ((p)->kids[0])
@@ -931,12 +933,19 @@ static void renameregs(void)
 static void defconst(int suffix, int size, Value v)
 {
     if (suffix == F && size == 4) {
-        float f = v.d;
-        print(".word 0x%x\n", *(unsigned *)&f);
+        union {
+            float f;
+            uint32_t u;
+        } u;
+        u.f = v.d;
+        print(".word 0x%x\n", u.u);
     } else if (suffix == F && size == 8) {
-        double d    = v.d;
-        unsigned *p = (unsigned *)&d;
-        print(".word 0x%x\n.word 0x%x\n", p[swap], p[!swap]);
+        union {
+            double d;
+            uint32_t u[2];
+        } u;
+        u.d = v.d;
+        print(".word 0x%x\n.word 0x%x\n", u.u[swap], u.u[!swap]);
     } else if (suffix == P)
         print(".word %p\n", v.p);
     else if (size == 1)

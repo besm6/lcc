@@ -2,13 +2,16 @@
 
 #define iscall(op)                                                                           \
     (generic(op) == CALL ||                                                                  \
-     IR->mulops_calls && (generic(op) == DIV || generic(op) == MOD || generic(op) == MUL) && \
-         (optype(op) == U || optype(op) == I))
+     (IR->mulops_calls && (generic(op) == DIV || generic(op) == MOD || generic(op) == MUL) && \
+         (optype(op) == U || optype(op) == I)))
+
 static Node forest;
+
 static struct dag {
     struct node node;
     struct dag *hlink;
 } * buckets[16];
+
 int nodecount;
 static Tree firstarg;
 int assignargs = 1;
@@ -34,6 +37,7 @@ static void typestab(Symbol, void *);
 static Node undag(Node);
 static Node visit(Node, int);
 static void unlist(void);
+
 void walk(Tree tp, int tlab, int flab)
 {
     listnodes(tp, tlab, flab);
@@ -65,6 +69,7 @@ static Node node(int op, Node l, Node r, Symbol sym)
     ++nodecount;
     return &p->node;
 }
+
 static struct dag *dagnode(int op, Node l, Node r, Symbol sym)
 {
     struct dag *p;
@@ -78,10 +83,12 @@ static struct dag *dagnode(int op, Node l, Node r, Symbol sym)
     p->node.syms[0] = sym;
     return p;
 }
+
 Node newnode(int op, Node l, Node r, Symbol sym)
 {
     return &dagnode(op, l, r, sym)->node;
 }
+
 static void killnodes(Symbol p)
 {
     int i;
@@ -96,12 +103,14 @@ static void killnodes(Symbol p)
             } else
                 q = &(*q)->hlink;
 }
+
 static void reset(void)
 {
     if (nodecount > 0)
         memset(buckets, 0, sizeof buckets);
     nodecount = 0;
 }
+
 Node listnodes(Tree tp, int tlab, int flab)
 {
     Node p = NULL, l, r;
@@ -435,6 +444,7 @@ Node listnodes(Tree tp, int tlab, int flab)
     tp->node = p;
     return p;
 }
+
 static void list(Node p)
 {
     if (p && p->link == NULL) {
@@ -446,6 +456,7 @@ static void list(Node p)
         forest = p;
     }
 }
+
 static void labelnode(int lab)
 {
     assert(lab);
@@ -455,6 +466,7 @@ static void labelnode(int lab)
         list(newnode(LABEL + V, NULL, NULL, findlabel(lab)));
     reset();
 }
+
 static void unlist(void)
 {
     Node p;
@@ -467,6 +479,7 @@ static void unlist(void)
     p->link = forest->link;
     forest  = p;
 }
+
 Tree cvtconst(Tree p)
 {
     Symbol q = constant(p->type, p->u.v);
@@ -481,6 +494,7 @@ Tree cvtconst(Tree p)
         e = idtree(q->u.c.loc);
     return e;
 }
+
 void gencode(Symbol caller[], Symbol callee[])
 {
     Code cp;
@@ -550,6 +564,7 @@ void gencode(Symbol caller[], Symbol callee[])
         }
     src = save;
 }
+
 static void fixup(Node p)
 {
     for (; p; p = p->link)
@@ -571,6 +586,7 @@ static void fixup(Node p)
             p->syms[0] = equated(p->syms[0]);
         }
 }
+
 static Symbol equated(Symbol p)
 {
     {
@@ -582,6 +598,7 @@ static Symbol equated(Symbol p)
         p = p->u.l.equatedto;
     return p;
 }
+
 void emitcode(void)
 {
     Code cp;
@@ -671,6 +688,7 @@ static Node undag(Node tree)
     *tail = NULL;
     return tree;
 }
+
 static Node replace(Node p)
 {
     if (p && (generic(p->op) == INDIR && generic(p->kids[0]->op) == ADDRL &&
@@ -690,6 +708,7 @@ static Node replace(Node p)
     }
     return p;
 }
+
 static Node prune(Node tree)
 {
     Node p, *tailp = &tree;
@@ -723,6 +742,7 @@ static Node prune(Node tree)
     assert(*tailp == NULL);
     return tree;
 }
+
 static Node visit(Node p, int listed)
 {
     if (p) {
@@ -756,6 +776,7 @@ static Node visit(Node p, int listed)
     }
     return p;
 }
+
 static Node tmpnode(Node p)
 {
     Symbol tmp = p->syms[2];
@@ -768,6 +789,7 @@ static Node tmpnode(Node p)
     p->count = 1;
     return p;
 }
+
 static Node asgnnode(Symbol tmp, Node p)
 {
     p = newnode(ASGN + ttob(tmp->type), newnode(ADDRL + ttob(voidptype), NULL, NULL, tmp), p, NULL);
@@ -775,6 +797,7 @@ static Node asgnnode(Symbol tmp, Node p)
     p->syms[1] = intconst(tmp->type->align);
     return p;
 }
+
 /* printdag - print dag p on fd, or the node list if p == 0 */
 void printdag(Node p, int fd)
 {

@@ -343,7 +343,6 @@ int gettokens(Tokenrow *trp, int reset)
     int runelen;
     Source *s = cursource;
     int nmac  = 0;
-    extern char outbuf[];
 
     tp = trp->lp;
     ip = s->inp;
@@ -599,7 +598,7 @@ Source *setsource(char *name, FILE *fd, char *str)
         len    = strlen(str);
         s->inb = domalloc(len + 4);
         s->inp = s->inb;
-        strncpy((char *)s->inp, str, len);
+        strncpy((char *)s->inp, str, len+1);
     } else {
         s->inb = domalloc(INS + 4);
         s->inp = s->inb;

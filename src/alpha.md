@@ -9,6 +9,8 @@
 #define FLTRET 0x00000003
 
 #include "c.h"
+#include <stdint.h>
+
 #define NODEPTR_TYPE Node
 #define OP_LABEL(p) ((p)->op)
 #define LEFT_CHILD(p) ((p)->kids[0])
@@ -996,12 +998,19 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls)
 static void defconst(int suffix, int size, Value v)
 {
     if (suffix == F && size == 4) {
-        float f = v.d;
-        print(".long 0x%x\n", *(unsigned *)&f);
+        union {
+            float f;
+            uint32_t u;
+        } u;
+        u.f = v.d;
+        print(".long 0x%x\n", u.u);
     } else if (suffix == F && size == 8) {
-        double d    = v.d;
-        unsigned *p = (unsigned *)&d;
-        print(".long 0x%x\n.long 0x%x\n", p[swap], p[!swap]);
+        union {
+            double d;
+            uint32_t u[2];
+        } u;
+        u.d = v.d;
+        print(".long 0x%x\n.long 0x%x\n", u.u[swap], u.u[!swap]);
     } else if (suffix == P)
         print(".quad 0x%X\n", v.p);
     else if (size == 1)
