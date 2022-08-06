@@ -34,7 +34,7 @@ Tree call(Tree f, Type fty, Coordinate src)
         if (rty->size == 0)
             error("illegal use of incomplete type `%t'\n", rty);
     }
-    if (t != ')')
+    if (curtok != ')')
         for (;;) {
             Tree q = pointer(expr1(0));
             if (proto && *proto && *proto != voidtype) {
@@ -79,9 +79,9 @@ Tree call(Tree f, Type fty, Coordinate src)
             n++;
             if (Aflag >= 2 && n == 32)
                 warning("more than 31 arguments in a call to %s\n", funcname(f));
-            if (t != ',')
+            if (curtok != ',')
                 break;
-            t = gettok();
+            curtok = gettok();
         }
     expect(')');
     if (proto && *proto && *proto != voidtype)
@@ -195,7 +195,7 @@ Tree cnsttree(Type ty, ...)
         p->u.v.p = va_arg(ap, void *);
         break;
     default:
-        assert(0);
+        unreachable();
     }
     va_end(ap);
     return p;

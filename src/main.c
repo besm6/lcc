@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     init(argc, argv);
-    t = gettok();
+    curtok = gettok();
     (*IR->progbeg)(argc, argv);
     for (i = 1; i < argc; i++)
         if (strcmp(argv[i], "-n") == 0) {

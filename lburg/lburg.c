@@ -273,9 +273,9 @@ Rule rule(char *id, Tree pattern, char *template, char *code)
             ;
         *q = r;
     } else if (pattern->left == NULL && pattern->right == NULL) {
-        Nonterm p = pattern->op;
-        r->chain  = p->chain;
-        p->chain  = r;
+        Nonterm n = pattern->op;
+        r->chain  = n->chain;
+        n->chain  = r;
         if (r->cost == -1)
             yyerror("illegal nonconstant cost `%s'\n", code);
     }
@@ -367,7 +367,7 @@ static void ckreach(Nonterm p)
 }
 
 /* emitcase - emit one case in function state */
-static void emitcase(Term p, int ntnumber)
+static void emitcase(Term p, int ntnum)
 {
     Rule r;
 
@@ -384,7 +384,7 @@ static void emitcase(Term p, int ntnumber)
         print("%2%Plabel(RIGHT_CHILD(a));\n");
         break;
     default:
-        assert(0);
+        abort();
     }
     for (r = p->rules; r; r = r->next) {
         char *indent = "\t\t\0";
@@ -434,22 +434,22 @@ static void emitcase(Term p, int ntnumber)
                 print("%2}\n");
             break;
         default:
-            assert(0);
+            abort();
         }
     }
     print("%2break;\n");
 }
 
 /* emitclosure - emit the closure functions */
-static void emitclosure(Nonterm nts)
+static void emitclosure(Nonterm closure)
 {
     Nonterm p;
 
-    for (p = nts; p; p = p->link)
+    for (p = closure; p; p = p->link)
         if (p->chain)
             print("static void %Pclosure_%S(NODEPTR_TYPE, int);\n", p);
     print("\n");
-    for (p = nts; p; p = p->link)
+    for (p = closure; p; p = p->link)
         if (p->chain) {
             Rule r;
             print(
@@ -477,15 +477,15 @@ static void emitcost(Tree t, char *v)
 }
 
 /* emitdefs - emit nonterminal defines and data structures */
-static void emitdefs(Nonterm nts, int ntnumber)
+static void emitdefs(Nonterm def, int ntnum)
 {
     Nonterm p;
 
-    for (p = nts; p; p = p->link)
+    for (p = def; p; p = p->link)
         print("#define %P%S_NT %d\n", p, p->number);
     print("\n");
-    print("static char *%Pntname[] = {\n%10,\n");
-    for (p = nts; p; p = p->link)
+    print("static char *%Pntname[] __attribute__((unused)) = {\n%10,\n");
+    for (p = def; p; p = p->link)
         print("%1\"%S\",\n", p);
     print("%10\n};\n\n");
 }
@@ -518,13 +518,13 @@ static char *computekids(Tree t, char *v, char *bp, int *ip)
 }
 
 /* emitkids - emit _kids */
-static void emitkids(Rule rules, int nrules)
+static void emitkids(Rule list, int list_len)
 {
     int i;
-    Rule r, *rc = alloc((nrules + 1 + 1) * sizeof *rc);
-    char **str = alloc((nrules + 1 + 1) * sizeof *str);
+    Rule r, *rc = alloc((list_len + 1 + 1) * sizeof *rc);
+    char **str = alloc((list_len + 1 + 1) * sizeof *str);
 
-    for (i = 0, r = rules; r; r = r->link) {
+    for (i = 0, r = list; r; r = r->link) {
         int j = 0;
         char buf[1024], *bp = buf;
         *computekids(r->pattern, "p", bp, &j) = 0;
@@ -549,7 +549,7 @@ static void emitkids(Rule rules, int nrules)
 }
 
 /* emitlabel - emit label function */
-static void emitlabel(Term terms, Nonterm start, int ntnumber)
+static void emitlabel(Term list, Nonterm strt, int ntnum)
 {
     int i;
     Term p;
@@ -561,11 +561,11 @@ static void emitlabel(Term terms, Nonterm start, int ntnumber)
     print(
         "%1STATE_LABEL(a) = p = allocate(sizeof *p, FUNC);\n"
         "%1p->rule._stmt = 0;\n");
-    for (i = 1; i <= ntnumber; i++)
+    for (i = 1; i <= ntnum; i++)
         print("%1p->cost[%d] =\n", i);
     print("%20x7fff;\n%1switch (OP_LABEL(a)) {\n");
-    for (p = terms; p; p = p->link)
-        emitcase(p, ntnumber);
+    for (p = list; p; p = p->link)
+        emitcase(p, ntnum);
     print(
         "%1default:\n"
         "%2fatal(\"%Plabel\", \"Bad terminal %%d\\n\", OP_LABEL(a));\n%1}\n}\n\n");
@@ -586,13 +586,13 @@ static char *computents(Tree t, char *bp)
 }
 
 /* emitnts - emit _nts ragged array */
-static void emitnts(Rule rules, int nrules)
+static void emitnts(Rule list, int list_len)
 {
     Rule r;
-    int i, j, *nts = alloc((nrules + 1) * sizeof *nts);
-    char **str = alloc((nrules + 1) * sizeof *str);
+    int i, j, *index = alloc((list_len + 1) * sizeof *index);
+    char **str = alloc((list_len + 1) * sizeof *str);
 
-    for (i = 0, r = rules; r; r = r->link) {
+    for (i = 0, r = list; r; r = r->link) {
         char buf[1024];
         *computents(r->pattern, buf) = 0;
         for (j = 0; str[j] && strcmp(str[j], buf); j++)
@@ -601,13 +601,13 @@ static void emitnts(Rule rules, int nrules)
             print("static short %Pnts_%d[] = { %s0 };\n", j, buf);
             str[j] = strcpy(alloc(strlen(buf) + 1), buf);
         }
-        nts[i++] = j;
+        index[i++] = j;
     }
     print("\nstatic short *%Pnts[] = {\n");
-    for (i = j = 0, r = rules; r; r = r->link) {
+    for (i = j = 0, r = list; r; r = r->link) {
         for (; j < r->ern; j++)
             print("%10,%1/* %d */\n", j);
-        print("%1%Pnts_%d,%1/* %d */\n", nts[i++], j++);
+        print("%1%Pnts_%d,%1/* %d */\n", index[i++], j++);
     }
     print("};\n\n");
 }
@@ -646,11 +646,11 @@ static void emitrecord(char *pre, Rule r, char *c, int cost)
 }
 
 /* emitrule - emit decoding vectors and _rule */
-static void emitrule(Nonterm nts)
+static void emitrule(Nonterm list)
 {
     Nonterm p;
 
-    for (p = nts; p; p = p->link) {
+    for (p = list; p; p = p->link) {
         Rule r;
         print("static short %Pdecode_%S[] = {\n%10,\n", p);
         for (r = p->rules; r; r = r->decode)
@@ -663,7 +663,7 @@ static void emitrule(Nonterm nts)
         "goalnt);\n"
         "%1if (!state)\n%2return 0;\n%1switch (goalnt) {\n",
         ntnumber);
-    for (p = nts; p; p = p->link)
+    for (p = list; p; p = p->link)
         print(
             "%1case %P%S_NT:"
             "%1return %Pdecode_%S[((struct %Pstate *)state)->rule.%P%S];\n",
@@ -674,39 +674,39 @@ static void emitrule(Nonterm nts)
 }
 
 /* emitstring - emit arrays of templates, instruction flags, and rules */
-static void emitstring(Rule rules)
+static void emitstring(Rule list)
 {
     Rule r;
 
-    print("static char *%Ptemplates[] = {\n");
+    print("static char *%Ptemplates[] __attribute__((unused)) = {\n");
     print("/* 0 */%10,\n");
-    for (r = rules; r; r = r->link)
+    for (r = list; r; r = r->link)
         print("/* %d */%1\"%s\",%1/* %R */\n", r->ern, r->template, r);
     print("};\n");
-    print("\nstatic char %Pisinstruction[] = {\n");
+    print("\nstatic char %Pisinstruction[] __attribute__((unused)) = {\n");
     print("/* 0 */%10,\n");
-    for (r = rules; r; r = r->link) {
+    for (r = list; r; r = r->link) {
         int len = strlen(r->template);
         print("/* %d */%1%d,%1/* %s */\n", r->ern,
               len >= 2 && r->template[len - 2] == '\\' && r->template[len - 1] == 'n', r->template);
     }
     print("};\n");
-    print("\nstatic char *%Pstring[] = {\n");
+    print("\nstatic char *%Pstring[] __attribute__((unused)) = {\n");
     print("/* 0 */%10,\n");
-    for (r = rules; r; r = r->link)
+    for (r = list; r; r = r->link)
         print("/* %d */%1\"%R\",\n", r->ern, r);
     print("};\n\n");
 }
 
 /* emitstruct - emit the definition of the state structure */
-static void emitstruct(Nonterm nts, int ntnumber)
+static void emitstruct(Nonterm list, int list_len)
 {
-    print("struct %Pstate {\n%1short cost[%d];\n%1struct {\n", ntnumber + 1);
-    for (; nts; nts = nts->link) {
-        int n = 1, m = nts->lhscount;
+    print("struct %Pstate {\n%1short cost[%d];\n%1struct {\n", list_len + 1);
+    for (; list; list = list->link) {
+        int n = 1, m = list->lhscount;
         while ((m >>= 1) != 0)
             n++;
-        print("%2unsigned int %P%S:%d;\n", nts, n);
+        print("%2unsigned int %P%S:%d;\n", list, n);
     }
     print("%1} rule;\n};\n\n");
 }

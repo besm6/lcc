@@ -107,7 +107,7 @@ static void tracevalue(Tree e, int lev)
             appendstr(typestring(ty, ""));
         return;
     default:
-        assert(0);
+        unreachable();
     }
     e    = cast(e, promote(ty));
     args = tree(mkop(ARG, e->type), e->type, e, args);

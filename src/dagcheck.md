@@ -206,7 +206,7 @@ static void reduce(NODEPTR_TYPE p, int goalnt)
 #undef xx
     }
     printdag(p, 2);
-    assert(0);
+    unreachable();
 }
 
 void check(Node p)
@@ -218,7 +218,7 @@ void check(Node p)
     _label(p);
     if (((struct _state *)p->x.state)->cost[1] > 0) {
         printdag(p, 2);
-        assert(0);
+        unreachable();
     }
     reduce(p, 1);
 }

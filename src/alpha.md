@@ -804,7 +804,7 @@ static void emit2(Node p)
         else if (sz == 8)
             print("stq $%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
         else
-            assert(0);
+            unreachable();
         break;
 
     case ASGN + B:

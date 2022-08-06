@@ -86,11 +86,11 @@ static int initarray(int len, Type ty, int lev)
         initializer(ty, lev);
         n += ty->size;
         if ((len > 0 && n >= len) ||
-            t != ',') {
+            curtok != ',') {
             break;
         }
-        t = gettok();
-    } while (t != '}');
+        curtok = gettok();
+    } while (curtok != '}');
     return n;
 }
 
@@ -107,11 +107,11 @@ static int initchar(int len, Type ty)
             s = buf;
         }
         if ((len > 0 && n >= len) ||
-            t != ',') {
+            curtok != ',') {
             break;
         }
-        t = gettok();
-    } while (t != '}');
+        curtok = gettok();
+    } while (curtok != '}');
     if (s > buf)
         (*IR->defstring)(s - buf, buf);
     return n;
@@ -120,8 +120,8 @@ static int initchar(int len, Type ty)
 /* initend - finish off an initialization at level lev; accepts trailing comma */
 static void initend(int lev, char follow[])
 {
-    if (lev == 0 && t == ',')
-        t = gettok();
+    if (lev == 0 && curtok == ',')
+        curtok = gettok();
     test('}', follow);
 }
 
@@ -152,7 +152,7 @@ static int initfields(Field p, Field q)
         if (p->link == q)
             break;
         p = p->link;
-    } while (t == ',' && (t = gettok()) != 0);
+    } while (curtok == ',' && (curtok = gettok()) != 0);
     n = (n + 7) / 8;
     for (i = 0; i < n; i++) {
         Value v;
@@ -199,11 +199,11 @@ static int initstruct(int len, Type ty, int lev)
             n = roundup(n, a);
         }
         if ((len > 0 && n >= len) ||
-            t != ',') {
+            curtok != ',') {
             break;
         }
-        t = gettok();
-    } while (t != '}');
+        curtok = gettok();
+    } while (curtok != '}');
     return n;
 }
 
@@ -218,8 +218,8 @@ Type initializer(Type ty, int lev)
     ty = unqual(ty);
     if (isscalar(ty)) {
         needconst++;
-        if (t == '{') {
-            t = gettok();
+        if (curtok == '{') {
+            curtok = gettok();
             e = expr1(0);
             initend(lev, follow);
         } else
@@ -239,8 +239,8 @@ Type initializer(Type ty, int lev)
         skipto(';', follow);
         return ty;
     } else if (isunion(ty)) {
-        if (t == '{') {
-            t = gettok();
+        if (curtok == '{') {
+            curtok = gettok();
             n = initstruct(ty->u.sym->u.s.flist->type->size, ty, lev + 1);
             initend(lev, follow);
         } else {
@@ -249,8 +249,8 @@ Type initializer(Type ty, int lev)
             n = initstruct(ty->u.sym->u.s.flist->type->size, ty, lev + 1);
         }
     } else if (isstruct(ty)) {
-        if (t == '{') {
-            t = gettok();
+        if (curtok == '{') {
+            curtok = gettok();
             n = initstruct(0, ty, lev + 1);
             test('}', follow);
         } else if (lev > 0)
@@ -263,15 +263,15 @@ Type initializer(Type ty, int lev)
     if (isarray(ty))
         aty = unqual(ty->type);
     if (isarray(ty) && ischar(aty)) {
-        if (t == SCON) {
+        if (curtok == SCON) {
             if (ty->size > 0 && ty->size == tsym->type->size - 1)
                 tsym->type = array(chartype, ty->size, 0);
             n = tsym->type->size;
             (*IR->defstring)(tsym->type->size, tsym->u.c.v.p);
-            t = gettok();
-        } else if (t == '{') {
-            t = gettok();
-            if (t == SCON) {
+            curtok = gettok();
+        } else if (curtok == '{') {
+            curtok = gettok();
+            if (curtok == SCON) {
                 ty = initializer(ty, lev + 1);
                 initend(lev, follow);
                 return ty;
@@ -285,7 +285,7 @@ Type initializer(Type ty, int lev)
             n = initchar(1, aty);
         }
     } else if (isarray(ty)) {
-        if (t == SCON && aty == widechar) {
+        if (curtok == SCON && aty == widechar) {
             int i;
             unsigned int *s = tsym->u.c.v.p;
             if (ty->size > 0 && ty->size == tsym->type->size - widechar->size)
@@ -296,10 +296,10 @@ Type initializer(Type ty, int lev)
                 v.u = *s++;
                 (*IR->defconst)(widechar->op, widechar->size, v);
             }
-            t = gettok();
-        } else if (t == '{') {
-            t = gettok();
-            if (t == SCON && aty == widechar) {
+            curtok = gettok();
+        } else if (curtok == '{') {
+            curtok = gettok();
+            if (curtok == SCON && aty == widechar) {
                 ty = initializer(ty, lev + 1);
                 initend(lev, follow);
                 return ty;

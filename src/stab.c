@@ -63,7 +63,7 @@ static void asgncode(Type ty, int lev)
         break;
     }
     default:
-        assert(0);
+        unreachable();
     }
 }
 
@@ -203,7 +203,7 @@ static int emittype(Type ty, int lev, int col)
         break;
     }
     default:
-        assert(0);
+        unreachable();
     }
     return col;
 }
@@ -284,17 +284,21 @@ void stabsym(Symbol p)
 
     if (p->generated || p->computed)
         return;
+
     if (isfunc(p->type)) {
         print(".stabs \"%s:%c%d\",%d,0,0,%s\n", p->name, p->sclass == STATIC ? 'f' : 'F',
               dbxtype(freturn(p->type)), N_FUN, p->x.name);
         return;
     }
+
     if (!IR->wants_argb && p->scope == PARAM && p->structarg) {
         assert(isptr(p->type) && isstruct(p->type->type));
         tc = dbxtype(p->type->type);
         sz = p->type->type->size;
-    } else
+    } else {
         tc = dbxtype(p->type);
+    }
+
     if ((p->sclass == AUTO && p->scope == GLOBAL) ||
         p->sclass == EXTERN) {
         print(".stabs \"%s:G", p->name);
@@ -318,8 +322,9 @@ void stabsym(Symbol p)
     } else if (p->scope >= LOCAL) {
         print(".stabs \"%s:", p->name);
         code = N_LSYM;
-    } else
-        assert(0);
+    } else {
+        unreachable();
+    }
     print("%d\",%d,0,0,%s\n", tc, code, p->scope >= PARAM && p->sclass != EXTERN ? p->x.name : "0");
 }
 

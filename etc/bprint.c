@@ -95,9 +95,9 @@ void *alloc(unsigned n)
 }
 
 /* emitdata - write prof.out data to file */
-void emitdata(char *file)
+void emitdata(char *filename)
 {
-    FILE *fp = fopen(file, "w");
+    FILE *fp = fopen(filename, "w");
 
     if (fp) {
         struct file *p;
@@ -127,7 +127,7 @@ void emitdata(char *file)
         }
         fclose(fp);
     } else
-        fprintf(stderr, "%s: can't create `%s'\n", progname, file);
+        fprintf(stderr, "%s: can't create `%s'\n", progname, filename);
 }
 
 /* openfile - open name for reading, searching -I directories */
@@ -150,7 +150,7 @@ FILE *openfile(char *name)
 /* printfile - print annotated listing for p */
 void printfile(struct file *p, int nf)
 {
-    int lineno;
+    int line_num;
     FILE *fp;
     char *s, buf[512];
     struct count *u = p->counts, *r, *uend;
@@ -164,19 +164,19 @@ void printfile(struct file *p, int nf)
     }
     if (nf)
         printf("%s%s:\n\n", nf == 1 ? "" : "\f", p->name);
-    for (lineno = 1; fgets(buf, sizeof buf, fp); lineno++) {
+    for (line_num = 1; fgets(buf, sizeof buf, fp); line_num++) {
         if (number)
-            printf("%d\t", lineno);
-        while (u < uend && u->y < lineno)
+            printf("%d\t", line_num);
+        while (u < uend && u->y < line_num)
             u++;
         for (s = buf; *s;) {
             char *t = s + 1;
-            while (u < uend && u->y == lineno && u->x < s - buf)
+            while (u < uend && u->y == line_num && u->x < s - buf)
                 u++;
             if (isalnum(*s) || *s == '_')
                 while (isalnum(*t) || *t == '_')
                     t++;
-            while (u < uend && u->y == lineno && u->x < t - buf) {
+            while (u < uend && u->y == line_num && u->x < t - buf) {
                 printf("<%d>", u->count);
                 for (r = u++; u < uend && u->x == r->x && u->y == r->y && u->count == r->count; u++)
                     ;

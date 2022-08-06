@@ -62,7 +62,7 @@ static Type xxinit(int op, char *name, Metrics m)
         p->u.limits.min.d = -p->u.limits.max.d;
         break;
     default:
-        assert(0);
+        unreachable();
     }
     return ty;
 }
@@ -365,7 +365,7 @@ int eqtype(Type ty1, Type ty2, int ret)
         }
         return 0;
     }
-    assert(0);
+    unreachable();
     return 0;
 }
 Type promote(Type ty)
@@ -402,7 +402,7 @@ Type signedint(Type ty)
     xx(longtype);
     xx(longlong);
 #undef xx
-    assert(0);
+    unreachable();
     return NULL;
 }
 Type compose(Type ty1, Type ty2)
@@ -449,7 +449,7 @@ Type compose(Type ty1, Type ty2)
         return func(ty, ltov(&tlist, PERM), 0);
     }
     }
-    assert(0);
+    unreachable();
     return NULL;
 }
 int ttob(Type ty)
@@ -475,7 +475,7 @@ int ttob(Type ty)
     case ENUM:
         return INT + sizeop(inttype->size);
     }
-    assert(0);
+    unreachable();
     return INT;
 }
 Type btot(int op, int size)
@@ -488,7 +488,7 @@ Type btot(int op, int size)
         xx(floattype);
         xx(doubletype);
         xx(longdouble);
-        assert(0);
+        unreachable();
         return 0;
     case I:
         if (chartype->op == INT)
@@ -498,7 +498,7 @@ Type btot(int op, int size)
         xx(inttype);
         xx(longtype);
         xx(longlong);
-        assert(0);
+        unreachable();
         return 0;
     case U:
         if (chartype->op == UNSIGNED)
@@ -508,16 +508,16 @@ Type btot(int op, int size)
         xx(unsignedtype);
         xx(unsignedlong);
         xx(unsignedlonglong);
-        assert(0);
+        unreachable();
         return 0;
     case P:
         xx(voidptype);
         xx(funcptype);
-        assert(0);
+        unreachable();
         return 0;
     }
 #undef xx
-    assert(0);
+    unreachable();
     return 0;
 }
 int hasproto(Type ty)
@@ -542,7 +542,7 @@ int hasproto(Type ty)
     case UNSIGNED:
         return 1;
     }
-    assert(0);
+    unreachable();
     return 0;
 }
 /* fieldlist - construct a flat list of fields in type ty */
@@ -655,7 +655,7 @@ void outtype(Type ty, FILE *f)
             fprint(f, " of %t", ty->type);
         break;
     default:
-        assert(0);
+        unreachable();
     }
 }
 
@@ -674,7 +674,7 @@ void printdecl(Symbol p, Type ty)
     case ENUM:
         break;
     default:
-        assert(0);
+        unreachable();
     }
 }
 
@@ -834,9 +834,9 @@ char *typestring(Type ty, char *str)
                 str = stringf("%s[]", str);
             break;
         default:
-            assert(0);
+            unreachable();
         }
     }
-    assert(0);
+    unreachable();
     return 0;
 }

@@ -12,19 +12,19 @@ int wflag; /* != 0 to suppress warning messages */
 
 void test(int tok, char set[])
 {
-    if (t == tok)
-        t = gettok();
+    if (curtok == tok)
+        curtok = gettok();
     else {
         expect(tok);
         skipto(tok, set);
-        if (t == tok)
-            t = gettok();
+        if (curtok == tok)
+            curtok = gettok();
     }
 }
 void expect(int tok)
 {
-    if (t == tok)
-        t = gettok();
+    if (curtok == tok)
+        curtok = gettok();
     else {
         error("syntax error; found");
         printtoken();
@@ -54,10 +54,10 @@ void skipto(int tok, char set[])
     char *s;
 
     assert(set);
-    for (n = 0; t != EOI && t != tok; t = gettok()) {
-        for (s = set; *s && kind[t] != *s; s++)
+    for (n = 0; curtok != EOI && curtok != tok; curtok = gettok()) {
+        for (s = set; *s && kind[curtok] != *s; s++)
             ;
-        if (kind[t] == *s)
+        if (kind[curtok] == *s)
             break;
         if (n++ == 0)
             error("skipping");
@@ -87,7 +87,7 @@ int fatal(const char *name, const char *fmt, int n)
 /* printtoken - print current token preceeded by a space */
 static void printtoken(void)
 {
-    switch (t) {
+    switch (curtok) {
     case ID:
         fprint(stderr, " `%s'", token);
         break;
@@ -127,10 +127,10 @@ static void printtoken(void)
         break;
     case '`':
     case '\'':
-        fprint(stderr, " \"%k\"", t);
+        fprint(stderr, " \"%k\"", curtok);
         break;
     default:
-        fprint(stderr, " `%k'", t);
+        fprint(stderr, " `%k'", curtok);
     }
 }
 

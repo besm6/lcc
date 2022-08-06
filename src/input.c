@@ -86,13 +86,13 @@ static void ident(void)
 /* pragma - handle #pragma ref id... */
 static void pragma(void)
 {
-    if ((t = gettok()) == ID && strcmp(token, "ref") == 0)
+    if ((curtok = gettok()) == ID && strcmp(token, "ref") == 0)
         for (;;) {
             while (*cp == ' ' || *cp == '\t')
                 cp++;
             if (*cp == '\n' || *cp == 0)
                 break;
-            if ((t = gettok()) == ID && tsym) {
+            if ((curtok = gettok()) == ID && tsym) {
                 tsym->ref++;
                 use(tsym, src);
             }

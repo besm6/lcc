@@ -140,7 +140,7 @@ static Tree root1(Tree p)
     case LABEL:
         break;
     default:
-        assert(0);
+        unreachable();
     }
     return p;
 }

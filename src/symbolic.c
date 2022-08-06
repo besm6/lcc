@@ -236,7 +236,7 @@ static void I(defconst)(int suffix, int size, Value v)
         END;
         break;
     default:
-        assert(0);
+        unreachable();
     }
     END;
 }
@@ -436,7 +436,7 @@ static Node I(gen)(Node p)
             assert(IR->wants_dag && p->count > 0);
             break;
         default:
-            assert(0);
+            unreachable();
         }
         check(p);
         p->x.listed = 1;

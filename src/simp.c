@@ -637,7 +637,7 @@ Tree simplify(int op, Type ty, Tree l, Tree r)
             return simplify(SUB, ty, simplify(SUB, ty, l, r->kids[1]), r->kids[0]);
         break;
     default:
-        assert(0);
+        unreachable();
     }
     return tree(op, ty, l, r);
 }

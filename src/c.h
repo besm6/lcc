@@ -350,7 +350,7 @@ extern char *firstfile;
 extern char *file;
 extern char *line;
 extern int lineno;
-extern int t;
+extern int curtok;
 extern char *token;
 extern Symbol tsym;
 extern Coordinate src;
@@ -582,3 +582,9 @@ extern Type qual(int, Type);
 extern void rmtypes(int);
 extern int ttob(Type);
 extern int variadic(Type);
+
+#ifdef NDEBUG
+#define unreachable() __builtin_unreachable()
+#else
+#define unreachable() assert(0)
+#endif

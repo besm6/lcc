@@ -21,6 +21,7 @@ static Symbol localaddr(Tree);
 static void stmtlabel(void);
 static void swstmt(int, int, int);
 static void whilestmt(int, Swtch, int);
+
 Code code(int kind)
 {
     Code cp;
@@ -36,6 +37,7 @@ Code code(int kind)
     codelist       = cp;
     return cp;
 }
+
 int reachable(int kind)
 {
     if (kind > Start) {
@@ -47,6 +49,7 @@ int reachable(int kind)
     }
     return 1;
 }
+
 void addlocal(Symbol p)
 {
     if (!p->defined) {
@@ -55,6 +58,7 @@ void addlocal(Symbol p)
         p->scope           = level;
     }
 }
+
 void definept(Coordinate *p)
 {
     Code cp = code(Defpoint);
@@ -75,13 +79,14 @@ void definept(Coordinate *p)
             listnodes(e, 0, 0);
     }
 }
+
 void statement(int loop, Swtch swp, int lev)
 {
     float ref = refinc;
 
     if (Aflag >= 2 && lev == 15)
         warning("more than 15 levels of nested statements\n");
-    switch (t) {
+    switch (curtok) {
     case IF:
         ifstmt(genlabel(2), loop, swp, lev + 1);
         break;
@@ -105,7 +110,7 @@ void statement(int loop, Swtch swp, int lev)
             branch(loop + 2);
         else
             error("illegal break statement\n");
-        t = gettok();
+        curtok = gettok();
         expect(';');
         break;
 
@@ -116,7 +121,7 @@ void statement(int loop, Swtch swp, int lev)
             branch(loop + 1);
         else
             error("illegal continue statement\n");
-        t = gettok();
+        curtok = gettok();
         expect(';');
         break;
 
@@ -128,10 +133,10 @@ void statement(int loop, Swtch swp, int lev)
         if (swp == NULL)
             error("illegal case label\n");
         definelab(lab);
-        while (t == CASE) {
+        while (curtok == CASE) {
             static char stop[] = { IF, ID, 0 };
             Tree p;
-            t = gettok();
+            curtok = gettok();
             p = constexpr(0);
             if (generic(p->op) == CNST && isint(p->type)) {
                 if (swp) {
@@ -158,15 +163,15 @@ void statement(int loop, Swtch swp, int lev)
             swp->deflab = findlabel(swp->lab);
             definelab(swp->deflab->u.l.label);
         }
-        t = gettok();
+        curtok = gettok();
         expect(':');
         statement(loop, swp, lev);
         break;
     case RETURN: {
         Type rty = freturn(cfunc->type);
-        t        = gettok();
+        curtok        = gettok();
         definept(NULL);
-        if (t != ';')
+        if (curtok != ';')
             if (rty == voidtype) {
                 error("extraneous return value\n");
                 expr(0);
@@ -190,13 +195,13 @@ void statement(int loop, Swtch swp, int lev)
         break;
     case ';':
         definept(NULL);
-        t = gettok();
+        curtok = gettok();
         break;
     case GOTO:
         walk(NULL, 0, 0);
         definept(NULL);
-        t = gettok();
-        if (t == ID) {
+        curtok = gettok();
+        if (curtok == ID) {
             Symbol p = lookup(token, stmtlabs);
             if (p == NULL) {
                 p            = install(token, &stmtlabs, 0, FUNC);
@@ -206,7 +211,7 @@ void statement(int loop, Swtch swp, int lev)
             }
             use(p, src);
             branch(p->u.l.label);
-            t = gettok();
+            curtok = gettok();
         } else
             error("missing label in goto\n");
         expect(';');
@@ -220,9 +225,9 @@ void statement(int loop, Swtch swp, int lev)
         }
     default:
         definept(NULL);
-        if (kind[t] != ID) {
+        if (kind[curtok] != ID) {
             error("unrecognized statement\n");
-            t = gettok();
+            curtok = gettok();
         } else {
             Tree e = expr0(0);
             listnodes(e, 0, 0);
@@ -235,7 +240,7 @@ void statement(int loop, Swtch swp, int lev)
         expect(';');
         break;
     }
-    if (kind[t] != IF && kind[t] != ID && t != '}' && t != EOI) {
+    if (kind[curtok] != IF && kind[curtok] != ID && curtok != '}' && curtok != EOI) {
         static char stop[] = { IF, ID, '}', 0 };
         error("illegal statement termination\n");
         skipto(0, stop);
@@ -245,15 +250,15 @@ void statement(int loop, Swtch swp, int lev)
 
 static void ifstmt(int lab, int loop, Swtch swp, int lev)
 {
-    t = gettok();
+    curtok = gettok();
     expect('(');
     definept(NULL);
     walk(conditional(')'), 0, lab);
     refinc /= 2.0;
     statement(loop, swp, lev);
-    if (t == ELSE) {
+    if (curtok == ELSE) {
         branch(lab + 1);
-        t = gettok();
+        curtok = gettok();
         definelab(lab);
         statement(loop, swp, lev);
         if (findlabel(lab + 1)->ref)
@@ -261,6 +266,7 @@ static void ifstmt(int lab, int loop, Swtch swp, int lev)
     } else
         definelab(lab);
 }
+
 static Tree conditional(int tok)
 {
     Tree p = expr(tok);
@@ -269,6 +275,7 @@ static Tree conditional(int tok)
         warning("%s used in a conditional expression\n", funcname(p));
     return cond(p);
 }
+
 static void stmtlabel(void)
 {
     Symbol p = lookup(token, stmtlabs);
@@ -284,31 +291,32 @@ static void stmtlabel(void)
 
     p->defined = 1;
     definelab(p->u.l.label);
-    t = gettok();
+    curtok = gettok();
     expect(':');
 }
+
 static void forstmt(int lab, Swtch swp, int lev)
 {
     int once = 0;
     Tree e1 = NULL, e2 = NULL, e3 = NULL;
     Coordinate pt2, pt3;
 
-    t = gettok();
+    curtok = gettok();
     expect('(');
     definept(NULL);
-    if (kind[t] == ID)
+    if (kind[curtok] == ID)
         e1 = texpr(expr0, ';', FUNC);
     else
         expect(';');
     walk(e1, 0, 0);
     pt2 = src;
     refinc *= 10.0;
-    if (kind[t] == ID)
+    if (kind[curtok] == ID)
         e2 = texpr(conditional, ';', FUNC);
     else
         expect(';');
     pt3 = src;
-    if (kind[t] == ID)
+    if (kind[curtok] == ID)
         e3 = texpr(expr0, ')', FUNC);
     else {
         static char stop[] = { IF, ID, '}', 0 };
@@ -337,13 +345,14 @@ static void forstmt(int lab, Swtch swp, int lev)
     if (findlabel(lab + 2)->ref)
         definelab(lab + 2);
 }
+
 static void swstmt(int loop, int lab, int lev)
 {
     Tree e;
     struct swtch sw;
     Code head, tail;
 
-    t = gettok();
+    curtok = gettok();
     expect('(');
     definept(NULL);
     e = expr(')');
@@ -388,6 +397,7 @@ static void swstmt(int loop, int lab, int lev)
     codelist->next   = head->next;
     codelist         = tail;
 }
+
 static void caselabel(Swtch swp, long val, int lab)
 {
     int k;
@@ -416,6 +426,7 @@ static void caselabel(Swtch swp, long val, int lab)
     if (Aflag >= 2 && swp->ncases == 258)
         warning("more than 257 cases in a switch\n");
 }
+
 void swgen(Swtch swp)
 {
     int *buckets, k, n;
@@ -430,6 +441,7 @@ void swgen(Swtch swp)
     buckets[n] = swp->ncases;
     swcode(swp, buckets, 0, n - 1);
 }
+
 void swcode(Swtch swp, int b[], int lb, int ub)
 {
     int hilab, lolab, l, u, k = (lb + ub) / 2;
@@ -494,12 +506,14 @@ void swcode(Swtch swp, int b[], int lb, int ub)
         swcode(swp, b, k + 1, ub);
     }
 }
+
 static void cmp(int op, Symbol p, long n, int lab)
 {
     Type ty = signedint(p->type);
 
     listnodes(eqtree(op, cast(idtree(p), ty), cnsttree(ty, n)), lab, 0);
 }
+
 void retcode(Tree p)
 {
     Type ty;
@@ -555,6 +569,7 @@ void retcode(Tree p)
     }
     walk(tree(mkop(RET, p->type), p->type, p, NULL), 0, 0);
 }
+
 void definelab(int lab)
 {
     Code cp;
@@ -579,6 +594,7 @@ void definelab(int lab)
             cp = cp->prev;
     }
 }
+
 Node jump(int lab)
 {
     Symbol p = findlabel(lab);
@@ -586,6 +602,7 @@ Node jump(int lab)
     p->ref++;
     return newnode(JUMP + V, newnode(ADDRG + ttob(voidptype), NULL, NULL, p), NULL, NULL);
 }
+
 void branch(int lab)
 {
     Code cp;
@@ -616,12 +633,14 @@ void branch(int lab)
             warning("source code specifies an infinite loop\n");
     }
 }
+
 void equatelab(Symbol old, Symbol new)
 {
     assert(old->u.l.equatedto == NULL);
     old->u.l.equatedto = new;
     new->ref++;
 }
+
 static int equal(Symbol lprime, Symbol dst)
 {
     assert(dst && lprime);
@@ -630,11 +649,12 @@ static int equal(Symbol lprime, Symbol dst)
             return 1;
     return 0;
 }
+
 /* dostmt - do statement while ( expression ) */
 static void dostmt(int lab, Swtch swp, int lev)
 {
     refinc *= 10.0;
-    t = gettok();
+    curtok = gettok();
     definelab(lab);
     statement(lab, swp, lev);
     definelab(lab + 1);
@@ -710,7 +730,7 @@ static void whilestmt(int lab, Swtch swp, int lev)
     Tree e;
 
     refinc *= 10.0;
-    t = gettok();
+    curtok = gettok();
     expect('(');
     walk(NULL, 0, 0);
     pt = src;

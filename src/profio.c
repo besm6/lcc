@@ -39,22 +39,23 @@ struct file {                    /* per-file prof.out data: */
         } * callers;
     } * funcs; /* list of functions */
 } * filelist;
-FILE *fp;
+
+FILE *prof_fp;
 
 /* acaller - add caller and site (file,x,y) to callee's callers list */
-static void acaller(char *caller, char *file, int x, int y, int count, struct func *callee)
+static void acaller(char *caller, char *f, int x, int y, int count, struct func *callee)
 {
     struct caller *q;
 
     assert(callee);
-    for (q = callee->callers; q && (caller != q->name || file != q->file || x != q->x || y != q->y);
+    for (q = callee->callers; q && (caller != q->name || f != q->file || x != q->x || y != q->y);
          q = q->link)
         ;
     if (!q) {
         struct caller **r;
         NEW(q, PERM);
         q->name  = caller;
-        q->file  = file;
+        q->file  = f;
         q->x     = x;
         q->y     = y;
         q->count = 0;
@@ -90,9 +91,9 @@ static struct file *findfile(char *name)
 }
 
 /* afunction - add function name and its data to file's function list */
-static struct func *afunction(char *name, char *file, int x, int y, int count)
+static struct func *afunction(char *name, char *f, int x, int y, int count)
 {
-    struct file *p = findfile(file);
+    struct file *p = findfile(f);
     struct func *q;
 
     assert(p);
@@ -116,9 +117,9 @@ static struct func *afunction(char *name, char *file, int x, int y, int count)
 }
 
 /* apoint - append execution point i to file's data */
-static void apoint(int i, char *file, int x, int y, int count)
+static void apoint(int i, char *f, int x, int y, int count)
 {
-    struct file *p = findfile(file);
+    struct file *p = findfile(f);
 
     assert(p);
     if (i >= p->size) {
@@ -145,7 +146,7 @@ static void apoint(int i, char *file, int x, int y, int count)
                 break;
     if (i >= p->count)
         if (i >= p->size)
-            apoint(i, file, x, y, count);
+            apoint(i, f, x, y, count);
         else {
             p->count           = i + 1;
             p->counts[i].x     = x;
@@ -157,12 +158,12 @@ static void apoint(int i, char *file, int x, int y, int count)
 }
 
 /* findcount - return count associated with (file,x,y) or -1 */
-int findcount(char *file, int x, int y)
+int findcount(char *f, int x, int y)
 {
     static struct file *cursor;
 
-    if (cursor == 0 || cursor->name != file)
-        cursor = findfile(file);
+    if (cursor == 0 || cursor->name != f)
+        cursor = findfile(f);
     if (cursor) {
         int l, u;
         struct count *c = cursor->counts;
@@ -182,12 +183,12 @@ int findcount(char *file, int x, int y)
 }
 
 /* findfunc - return count associated with function name in file or -1 */
-int findfunc(char *name, char *file)
+int findfunc(char *name, char *f)
 {
     static struct file *cursor;
 
-    if (cursor == 0 || cursor->name != file)
-        cursor = findfile(file);
+    if (cursor == 0 || cursor->name != f)
+        cursor = findfile(f);
     if (cursor) {
         struct func *p;
         for (p = cursor->funcs; p; p = p->link)
@@ -202,12 +203,12 @@ static int getd(void)
 {
     int c, n = 0;
 
-    while ((c = getc(fp)) != EOF && (c == ' ' || c == '\n' || c == '\t'))
+    while ((c = getc(prof_fp)) != EOF && (c == ' ' || c == '\n' || c == '\t'))
         ;
     if (c >= '0' && c <= '9') {
         do
             n = 10 * n + (c - '0');
-        while ((c = getc(fp)) >= '0' && c <= '9');
+        while ((c = getc(prof_fp)) >= '0' && c <= '9');
         return n;
     }
     return -1;
@@ -219,7 +220,7 @@ static char *getstr(void)
     int c;
     char buf[MAXTOKEN], *s = buf;
 
-    while ((c = getc(fp)) != EOF && c != ' ' && c != '\n' && c != '\t')
+    while ((c = getc(prof_fp)) != EOF && c != ' ' && c != '\n' && c != '\t')
         if (s - buf < (int)sizeof buf - 2)
             *s++ = c;
     *s = 0;
@@ -229,7 +230,7 @@ static char *getstr(void)
 /* gather - read prof.out data from fd */
 static int gather(void)
 {
-    int i, nfiles, nfuncs, npoints;
+    int i, nfiles, nfuncs, npt;
     char *files[64];
 
     if ((nfiles = getd()) < 0)
@@ -253,21 +254,21 @@ static int gather(void)
         return -1;
     for (i = 0; i < nfuncs; i++) {
         struct func *q;
-        char *name, *file;
+        char *name, *fil;
         int f, x, y, count;
         if ((name = getstr()) == 0 || (f = getd()) <= 0 || (x = getd()) < 0 || (y = getd()) < 0 ||
             (count = getd()) < 0)
             return -1;
         q = afunction(name, files[f - 1], x, y, count);
-        if ((name = getstr()) == 0 || (file = getstr()) == 0 || (x = getd()) < 0 ||
+        if ((name = getstr()) == 0 || (fil = getstr()) == 0 || (x = getd()) < 0 ||
             (y = getd()) < 0)
             return -1;
         if (*name != '?')
-            acaller(name, file, x, y, count, q);
+            acaller(name, fil, x, y, count, q);
     }
-    if ((npoints = getd()) < 0)
+    if ((npt = getd()) < 0)
         return -1;
-    for (i = 0; i < npoints; i++) {
+    for (i = 0; i < npt; i++) {
         int f, x, y, count;
         if ((f = getd()) < 0 || (x = getd()) < 0 || (y = getd()) < 0 || (count = getd()) < 0)
             return -1;
@@ -278,15 +279,15 @@ static int gather(void)
 }
 
 /* process - read prof.out data from file */
-int process(char *file)
+int process(char *filename)
 {
     int more;
 
-    if ((fp = fopen(file, "r")) != NULL) {
+    if ((prof_fp = fopen(filename, "r")) != NULL) {
         struct file *p;
         while ((more = gather()) > 0)
             ;
-        fclose(fp);
+        fclose(prof_fp);
         if (more < 0)
             return more;
         for (p = filelist; p; p = p->link)

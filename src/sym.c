@@ -213,7 +213,7 @@ Symbol constant(Type ty, Value v)
                     return &p->sym;
                 break;
             default:
-                assert(0);
+                unreachable();
             }
     NEW0(p, PERM);
     p->sym.name           = vtoa(ty, v);
@@ -362,6 +362,6 @@ char *vtoa(Type ty, Value v)
     case FUNCTION:
         return stringf("%p", v.g);
     }
-    assert(0);
+    unreachable();
     return NULL;
 }

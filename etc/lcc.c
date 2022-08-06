@@ -252,13 +252,13 @@ static int _spawnvp(int mode, const char *cmdname, const char *const argv[])
 #endif
 
 /* callsys - execute the command described by av[0...], return status */
-static int callsys(char **av)
+static int callsys(char **argument)
 {
     int i, status = 0;
     static char **argv;
     static int argc;
 
-    for (i = 0; av[i] != NULL; i++)
+    for (i = 0; argument[i] != NULL; i++)
         ;
     if (i + 1 > argc) {
         argc = i + 1;
@@ -268,16 +268,16 @@ static int callsys(char **av)
             argv = realloc(argv, argc * sizeof *argv);
         assert(argv);
     }
-    for (i = 0; status == 0 && av[i] != NULL;) {
+    for (i = 0; status == 0 && argument[i] != NULL;) {
         int j = 0;
         char *s;
-        for (; av[i] != NULL && (s = strchr(av[i], '\n')) == NULL; i++)
-            argv[j++] = av[i];
+        for (; argument[i] != NULL && (s = strchr(argument[i], '\n')) == NULL; i++)
+            argv[j++] = argument[i];
         if (s != NULL) {
-            if (s > av[i])
-                argv[j++] = stringf("%.*s", s - av[i], av[i]);
+            if (s > argument[i])
+                argv[j++] = stringf("%.*s", s - argument[i], argument[i]);
             if (s[1] != '\0')
-                av[i] = s + 1;
+                argument[i] = s + 1;
             else
                 i++;
         }

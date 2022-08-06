@@ -946,7 +946,7 @@ static void defconst(int suffix, int size, Value v)
     else if (size == 4)
         print(".word 0x%x\n", (unsigned)(suffix == I ? v.i : v.u));
     else
-        assert(0);
+        unreachable();
 }
 
 static void defaddress(Symbol p)

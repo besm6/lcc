@@ -20,7 +20,7 @@ static void I(segment)(int n)
             print("lit\n");
             return;
         default:
-            assert(0);
+            unreachable();
         }
 }
 
@@ -64,7 +64,7 @@ static void I(defconst)(int suffix, int size, Value v)
         }
         return;
     }
-    assert(0);
+    unreachable();
 }
 
 static void I(defstring)(int len, char *str)
@@ -89,7 +89,7 @@ static void I(defsymbol)(Symbol p)
             p->x.name = stringf("%U", p->u.c.v.p);
             break;
         default:
-            assert(0);
+            unreachable();
         }
     else if (p->scope >= LOCAL && p->sclass == STATIC)
         p->x.name = stringf("$%d", genlabel(1));
@@ -187,7 +187,7 @@ static void dumptree(Node p)
         print("%s %s\n", opname(p->op), p->syms[0]->x.name);
         return;
     }
-    assert(0);
+    unreachable();
 }
 
 static void I(emit)(Node p)

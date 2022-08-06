@@ -1016,7 +1016,7 @@ static void defconst(int suffix, int size, Value v)
         unsigned *p = (unsigned *)&d;
         print(".long %d\n.long %d\n", (int)p[swap], (int)p[!swap]);
     } else
-        assert(0);
+        unreachable();
 }
 
 static void defaddress(Symbol p)

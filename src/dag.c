@@ -296,7 +296,7 @@ Node listnodes(Tree tp, int tlab, int flab)
                 op = GT;
                 break;
             default:
-                assert(0);
+                unreachable();
             }
             list(newnode(op + opkind(l->op), l, r, findlabel(flab)));
         }
@@ -430,7 +430,7 @@ Node listnodes(Tree tp, int tlab, int flab)
         p = node(tp->op + sizeop(voidptype->size), NULL, NULL, tp->u.sym);
     } break;
     default:
-        assert(0);
+        unreachable();
     }
     tp->node = p;
     return p;
@@ -546,7 +546,7 @@ void gencode(Symbol caller[], Symbol callee[])
         case Switch:
             break;
         default:
-            assert(0);
+            unreachable();
         }
     src = save;
 }
@@ -642,7 +642,7 @@ void emitcode(void)
             swtoseg(CODE);
         } break;
         default:
-            assert(0);
+            unreachable();
         }
     src = save;
 }
@@ -682,7 +682,7 @@ static Node replace(Node p)
         else if (generic(p->op) == ADDRG)
             p = newnode(p->op, NULL, NULL, p->syms[0]);
         else
-            assert(0);
+            unreachable();
         p->count = 1;
     } else if (p) {
         p->kids[0] = replace(p->kids[0]);

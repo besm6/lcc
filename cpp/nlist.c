@@ -49,22 +49,22 @@ Nlist *np;
 void setup_kwtab(void)
 {
     struct kwtab *kp;
-    Nlist *np;
+    Nlist *p;
     Token t;
     static Token deftoken[1] = { { NAME, 0, 0, 0, 7, (uchar *)"defined" } };
     static Tokenrow deftr    = { deftoken, deftoken, deftoken + 1, 1 };
 
     for (kp = kwtab; kp->kw; kp++) {
-        t.t      = (uchar *)kp->kw;
-        t.len    = strlen(kp->kw);
-        np       = lookup(&t, 1);
-        np->flag = kp->flag;
-        np->val  = kp->val;
-        if (np->val == KDEFINED) {
-            kwdefined = np;
-            np->val   = NAME;
-            np->vp    = &deftr;
-            np->ap    = 0;
+        t.t     = (uchar *)kp->kw;
+        t.len   = strlen(kp->kw);
+        p       = lookup(&t, 1);
+        p->flag = kp->flag;
+        p->val  = kp->val;
+        if (p->val == KDEFINED) {
+            kwdefined = p;
+            p->val    = NAME;
+            p->vp     = &deftr;
+            p->ap     = 0;
         }
     }
 }
@@ -72,32 +72,32 @@ void setup_kwtab(void)
 Nlist *lookup(Token *tp, int install)
 {
     unsigned int h;
-    Nlist *np;
+    Nlist *p;
     uchar *cp, *cpe;
 
     h = 0;
     for (cp = tp->t, cpe = cp + tp->len; cp < cpe;)
         h += *cp++;
     h %= NLSIZE;
-    np = nlist[h];
-    while (np) {
-        if (*tp->t == *np->name && tp->len == np->len &&
-            strncmp((char *)tp->t, (char *)np->name, tp->len) == 0)
-            return np;
-        np = np->next;
+    p = nlist[h];
+    while (p) {
+        if (*tp->t == *p->name && tp->len == p->len &&
+            strncmp((char *)tp->t, (char *)p->name, tp->len) == 0)
+            return p;
+        p = p->next;
     }
     if (install) {
-        np       = new (Nlist);
-        np->vp   = NULL;
-        np->ap   = NULL;
-        np->flag = 0;
-        np->val  = 0;
-        np->len  = tp->len;
-        np->name = newstring(tp->t, tp->len, 0);
-        np->next = nlist[h];
-        nlist[h] = np;
+        p        = new (Nlist);
+        p->vp    = NULL;
+        p->ap    = NULL;
+        p->flag  = 0;
+        p->val   = 0;
+        p->len   = tp->len;
+        p->name  = newstring(tp->t, tp->len, 0);
+        p->next  = nlist[h];
+        nlist[h] = p;
         quickset(tp->t[0], tp->len > 1 ? tp->t[1] : 0);
-        return np;
+        return p;
     }
     return NULL;
 }

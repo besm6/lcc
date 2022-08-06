@@ -141,7 +141,7 @@ static char cbuf[BUFSIZE + 1];
 static unsigned int wcbuf[BUFSIZE + 1];
 
 Coordinate src; /* current source coordinate */
-int t;
+int curtok;
 char *token; /* current token */
 Symbol tsym; /* symbol table entry for current token */
 
@@ -682,7 +682,7 @@ static Symbol icon(unsigned long n, int overflow, int base)
             tval.u.c.v.u = n;
         break;
     default:
-        assert(0);
+        unreachable();
     }
     ppnumber("integer");
     return &tval;

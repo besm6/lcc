@@ -11,10 +11,6 @@ static Symbol askfixedreg(Symbol);
 static Symbol askreg(Symbol, unsigned *);
 static void blkunroll(int, int, int, int, int, int, int[]);
 static void docall(Node);
-static void dumpcover(Node, int, int);
-static void dumpregs(char *, char *, char *);
-static void dumprule(int);
-static void dumptree(Node);
 static void genreload(Node, Symbol, int);
 static void genspill(Symbol, Node, Symbol);
 static Symbol getreg(Symbol, unsigned *, Node);
@@ -50,7 +46,8 @@ int dflag = 0;
 int swap;
 
 unsigned (*emitter)(Node, int) = emitasm;
-static char NeedsReg[]         = {
+
+static char NeedsReg[] = {
             0,                /* unused */
             1,                /* CNST */
             0, 0,             /* ARG ASGN */
@@ -73,6 +70,7 @@ unsigned freemask[2];
 unsigned usedmask[2];
 unsigned tmask[2];
 unsigned vmask[2];
+
 Symbol mkreg(char *fmt, int n, int mask, int set)
 {
     Symbol p;
@@ -85,6 +83,7 @@ Symbol mkreg(char *fmt, int n, int mask, int set)
     p->x.regnode->set    = set;
     return p;
 }
+
 Symbol mkwildcard(Symbol *syms)
 {
     Symbol p;
@@ -94,6 +93,7 @@ Symbol mkwildcard(Symbol *syms)
     p->x.wildcard       = syms;
     return p;
 }
+
 void mkauto(Symbol p)
 {
     assert(p->sclass == AUTO);
@@ -101,12 +101,14 @@ void mkauto(Symbol p)
     p->x.offset = -offset;
     p->x.name   = stringd(-offset);
 }
+
 void blockbeg(Env *e)
 {
     e->offset         = offset;
     e->freemask[IREG] = freemask[IREG];
     e->freemask[FREG] = freemask[FREG];
 }
+
 void blockend(Env *e)
 {
     if (offset > maxoffset)
@@ -115,6 +117,7 @@ void blockend(Env *e)
     freemask[IREG] = e->freemask[IREG];
     freemask[FREG] = e->freemask[FREG];
 }
+
 int mkactual(int align, int size)
 {
     int n = roundup(argoffset, align);
@@ -122,6 +125,7 @@ int mkactual(int align, int size)
     argoffset = n + size;
     return n;
 }
+
 static void docall(Node p)
 {
     p->syms[1] = p->syms[0];
@@ -130,6 +134,7 @@ static void docall(Node p)
         maxargoffset = argoffset;
     argoffset = 0;
 }
+
 void blkcopy(int dreg, int doff, int sreg, int soff, int size, int tmp[])
 {
     assert(size >= 0);
@@ -146,6 +151,7 @@ void blkcopy(int dreg, int doff, int sreg, int soff, int size, int tmp[])
     } else
         (*IR->x.blkloop)(dreg, doff, sreg, soff, size, tmp);
 }
+
 static void blkunroll(int k, int dreg, int doff, int sreg, int soff, int size, int tmp[])
 {
     int i;
@@ -164,6 +170,7 @@ static void blkunroll(int k, int dreg, int doff, int sreg, int soff, int size, i
         (*IR->x.blkstore)(k, i + doff, dreg, tmp[0]);
     }
 }
+
 void parseflags(int argc, char *argv[])
 {
     int i;
@@ -174,6 +181,7 @@ void parseflags(int argc, char *argv[])
         else if (strcmp(argv[i], "-b") == 0) /* omit */
             bflag = 1;                       /* omit */
 }
+
 static int getrule(Node p, int nt)
 {
     int rulenum;
@@ -182,10 +190,11 @@ static int getrule(Node p, int nt)
     rulenum = (*IR->x._rule)(p->x.state, nt);
     if (!rulenum) {
         fprint(stderr, "(%x->op=%s at %w is corrupt.)\n", p, opname(p->op), &src);
-        assert(0);
+        unreachable();
     }
     return rulenum;
 }
+
 static void reduce(Node p, int nt)
 {
     int rulenum, i;
@@ -207,6 +216,7 @@ static void reduce(Node p, int nt)
         }
     }
 }
+
 static Node reuse(Node p, int nt)
 {
     struct _state {
@@ -235,6 +245,7 @@ int mayrecalc(Node p)
     } else
         return 0;
 }
+
 static Node *prune(Node p, Node pp[])
 {
     if (p == NULL)
@@ -272,6 +283,8 @@ int range(Node p, int lo, int hi)
     }
     return LBURG_MAX;
 }
+
+#ifndef NDEBUG
 static void dumptree(Node p)
 {
     if (p->op == VREG + P && p->syms[0]) {
@@ -336,10 +349,19 @@ static void dumptree(Node p)
         dumptree(p->kids[1]);
         break;
     default:
-        assert(0);
+        unreachable();
     }
     fprint(stderr, ")");
 }
+
+static void dumprule(int rulenum)
+{
+    assert(rulenum);
+    fprint(stderr, "%s / %s", IR->x._string[rulenum], IR->x._templates[rulenum]);
+    if (!IR->x._isinstruction[rulenum])
+        fprint(stderr, "\n");
+}
+
 static void dumpcover(Node p, int nt, int in)
 {
     int rulenum, i;
@@ -358,13 +380,14 @@ static void dumpcover(Node p, int nt, int in)
         dumpcover(kids[i], nts[i], in + 1);
 }
 
-static void dumprule(int rulenum)
+static void dumpregs(char *msg, char *a, char *b)
 {
-    assert(rulenum);
-    fprint(stderr, "%s / %s", IR->x._string[rulenum], IR->x._templates[rulenum]);
-    if (!IR->x._isinstruction[rulenum])
-        fprint(stderr, "\n");
+    fprint(stderr, msg, a, b);
+    fprint(stderr, "(free[0]=%x)\n", freemask[0]);
+    fprint(stderr, "(free[1]=%x)\n", freemask[1]);
 }
+#endif
+
 unsigned emitasm(Node p, int nt)
 {
     int rulenum;
@@ -403,6 +426,7 @@ unsigned emitasm(Node p, int nt)
     }
     return 0;
 }
+
 void emit(Node p)
 {
     for (; p; p = p->x.next) {
@@ -416,15 +440,18 @@ void emit(Node p)
         p->x.emitted = 1;
     }
 }
+
 static int moveself(Node p)
 {
     return p->x.copy && p->syms[RX]->x.name == p->x.kids[0]->syms[RX]->x.name;
 }
+
 int move(Node p)
 {
     p->x.copy = 1;
     return 1;
 }
+
 static int requate(Node q)
 {
     Symbol src = q->x.kids[0]->syms[RX];
@@ -458,6 +485,7 @@ static int requate(Node q)
         }
     return 1;
 }
+
 static void prelabel(Node p)
 {
     if (p == NULL)
@@ -489,10 +517,12 @@ static void prelabel(Node p)
     }
     (IR->x.target)(p);
 }
+
 void setreg(Node p, Symbol r)
 {
     p->syms[RX] = r;
 }
+
 void rtarget(Node p, int n, Symbol r)
 {
     Node q = p->kids[n];
@@ -511,6 +541,7 @@ void rtarget(Node p, int n, Symbol r)
     setreg(q, r);
     debug(fprint(stderr, "(targeting %x->x.kids[%d]=%x to %s)\n", p, n, p->kids[n], r->x.name));
 }
+
 static void rewrite(Node p)
 {
     assert(p->x.inst == 0);
@@ -521,6 +552,7 @@ static void rewrite(Node p)
     debug(dumpcover(p, 1, 0));
     reduce(p, 1);
 }
+
 Node gen(Node forest)
 {
     int i;
@@ -565,16 +597,19 @@ Node gen(Node forest)
     }
     return forest;
 }
+
 int notarget(Node p)
 {
     return p->syms[RX]->x.wildcard ? 0 : LBURG_MAX;
 }
+
 static void putreg(Symbol r)
 {
     assert(r && r->x.regnode);
     freemask[r->x.regnode->set] |= r->x.regnode->mask;
     debug(dumpregs("(freeing %s)\n", r->x.name, NULL));
 }
+
 static Symbol askfixedreg(Symbol s)
 {
     Regnode r = s->x.regnode;
@@ -588,6 +623,7 @@ static Symbol askfixedreg(Symbol s)
         return s;
     }
 }
+
 static Symbol askreg(Symbol rs, unsigned rmask[])
 {
     int i;
@@ -615,6 +651,7 @@ static Symbol getreg(Symbol s, unsigned mask[], Node p)
     r->x.regnode->vbl = NULL;
     return r;
 }
+
 int askregvar(Symbol p, Symbol regs)
 {
     Symbol r;
@@ -639,6 +676,7 @@ int askregvar(Symbol p, Symbol regs)
         return 0;
     }
 }
+
 static void linearize(Node p, Node next)
 {
     int i;
@@ -649,6 +687,7 @@ static void linearize(Node p, Node next)
     relink(p, next);
     debug(fprint(stderr, "(listing %x)\n", p));
 }
+
 static void ralloc(Node p)
 {
     int i;
@@ -701,6 +740,7 @@ static void ralloc(Node p)
     p->x.registered = 1;
     (*IR->x.clobber)(p);
 }
+
 static Symbol spillee(Symbol set, unsigned mask[], Node here)
 {
     Symbol bestreg = NULL;
@@ -734,6 +774,7 @@ static Symbol spillee(Symbol set, unsigned mask[], Node here)
             to ensure that this register is never allocated to a variable. */
     return bestreg;
 }
+
 static int uses(Node p, Regnode rn)
 {
     int i;
@@ -745,6 +786,7 @@ static int uses(Node p, Regnode rn)
             return 1;
     return 0;
 }
+
 static void spillr(Symbol r, Node here)
 {
     int i;
@@ -764,6 +806,7 @@ static void spillr(Symbol r, Node here)
         }
     putreg(r);
 }
+
 static void genspill(Symbol r, Node last, Symbol tmp)
 {
     Node p, q;
@@ -812,6 +855,7 @@ static void genreload(Node p, Symbol tmp, int i)
     prune(p, &q);
     linearize(p->x.kids[i], p);
 }
+
 static int reprune(Node *pp, int k, int n, Node p)
 {
     struct node x, *q = *pp;
@@ -828,6 +872,7 @@ static int reprune(Node *pp, int k, int n, Node p)
     }
     return k + 1;
 }
+
 void spill(unsigned mask, int n, Node here)
 {
     int i;
@@ -851,12 +896,6 @@ void spill(unsigned mask, int n, Node here)
                     spillr(r, here);
             }
     }
-}
-static void dumpregs(char *msg, char *a, char *b)
-{
-    fprint(stderr, msg, a, b);
-    fprint(stderr, "(free[0]=%x)\n", freemask[0]);
-    fprint(stderr, "(free[1]=%x)\n", freemask[1]);
 }
 
 int getregnum(Node p)
