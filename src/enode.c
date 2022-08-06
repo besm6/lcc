@@ -7,6 +7,7 @@ static int compatible(Type, Type);
 static int isnullptr(Tree e);
 static Tree multree(int, Tree, Tree);
 static Tree subtree(int, Tree, Tree);
+
 #define isvoidptr(ty) (isptr(ty) && unqual(ty->type) == voidtype)
 
 Tree (*optree[])(int, Tree, Tree) = {
@@ -14,6 +15,7 @@ Tree (*optree[])(int, Tree, Tree) = {
 #define yy(a, b, c, d, e, f, g) e,
 #include "token.h"
 };
+
 Tree call(Tree f, Type fty, Coordinate src)
 {
     int n     = 0;
@@ -91,6 +93,7 @@ Tree call(Tree f, Type fty, Coordinate src)
         apply(events.calls, &src, &e);
     return e;
 }
+
 Tree calltree(Tree f, Type ty, Tree args, Symbol t3)
 {
     Tree p;
@@ -111,6 +114,7 @@ Tree calltree(Tree f, Type ty, Tree args, Symbol t3)
     }
     return p;
 }
+
 Tree vcall(Symbol func, Type ty, ...)
 {
     va_list ap;
@@ -130,6 +134,7 @@ Tree vcall(Symbol func, Type ty, ...)
         args = tree(RIGHT, voidtype, r, args);
     return calltree(f, ty, args, NULL);
 }
+
 int iscallb(Tree e)
 {
     return e->op == RIGHT && e->kids[0] && e->kids[1] && e->kids[0]->op == CALL + B &&
@@ -204,6 +209,7 @@ Tree consttree(int n, Type ty)
         assert(isint(ty));
     return cnsttree(ty, (long)n);
 }
+
 static Tree cmptree(int op, Tree l, Tree r)
 {
     Type ty;
@@ -222,6 +228,7 @@ static Tree cmptree(int op, Tree l, Tree r)
     }
     return simplify(mkop(op, ty), inttype, l, r);
 }
+
 static int compatible(Type ty1, Type ty2)
 {
     ty1 = unqual(ty1);
@@ -229,27 +236,33 @@ static int compatible(Type ty1, Type ty2)
     return isptr(ty1) && !isfunc(ty1->type) && isptr(ty2) && !isfunc(ty2->type) &&
            eqtype(unqual(ty1->type), unqual(ty2->type), 0);
 }
+
 static int isnullptr(Tree e)
 {
     Type ty = unqual(e->type);
 
     return generic(e->op) == CNST &&
-           (ty->op == INT && e->u.v.i == 0 || ty->op == UNSIGNED && e->u.v.u == 0 ||
-            isvoidptr(ty) && e->u.v.p == NULL);
+           ((ty->op == INT && e->u.v.i == 0) ||
+            (ty->op == UNSIGNED && e->u.v.u == 0) ||
+            (isvoidptr(ty) && e->u.v.p == NULL));
 }
+
 Tree eqtree(int op, Tree l, Tree r)
 {
     Type xty = unqual(l->type), yty = unqual(r->type);
 
-    if (isptr(xty) && isnullptr(r) || isptr(xty) && !isfunc(xty->type) && isvoidptr(yty) ||
-        (isptr(xty) && isptr(yty) && eqtype(unqual(xty->type), unqual(yty->type), 1))) {
+    if ((isptr(xty) && isnullptr(r)) ||
+        (isptr(xty) && !isfunc(xty->type) && isvoidptr(yty)) ||
+        ((isptr(xty) && isptr(yty) && eqtype(unqual(xty->type), unqual(yty->type), 1)))) {
         Type ty = unsignedptr;
         l       = cast(l, ty);
         r       = cast(r, ty);
         return simplify(mkop(op, ty), inttype, l, r);
     }
-    if (isptr(yty) && isnullptr(l) || isptr(yty) && !isfunc(yty->type) && isvoidptr(xty))
+    if ((isptr(yty) && isnullptr(l)) ||
+        (isptr(yty) && !isfunc(yty->type) && isvoidptr(xty))) {
         return eqtree(op, r, l);
+    }
     return cmptree(op, l, r);
 }
 
@@ -262,11 +275,13 @@ Type assign(Type xty, Tree e)
         xty = xty->type;
     if (xty->size == 0 || yty->size == 0)
         return NULL;
-    if (isarith(xty) && isarith(yty) || isstruct(xty) && xty == yty)
+    if ((isarith(xty) && isarith(yty)) ||
+        (isstruct(xty) && xty == yty))
         return xty;
     if (isptr(xty) && isnullptr(e))
         return xty;
-    if ((isvoidptr(xty) && isptr(yty) || isptr(xty) && isvoidptr(yty)) &&
+    if (((isvoidptr(xty) && isptr(yty)) ||
+         (isptr(xty) && isvoidptr(yty))) &&
         ((isconst(xty->type) || !isconst(yty->type)) &&
          (isvolatile(xty->type) || !isvolatile(yty->type))))
         return xty;
@@ -279,7 +294,8 @@ Type assign(Type xty, Tree e)
         ((isconst(xty->type) || !isconst(yty->type)) &&
          (isvolatile(xty->type) || !isvolatile(yty->type)))) {
         Type lty = unqual(xty->type), rty = unqual(yty->type);
-        if (isenum(lty) && rty == inttype || isenum(rty) && lty == inttype) {
+        if ((isenum(lty) && rty == inttype) ||
+            (isenum(rty) && lty == inttype)) {
             if (Aflag >= 1)
                 warning("assignment between `%t' and `%t' is compiler-dependent\n", xty, yty);
             return xty;
@@ -287,6 +303,7 @@ Type assign(Type xty, Tree e)
     }
     return NULL;
 }
+
 Tree asgntree(int op, Tree l, Tree r)
 {
     Type aty, ty;
@@ -306,7 +323,8 @@ Tree asgntree(int op, Tree l, Tree r)
     aty = l->type;
     if (isptr(aty))
         aty = unqual(aty)->type;
-    if (isconst(aty) || isstruct(aty) && unqual(aty)->u.sym->u.s.cfields) {
+    if (isconst(aty) ||
+        (isstruct(aty) && unqual(aty)->u.sym->u.s.cfields)) {
         if (isaddrop(l->op) && !l->u.sym->computed && !l->u.sym->generated) {
             error("assignment to const identifier `%s'\n", l->u.sym->name);
         } else {
@@ -331,6 +349,7 @@ Tree asgntree(int op, Tree l, Tree r)
         return tree(RIGHT, ty, tree(CALL + B, ty, r->kids[0]->kids[0], l), idtree(l->u.sym));
     return tree(mkop(op, ty), ty, l, r);
 }
+
 Tree condtree(Tree e, Tree l, Tree r)
 {
     Symbol t1;
@@ -345,8 +364,8 @@ Tree condtree(Tree e, Tree l, Tree r)
         ty = xty;
     else if (isnullptr(l) && isptr(yty))
         ty = yty;
-    else if (isptr(xty) && !isfunc(xty->type) && isvoidptr(yty) ||
-             isptr(yty) && !isfunc(yty->type) && isvoidptr(xty))
+    else if ((isptr(xty) && !isfunc(xty->type) && isvoidptr(yty)) ||
+             (isptr(yty) && !isfunc(yty->type) && isvoidptr(xty)))
         ty = voidptype;
     else if ((isptr(xty) && isptr(yty) && eqtype(unqual(xty->type), unqual(yty->type), 1)))
         ty = xty;
@@ -356,10 +375,11 @@ Tree condtree(Tree e, Tree l, Tree r)
     }
     if (isptr(ty)) {
         ty = unqual(unqual(ty)->type);
-        if (isptr(xty) && isconst(unqual(xty)->type) || isptr(yty) && isconst(unqual(yty)->type))
+        if ((isptr(xty) && isconst(unqual(xty)->type)) ||
+            (isptr(yty) && isconst(unqual(yty)->type)))
             ty = qual(CONST, ty);
-        if (isptr(xty) && isvolatile(unqual(xty)->type) ||
-            isptr(yty) && isvolatile(unqual(yty)->type))
+        if ((isptr(xty) && isvolatile(unqual(xty)->type)) ||
+            (isptr(yty) && isvolatile(unqual(yty)->type)))
             ty = qual(VOLATILE, ty);
         ty = ptr(ty);
     }
@@ -384,6 +404,7 @@ Tree condtree(Tree e, Tree l, Tree r)
     p->u.sym = t1;
     return p;
 }
+
 /* addrof - address of p */
 Tree addrof(Tree p)
 {
@@ -526,10 +547,33 @@ void typeerror(int op, Tree l, Tree r)
     static struct {
         int op;
         char *name;
-    } ops[] = { ASGN, "=", INDIR, "*",  NEG, "-",  ADD,  "+",  SUB,  "-",  LSH, "<<", MOD,
-                "%",  RSH, ">>",  BAND, "&", BCOM, "~",  BOR,  "|",  BXOR, "^", DIV,  "/",
-                MUL,  "*", EQ,    "==", GE,  ">=", GT,   ">",  LE,   "<=", LT,  "<",  NE,
-                "!=", AND, "&&",  NOT,  "!", OR,   "||", COND, "?:", 0,    0 };
+    } ops[] = {
+        { ASGN,  "="  },
+        { INDIR, "*"  },
+        { NEG,   "-"  },
+        { ADD,   "+"  },
+        { SUB,   "-"  },
+        { LSH,   "<<" },
+        { MOD,   "%"  },
+        { RSH,   ">>" },
+        { BAND,  "&"  },
+        { BCOM,  "~"  },
+        { BOR,   "|"  },
+        { BXOR,  "^"  },
+        { DIV,   "/"  },
+        { MUL,   "*"  },
+        { EQ,    "==" },
+        { GE,    ">=" },
+        { GT,    ">"  },
+        { LE,    "<=" },
+        { LT,    "<"  },
+        { NE,    "!=" },
+        { AND,   "&&" },
+        { NOT,   "!"  },
+        { OR,    "||" },
+        { COND,  "?:" },
+        { 0,     0 }
+    };
 
     op = generic(op);
     for (i = 0; ops[i].op; i++)

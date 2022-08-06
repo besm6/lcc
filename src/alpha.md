@@ -781,8 +781,7 @@ static void clobber(Node p)
 
 static void emit2(Node p)
 {
-    int dst, n, src, sz, ty;
-    static int ty0;
+    int n, src, sz, ty;
     Symbol q;
 
     switch (specific(p->op)) {
@@ -863,7 +862,8 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls)
 
     for (i = 0; callee[i]; i++)
         ;
-    varargs = variadic(f->type) || i > 0 && strcmp(callee[i - 1]->name, "va_alist") == 0;
+    varargs = variadic(f->type) ||
+              (i > 0 && strcmp(callee[i - 1]->name, "va_alist") == 0);
     if (varargs)
         sizeargs = 2 * 48;
     else
@@ -1177,24 +1177,24 @@ static void stabsym(Symbol p)
 
 Interface alphaIR = {
     // clang-format off
-    1, 1, 0,    /* char */
-    2, 2, 0,    /* short */
-    4, 4, 0,    /* int */
-    8, 8, 0,    /* long */
-    8, 8, 0,    /* long long */
-    4, 4, 1,    /* float */
-    8, 8, 1,    /* double */
-    8, 8, 1,    /* long double */
-    8, 8, 0,    /* T * */
-    0, 1, 0,    /* struct */
+    { 1, 1, 0 },    /* char */
+    { 2, 2, 0 },    /* short */
+    { 4, 4, 0 },    /* int */
+    { 8, 8, 0 },    /* long */
+    { 8, 8, 0 },    /* long long */
+    { 4, 4, 1 },    /* float */
+    { 8, 8, 1 },    /* double */
+    { 8, 8, 1 },    /* long double */
+    { 8, 8, 0 },    /* T * */
+    { 0, 1, 0 },    /* struct */
 
-    1,          /* little_endian */
-    0,          /* mulops_calls */
-    0,          /* wants_callb */
-    1,          /* wants_argb */
-    1,          /* left_to_right */
-    0,          /* wants_dag */
-    0,          /* unsigned_char */
+    1,              /* little_endian */
+    0,              /* mulops_calls */
+    0,              /* wants_callb */
+    1,              /* wants_argb */
+    1,              /* left_to_right */
+    0,              /* wants_dag */
+    0,              /* unsigned_char */
     address,
     blockbeg,
     blockend,

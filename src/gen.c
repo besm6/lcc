@@ -407,10 +407,12 @@ void emit(Node p)
 {
     for (; p; p = p->x.next) {
         assert(p->x.registered);
-        if (p->x.equatable && requate(p) || moveself(p))
+        if ((p->x.equatable && requate(p)) ||
+            moveself(p)) {
             ;
-        else
+        } else {
             (*emitter)(p, p->x.inst);
+        }
         p->x.emitted = 1;
     }
 }

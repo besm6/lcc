@@ -295,7 +295,8 @@ void stabsym(Symbol p)
         sz = p->type->type->size;
     } else
         tc = dbxtype(p->type);
-    if (p->sclass == AUTO && p->scope == GLOBAL || p->sclass == EXTERN) {
+    if ((p->sclass == AUTO && p->scope == GLOBAL) ||
+        p->sclass == EXTERN) {
         print(".stabs \"%s:G", p->name);
         code = N_GSYM;
     } else if (p->sclass == STATIC) {

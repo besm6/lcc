@@ -642,8 +642,8 @@ int gettok(void)
 }
 static Symbol icon(unsigned long n, int overflow, int base)
 {
-    if ((*cp == 'u' || *cp == 'U') && (cp[1] == 'l' || cp[1] == 'L') ||
-        (*cp == 'l' || *cp == 'L') && (cp[1] == 'u' || cp[1] == 'U')) {
+    if (((*cp == 'u' || *cp == 'U') && (cp[1] == 'l' || cp[1] == 'L')) ||
+        ((*cp == 'l' || *cp == 'L') && (cp[1] == 'u' || cp[1] == 'U'))) {
         tval.type = unsignedlong;
         cp += 2;
     } else if (*cp == 'u' || *cp == 'U') {

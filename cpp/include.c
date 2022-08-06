@@ -62,7 +62,7 @@ void doinclude(Tokenrow *trp)
             if ((fd = fopen(iname, "r")) != NULL)
                 break;
         }
-    if (Mflag > 1 || !angled && Mflag == 1) {
+    if (Mflag > 1 || (!angled && Mflag == 1)) {
         fwrite(objname, 1, strlen(objname), stdout);
         fwrite(iname, 1, strlen(iname), stdout);
         fwrite("\n", 1, 1, stdout);

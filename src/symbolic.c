@@ -226,7 +226,8 @@ static void I(defconst)(int suffix, int size, Value v)
                 char endian;
             } little       = { 1 };
             signed char *b = (signed char *)&d;
-            if (!little.endian && b[0] < 0 || little.endian && b[sizeof(d) - 1] < 0)
+            if ((!little.endian && b[0] < 0) ||
+                (little.endian && b[sizeof(d) - 1] < 0))
                 print("-0.0");
             else
                 print("0.0");
@@ -580,6 +581,7 @@ static void I(stabend)(Coordinate *cp, Symbol p, Coordinate **cpp, Symbol *sp, S
 static void I(stabfend)(Symbol p, int lineno)
 {
 }
+
 static void I(stabinit)(char *file, int argc, char *argv[])
 {
 }
@@ -595,28 +597,29 @@ static void I(stabline)(Coordinate *cp)
 static void I(stabsym)(Symbol p)
 {
 }
+
 static void I(stabtype)(Symbol p)
 {
 }
 
 Interface symbolicIR = {
-    1,           1,           0, /* char */
-    2,           2,           0, /* short */
-    4,           4,           0, /* int */
-    4,           4,           0, /* long */
-    4,           4,           0, /* long long */
-    4,           4,           1, /* float */
-    8,           8,           1, /* double */
-    8,           8,           1, /* long double */
-    4,           4,           0, /* T* */
-    0,           4,           0, /* struct */
-    0,                           /* little_endian */
-    0,                           /* mulops_calls */
-    0,                           /* wants_callb */
-    1,                           /* wants_argb */
-    1,                           /* left_to_right */
-    1,                           /* wants_dag */
-    0,                           /* unsigned_char */
+    { 1,  1,  0 },  /* char */
+    { 2,  2,  0 },  /* short */
+    { 4,  4,  0 },  /* int */
+    { 4,  4,  0 },  /* long */
+    { 4,  4,  0 },  /* long long */
+    { 4,  4,  1 },  /* float */
+    { 8,  8,  1 },  /* double */
+    { 8,  8,  1 },  /* long double */
+    { 4,  4,  0 },  /* T* */
+    { 0,  4,  0 },  /* struct */
+    0,              /* little_endian */
+    0,              /* mulops_calls */
+    0,              /* wants_callb */
+    1,              /* wants_argb */
+    1,              /* left_to_right */
+    1,              /* wants_dag */
+    0,              /* unsigned_char */
     I(address),  I(blockbeg), I(blockend), I(defaddress), I(defconst),  I(defstring), I(defsymbol),
     I(emit),     I(export),   I(function), I(gen),        I(global),    I(import),    I(local),
     I(progbeg),  I(progend),  I(segment),  I(space),      I(stabblock), I(stabend),   I(stabfend),
@@ -624,23 +627,23 @@ Interface symbolicIR = {
 };
 
 Interface symbolic64IR = {
-    1,           1,           0, /* char */
-    2,           2,           0, /* short */
-    4,           4,           0, /* int */
-    8,           8,           0, /* long */
-    8,           8,           0, /* long long */
-    4,           4,           1, /* float */
-    8,           8,           1, /* double */
-    8,           8,           1, /* long double */
-    8,           8,           0, /* T* */
-    0,           1,           0, /* struct */
-    1,                           /* little_endian */
-    0,                           /* mulops_calls */
-    0,                           /* wants_callb */
-    1,                           /* wants_argb */
-    1,                           /* left_to_right */
-    1,                           /* wants_dag */
-    0,                           /* unsigned_char */
+    { 1,  1,  0 },  /* char */
+    { 2,  2,  0 },  /* short */
+    { 4,  4,  0 },  /* int */
+    { 8,  8,  0 },  /* long */
+    { 8,  8,  0 },  /* long long */
+    { 4,  4,  1 },  /* float */
+    { 8,  8,  1 },  /* double */
+    { 8,  8,  1 },  /* long double */
+    { 8,  8,  0 },  /* T* */
+    { 0,  1,  0 },  /* struct */
+    1,              /* little_endian */
+    0,              /* mulops_calls */
+    0,              /* wants_callb */
+    1,              /* wants_argb */
+    1,              /* left_to_right */
+    1,              /* wants_dag */
+    0,              /* unsigned_char */
     I(address),  I(blockbeg), I(blockend), I(defaddress), I(defconst),  I(defstring), I(defsymbol),
     I(emit),     I(export),   I(function), I(gen),        I(global),    I(import),    I(local),
     I(progbeg),  I(progend),  I(segment),  I(space),      I(stabblock), I(stabend),   I(stabfend),

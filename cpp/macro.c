@@ -68,9 +68,11 @@ void dodefine(Tokenrow *trp)
         trp->lp -= 1;
     def = normtokenrow(trp);
     if (np->flag & ISDEFINED) {
-        if (comparetokens(def, np->vp) || (np->ap == NULL) != (args == NULL) ||
-            np->ap && comparetokens(args, np->ap))
+        if (comparetokens(def, np->vp) ||
+            (np->ap == NULL) != (args == NULL) ||
+            (np->ap && comparetokens(args, np->ap))) {
             error(ERROR, "Macro redefinition of %t", trp->bp + 2);
+        }
     }
     if (args) {
         Tokenrow *tap;
@@ -134,9 +136,11 @@ void expandrow(Tokenrow *trp, char *flag)
     if (flag)
         setsource(flag, NULL, "");
     for (tp = trp->tp; tp < trp->lp;) {
-        if (tp->type != NAME || quicklook(tp->t[0], tp->len > 1 ? tp->t[1] : 0) == 0 ||
-            (np = lookup(tp, 0)) == NULL || (np->flag & (ISDEFINED | ISMAC)) == 0 ||
-            tp->hideset && checkhideset(tp->hideset, np)) {
+        if (tp->type != NAME ||
+            quicklook(tp->t[0], tp->len > 1 ? tp->t[1] : 0) == 0 ||
+            (np = lookup(tp, 0)) == NULL ||
+            (np->flag & (ISDEFINED | ISMAC)) == 0 ||
+            (tp->hideset && checkhideset(tp->hideset, np))) {
             tp++;
             continue;
         }
@@ -293,7 +297,8 @@ int gatherargs(Tokenrow *trp, Tokenrow **atr, int *narg)
             parens--;
         if (lp->type == DSHARP)
             lp->type = DSHARP1; /* ## not special in arg */
-        if (lp->type == COMMA && parens == 0 || parens < 0 && (lp - 1)->type != LP) {
+        if ((lp->type == COMMA && parens == 0) ||
+            (parens < 0 && (lp - 1)->type != LP)) {
             if (*narg >= NARG - 1)
                 error(FATAL, "Sorry, too many macro arguments");
             ttr.bp = ttr.tp = bp;
@@ -329,11 +334,10 @@ void substargs(Nlist *np, Tokenrow *rtr, Tokenrow **atr)
             continue;
         }
         if (rtr->tp->type == NAME && (argno = lookuparg(np, rtr->tp)) >= 0) {
-            if ((rtr->tp + 1) < rtr->lp && (rtr->tp + 1)->type == DSHARP /* don't look beyond end */
-                || rtr->tp != rtr->bp &&
-                       (rtr->tp - 1)->type == DSHARP) /* don't look before beginning */
+            if (((rtr->tp + 1) < rtr->lp && (rtr->tp + 1)->type == DSHARP) || /* don't look beyond end */
+                (rtr->tp != rtr->bp && (rtr->tp - 1)->type == DSHARP)) { /* don't look before beginning */
                 insertrow(rtr, 1, atr[argno]);
-            else {
+            } else {
                 copytokenrow(&tatr, atr[argno]);
                 expandrow(&tatr, "<macro>");
                 insertrow(rtr, 1, &tatr);

@@ -232,7 +232,8 @@ Type qual(int op, Type ty)
         ty = type(ARRAY, qual(op, ty->type), ty->size, ty->align, NULL);
     else if (isfunc(ty))
         warning("qualified function type ignored\n");
-    else if (isconst(ty) && op == CONST || isvolatile(ty) && op == VOLATILE)
+    else if ((isconst(ty) && op == CONST) ||
+             (isvolatile(ty) && op == VOLATILE))
         error("illegal type `%k %t'\n", op, ty);
     else {
         if (isqual(ty)) {
@@ -277,7 +278,8 @@ Type newstruct(int op, char *tag)
     if (*tag == 0)
         tag = stringd(genlabel(1));
     else if ((p = lookup(tag, types)) != NULL &&
-             (p->scope == level || p->scope == PARAM && level == PARAM + 1)) {
+             (p->scope == level ||
+              (p->scope == PARAM && level == PARAM + 1))) {
         if (p->type->op == op && !p->defined)
             return p->type;
         error("redefinition of `%s' previously defined at %w\n", p->name, &p->src);
@@ -418,7 +420,8 @@ Type compose(Type ty1, Type ty2)
         return qual(ty1->op, compose(ty1->type, ty2->type));
     case ARRAY: {
         Type ty = compose(ty1->type, ty2->type);
-        if (ty1->size && (ty1->type->size && ty2->size == 0 || ty1->size == ty2->size))
+        if (ty1->size && ((ty1->type->size && ty2->size == 0) ||
+                          ty1->size == ty2->size))
             return array(ty, ty1->size / ty1->type->size, ty1->align);
         if (ty2->size && ty2->type->size && ty1->size == 0)
             return array(ty, ty2->size / ty2->type->size, ty2->align);

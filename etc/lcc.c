@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         tempdir = getenv("TMPDIR");
     assert(tempdir);
     i = strlen(tempdir);
-    for (; i > 0 && tempdir[i - 1] == '/' || tempdir[i - 1] == '\\'; i--)
+    for (; i > 0 && (tempdir[i - 1] == '/' || tempdir[i - 1] == '\\'); i--)
         tempdir[i - 1] = '\0';
     if (argc <= 1) {
         help();
@@ -152,8 +152,10 @@ int main(int argc, char *argv[])
         else {
             char *name = exists(argv[i]);
             if (name) {
-                if (strcmp(name, argv[i]) != 0 || nf > 1 && suffix(name, suffixes, 3) >= 0)
+                if (strcmp(name, argv[i]) != 0 ||
+                    (nf > 1 && suffix(name, suffixes, 3) >= 0)) {
                     fprintf(stderr, "%s:\n", name);
+                }
                 filename(name, 0);
             } else
                 error("can't find `%s'", argv[i]);
@@ -544,7 +546,7 @@ static void help(void)
 static void initinputs(void)
 {
     char *s = getenv("LCCINPUTS");
-    List list, b;
+    List b;
 
     if (s == 0 && (s = inputs)[0] == 0)
         s = ".";
@@ -564,6 +566,7 @@ static void initinputs(void)
         }
     }
 #ifdef WIN32
+    List list;
     if (list = b = path2list(getenv("include")))
         do {
             int n;

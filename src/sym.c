@@ -197,8 +197,8 @@ Symbol constant(Type ty, Value v)
                 if (v.d == 0.0) {
                     float z1 = v.d, z2 = p->sym.u.c.v.d;
                     char *b1 = (char *)&z1, *b2 = (char *)&z2;
-                    if (z1 == z2 && (!little.endian && b1[0] == b2[0] ||
-                                     little.endian && b1[sizeof(z1) - 1] == b2[sizeof(z2) - 1]))
+                    if (z1 == z2 && ((!little.endian && b1[0] == b2[0]) ||
+                                     (little.endian && b1[sizeof(z1) - 1] == b2[sizeof(z2) - 1])))
                         return &p->sym;
                 } else if (equalp(d))
                     return &p->sym;

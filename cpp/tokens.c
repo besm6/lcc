@@ -147,15 +147,18 @@ void makespace(Tokenrow *trp)
     if (tp >= trp->lp)
         return;
     if (tp->wslen) {
-        if (tp->flag & XPWS && (wstab[tp->type] || trp->tp > trp->bp && wstab[(tp - 1)->type])) {
+        if ((tp->flag & XPWS) && (wstab[tp->type] ||
+                                  (trp->tp > trp->bp && wstab[(tp - 1)->type]))) {
             tp->wslen = 0;
             return;
         }
         tp->t[-1] = ' ';
         return;
     }
-    if (wstab[tp->type] || trp->tp > trp->bp && wstab[(tp - 1)->type])
+    if (wstab[tp->type] ||
+        (trp->tp > trp->bp && wstab[(tp - 1)->type])) {
         return;
+    }
     tt        = newstring(tp->t, tp->len, 1);
     *tt++     = ' ';
     tp->t     = tt;

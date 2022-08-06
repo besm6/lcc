@@ -5,6 +5,7 @@
 #define foldcnst(TYPE, VAR, OP)                       \
     if (l->op == CNST + TYPE && r->op == CNST + TYPE) \
     return cnsttree(ty, l->u.v.VAR OP r->u.v.VAR)
+
 #define commute(L, R)                                     \
     if (generic(R->op) == CNST && generic(L->op) != CNST) \
         do {                                              \
@@ -12,11 +13,13 @@
             L      = R;                                   \
             R      = t;                                   \
     } while (0)
+
 #define xfoldcnst(TYPE, VAR, OP, FUNC)                                                         \
     if (l->op == CNST + TYPE && r->op == CNST + TYPE &&                                        \
         FUNC(l->u.v.VAR, r->u.v.VAR, ty->u.sym->u.limits.min.VAR, ty->u.sym->u.limits.max.VAR, \
              needconst))                                                                       \
     return cnsttree(ty, l->u.v.VAR OP r->u.v.VAR)
+
 #define xcvtcnst(FTYPE, SRC, DST, VAR, EXPR)                                                       \
     if (l->op == CNST + FTYPE)                                                                     \
         do {                                                                                       \
@@ -28,9 +31,11 @@
                 !((SRC) < DST->u.sym->u.limits.min.VAR || (SRC) > DST->u.sym->u.limits.max.VAR))   \
                 return cnsttree(ty, (EXPR));                                                       \
     } while (0)
+
 #define identity(X, Y, TYPE, VAR, VAL)             \
     if (X->op == CNST + TYPE && X->u.v.VAR == VAL) \
     return Y
+
 #define zerofield(OP, TYPE, VAR)                                                      \
     if (l->op == FIELD && r->op == CNST + TYPE && r->u.v.VAR == 0)                    \
     return eqtree(OP,                                                                 \
@@ -38,37 +43,48 @@
                           cnsttree(unsignedtype, (unsigned long)fieldmask(l->u.field) \
                                                      << fieldright(l->u.field))),     \
                   r)
+
 #define cfoldcnst(TYPE, VAR, OP)                      \
     if (l->op == CNST + TYPE && r->op == CNST + TYPE) \
     return cnsttree(inttype, (long)(l->u.v.VAR OP r->u.v.VAR))
+
 #define foldaddp(L, R, RTYPE, VAR)                    \
     if (L->op == CNST + P && R->op == CNST + RTYPE) { \
         Tree e   = tree(CNST + P, ty, NULL, NULL);    \
         e->u.v.p = (char *)L->u.v.p + R->u.v.VAR;     \
         return e;                                     \
     }
+
 #define ufoldcnst(TYPE, EXP)  \
     if (l->op == CNST + TYPE) \
     return EXP
+
 #define sfoldcnst(OP)                                                                            \
     if (l->op == CNST + U && r->op == CNST + I && r->u.v.i >= 0 && r->u.v.i < 8 * l->type->size) \
     return cnsttree(ty, (unsigned long)(l->u.v.u OP r->u.v.i))
+
 #define geu(L, R, V)                                                            \
     if (R->op == CNST + U && R->u.v.u == 0)                                     \
         do {                                                                    \
             warning("result of unsigned comparison is constant\n");             \
             return tree(RIGHT, inttype, root(L), cnsttree(inttype, (long)(V))); \
     } while (0)
+
 #define idempotent(OP) \
     if (l->op == OP)   \
     return l->kids[0]
 
 int needconst;
 int explicitCast;
+
 static int addi(long x, long y, long min, long max, int needconst)
 {
-    int cond = x == 0 || y == 0 || x < 0 && y < 0 && x >= min - y || x < 0 && y > 0 ||
-               x > 0 && y < 0 || x > 0 && y > 0 && x <= max - y;
+    int cond = x == 0 ||
+               y == 0 ||
+               (x < 0 && y < 0 && x >= min - y) ||
+               (x < 0 && y > 0) ||
+               (x > 0 && y < 0) ||
+               (x > 0 && y > 0 && x <= max - y);
     if (!cond && needconst) {
         warning("overflow in constant expression\n");
         cond = 1;
@@ -78,8 +94,12 @@ static int addi(long x, long y, long min, long max, int needconst)
 
 static int addd(double x, double y, double min, double max, int needconst)
 {
-    int cond = x == 0 || y == 0 || x < 0 && y < 0 && x >= min - y || x < 0 && y > 0 ||
-               x > 0 && y < 0 || x > 0 && y > 0 && x <= max - y;
+    int cond = x == 0 ||
+               y == 0 ||
+               (x < 0 && y < 0 && x >= min - y) ||
+               (x < 0 && y > 0) ||
+               (x > 0 && y < 0) ||
+               (x > 0 && y > 0 && x <= max - y);
     if (!cond && needconst) {
         warning("overflow in constant expression\n");
         cond = 1;
@@ -154,9 +174,12 @@ static int divd(double x, double y, double min, double max, int needconst)
 /* mul[id] - return 1 if min <= x*y <= max, 0 otherwise */
 static int muli(long x, long y, long min, long max, int needconst)
 {
-    int cond = x > -1 && x <= 1 || y > -1 && y <= 1 || x < 0 && y < 0 && -x <= max / -y ||
-               x < 0 && y > 0 && x >= min / y || x > 0 && y < 0 && y >= min / x ||
-               x > 0 && y > 0 && x <= max / y;
+    int cond = (x > -1 && x <= 1) ||
+               (y > -1 && y <= 1) ||
+               (x < 0 && y < 0 && -x <= max / -y) ||
+               (x < 0 && y > 0 && x >= min / y) ||
+               (x > 0 && y < 0 && y >= min / x) ||
+               (x > 0 && y > 0 && x <= max / y);
     if (!cond && needconst) {
         warning("overflow in constant expression\n");
         cond = 1;
@@ -166,15 +189,19 @@ static int muli(long x, long y, long min, long max, int needconst)
 
 static int muld(double x, double y, double min, double max, int needconst)
 {
-    int cond = x >= -1 && x <= 1 || y >= -1 && y <= 1 || x < 0 && y < 0 && -x <= max / -y ||
-               x < 0 && y > 0 && x >= min / y || x > 0 && y < 0 && y >= min / x ||
-               x > 0 && y > 0 && x <= max / y;
+    int cond = (x >= -1 && x <= 1) ||
+               (y >= -1 && y <= 1) ||
+               (x < 0 && y < 0 && -x <= max / -y) ||
+               (x < 0 && y > 0 && x >= min / y) ||
+               (x > 0 && y < 0 && y >= min / x) ||
+               (x > 0 && y > 0 && x <= max / y);
     if (!cond && needconst) {
         warning("overflow in constant expression\n");
         cond = 1;
     }
     return cond;
 }
+
 /* sub[id] - return 1 if min <= x-y <= max, 0 otherwise */
 static int subi(long x, long y, long min, long max, int needconst)
 {
@@ -185,6 +212,7 @@ static int subd(double x, double y, double min, double max, int needconst)
 {
     return addd(x, -y, min, max, needconst);
 }
+
 Tree constexpr(int tok)
 {
     Tree p;
@@ -207,10 +235,10 @@ int intexpr(int tok, int n)
     needconst--;
     return n;
 }
+
 Tree simplify(int op, Type ty, Tree l, Tree r)
 {
     int n;
-    Tree p;
 
     if (optype(op) == 0)
         op = mkop(op, ty);
@@ -321,35 +349,42 @@ Tree simplify(int op, Type ty, Tree l, Tree r)
         the interface so that address() could fail.
         */
         if (l->op == ADDRG + P && l->u.sym->generated &&
-            (r->op == CNST + I && (r->u.v.i > 32767 || r->u.v.i < -32768) ||
-             r->op == CNST + U && r->u.v.u > 65536))
+            ((r->op == CNST + I && (r->u.v.i > 32767 || r->u.v.i < -32768)) ||
+             (r->op == CNST + U && r->u.v.u > 65536)))
             break;
+
         if (IR->address && isaddrop(l->op) &&
-            (r->op == CNST + I && r->u.v.i <= longtype->u.sym->u.limits.max.i &&
-                 r->u.v.i >= longtype->u.sym->u.limits.min.i ||
-             r->op == CNST + U && r->u.v.u <= longtype->u.sym->u.limits.max.i))
+            ((r->op == CNST + I && r->u.v.i <= longtype->u.sym->u.limits.max.i &&
+                 r->u.v.i >= longtype->u.sym->u.limits.min.i) ||
+             (r->op == CNST + U && r->u.v.u <= longtype->u.sym->u.limits.max.i)))
             return addrtree(l, cast(r, longtype)->u.v.i, ty);
+
         if (IR->address && l->op == ADD + P && isaddrop(l->kids[1]->op) &&
-            (r->op == CNST + I && r->u.v.i <= longtype->u.sym->u.limits.max.i &&
-                 r->u.v.i >= longtype->u.sym->u.limits.min.i ||
-             r->op == CNST + U && r->u.v.u <= longtype->u.sym->u.limits.max.i))
+            ((r->op == CNST + I && r->u.v.i <= longtype->u.sym->u.limits.max.i &&
+                 r->u.v.i >= longtype->u.sym->u.limits.min.i) ||
+             (r->op == CNST + U && r->u.v.u <= longtype->u.sym->u.limits.max.i)))
             return simplify(ADD + P, ty, l->kids[0],
                             addrtree(l->kids[1], cast(r, longtype)->u.v.i, ty));
+
         if ((l->op == ADD + I || l->op == SUB + I) && l->kids[1]->op == CNST + I && isaddrop(r->op))
             return simplify(ADD + P, ty, l->kids[0],
                             simplify(generic(l->op) + P, ty, r, l->kids[1]));
+
         if (l->op == ADD + P && generic(l->kids[1]->op) == CNST && generic(r->op) == CNST)
             return simplify(ADD + P, ty, l->kids[0],
                             simplify(ADD, l->kids[1]->type, l->kids[1], r));
+
         if (l->op == ADD + I && generic(l->kids[1]->op) == CNST && r->op == ADD + P &&
             generic(r->kids[1]->op) == CNST)
             return simplify(ADD + P, ty, l->kids[0],
                             simplify(ADD + P, ty, r->kids[0],
                                      simplify(ADD, r->kids[1]->type, l->kids[1], r->kids[1])));
+
         if (l->op == RIGHT && l->kids[1])
             return tree(RIGHT, ty, l->kids[0], simplify(ADD + P, ty, l->kids[1], r));
         else if (l->op == RIGHT && l->kids[0])
             return tree(RIGHT, ty, simplify(ADD + P, ty, l->kids[0], r), NULL);
+
         break;
 
     case ADD + F:
@@ -398,9 +433,10 @@ Tree simplify(int op, Type ty, Tree l, Tree r)
         break;
     case DIV + I:
         identity(r, l, I, i, 1);
-        if (r->op == CNST + I && r->u.v.i == 0 || l->op == CNST + I &&
-                                                      l->u.v.i == ty->u.sym->u.limits.min.i &&
-                                                      r->op == CNST + I && r->u.v.i == -1)
+        if ((r->op == CNST + I && r->u.v.i == 0) ||
+            (l->op == CNST + I && l->u.v.i == ty->u.sym->u.limits.min.i &&
+                                  r->op == CNST + I &&
+                                  r->u.v.i == -1))
             break;
         xfoldcnst(I, i, /, divi);
         break;
@@ -493,9 +529,10 @@ Tree simplify(int op, Type ty, Tree l, Tree r)
             return eqtree(NE, r, l);
         break;
     case MOD + I:
-        if (r->op == CNST + I && r->u.v.i == 0 || l->op == CNST + I &&
-                                                      l->u.v.i == ty->u.sym->u.limits.min.i &&
-                                                      r->op == CNST + I && r->u.v.i == -1)
+        if ((r->op == CNST + I && r->u.v.i == 0) ||
+            (l->op == CNST + I && l->u.v.i == ty->u.sym->u.limits.min.i &&
+                                  r->op == CNST + I &&
+                                  r->u.v.i == -1))
             break;
         xfoldcnst(I, i, %, divi);
         if (r->op == CNST + I && r->u.v.i == 1) /* l%1 => (l,0) */
@@ -604,6 +641,7 @@ Tree simplify(int op, Type ty, Tree l, Tree r)
     }
     return tree(op, ty, l, r);
 }
+
 /* ispow2 - if u > 1 && u == 2^n, return n, otherwise return 0 */
 int ispow2(unsigned long u)
 {

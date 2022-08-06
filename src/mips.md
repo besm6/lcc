@@ -748,7 +748,8 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls)
     offset = maxoffset = maxargoffset = 0;
     for (i = 0; callee[i]; i++)
         ;
-    varargs = variadic(f->type) || i > 0 && strcmp(callee[i - 1]->name, "va_alist") == 0;
+    varargs = variadic(f->type) ||
+              (i > 0 && strcmp(callee[i - 1]->name, "va_alist") == 0);
     for (i = 0; callee[i]; i++) {
         Symbol p = callee[i];
         Symbol q = caller[i];
@@ -1070,23 +1071,23 @@ static void stabsym(Symbol p)
 
 Interface mipsebIR = {
     // clang-format off
-    1, 1, 0,    /* char */
-    2, 2, 0,    /* short */
-    4, 4, 0,    /* int */
-    4, 4, 0,    /* long */
-    4, 4, 0,    /* long long */
-    4, 4, 1,    /* float */
-    8, 8, 1,    /* double */
-    8, 8, 1,    /* long double */
-    4, 4, 0,    /* T * */
-    0, 1, 0,    /* struct */
-    0,          /* little_endian */
-    0,          /* mulops_calls */
-    0,          /* wants_callb */
-    1,          /* wants_argb */
-    1,          /* left_to_right */
-    0,          /* wants_dag */
-    0,          /* unsigned_char */
+    { 1, 1, 0 },    /* char */
+    { 2, 2, 0 },    /* short */
+    { 4, 4, 0 },    /* int */
+    { 4, 4, 0 },    /* long */
+    { 4, 4, 0 },    /* long long */
+    { 4, 4, 1 },    /* float */
+    { 8, 8, 1 },    /* double */
+    { 8, 8, 1 },    /* long double */
+    { 4, 4, 0 },    /* T * */
+    { 0, 1, 0 },    /* struct */
+    0,              /* little_endian */
+    0,              /* mulops_calls */
+    0,              /* wants_callb */
+    1,              /* wants_argb */
+    1,              /* left_to_right */
+    0,              /* wants_dag */
+    0,              /* unsigned_char */
     address,
     blockbeg,
     blockend,
@@ -1128,23 +1129,23 @@ Interface mipsebIR = {
 
 Interface mipselIR = {
     // clang-format off
-    1, 1, 0,    /* char */
-    2, 2, 0,    /* short */
-    4, 4, 0,    /* int */
-    4, 4, 0,    /* long */
-    4, 4, 0,    /* long long */
-    4, 4, 1,    /* float */
-    8, 8, 1,    /* double */
-    8, 8, 1,    /* long double */
-    4, 4, 0,    /* T * */
-    0, 1, 0,    /* struct */
-    1,          /* little_endian */
-    0,          /* mulops_calls */
-    0,          /* wants_callb */
-    1,          /* wants_argb */
-    1,          /* left_to_right */
-    0,          /* wants_dag */
-    0,          /* unsigned_char */
+    { 1, 1, 0 },    /* char */
+    { 2, 2, 0 },    /* short */
+    { 4, 4, 0 },    /* int */
+    { 4, 4, 0 },    /* long */
+    { 4, 4, 0 },    /* long long */
+    { 4, 4, 1 },    /* float */
+    { 8, 8, 1 },    /* double */
+    { 8, 8, 1 },    /* long double */
+    { 4, 4, 0 },    /* T * */
+    { 0, 1, 0 },    /* struct */
+    1,              /* little_endian */
+    0,              /* mulops_calls */
+    0,              /* wants_callb */
+    1,              /* wants_argb */
+    1,              /* left_to_right */
+    0,              /* wants_dag */
+    0,              /* unsigned_char */
     address,
     blockbeg,
     blockend,

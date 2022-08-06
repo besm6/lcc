@@ -300,29 +300,31 @@ static void I(stabline)(Coordinate *cp)
 #define b_blockend blockend
 
 Interface bytecodeIR = {
-    1,           1,           0, /* char */
-    2,           2,           0, /* short */
-    4,           4,           0, /* int */
-    4,           4,           0, /* long */
-    4,           4,           0, /* long long */
-    4,           4,           1, /* float */
-    8,           8,           1, /* double */
-    8,           8,           1, /* long double */
-    4,           4,           0, /* T* */
-    0,           4,           0, /* struct */
-    0,                           /* little_endian */
-    0,                           /* mulops_calls */
-    0,                           /* wants_callb */
-    0,                           /* wants_argb */
-    1,                           /* left_to_right */
-    0,                           /* wants_dag */
-    0,                           /* unsigned_char */
+    { 1,  1,  0 },  /* char */
+    { 2,  2,  0 },  /* short */
+    { 4,  4,  0 },  /* int */
+    { 4,  4,  0 },  /* long */
+    { 4,  4,  0 },  /* long long */
+    { 4,  4,  1 },  /* float */
+    { 8,  8,  1 },  /* double */
+    { 8,  8,  1 },  /* long double */
+    { 4,  4,  0 },  /* T* */
+    { 0,  4,  0 },  /* struct */
+    0,              /* little_endian */
+    0,              /* mulops_calls */
+    0,              /* wants_callb */
+    0,              /* wants_argb */
+    1,              /* left_to_right */
+    0,              /* wants_dag */
+    0,              /* unsigned_char */
     I(address),  I(blockbeg), I(blockend), I(defaddress), I(defconst), I(defstring), I(defsymbol),
     I(emit),     I(export),   I(function), I(gen),        I(global),   I(import),    I(local),
-    I(progbeg),  I(progend),  I(segment),  I(space),      0, /* I(stabblock) */
-    0,                                                       /* I(stabend) */
-    0,                                                       /* I(stabfend) */
-    0,                                                       /* I(stabinit) */
-    I(stabline), 0,                                          /* I(stabsym) */
-    0,                                                       /* I(stabtype) */
+    I(progbeg),  I(progend),  I(segment),  I(space),
+    0,              /* I(stabblock) */
+    0,              /* I(stabend) */
+    0,              /* I(stabfend) */
+    0,              /* I(stabinit) */
+    I(stabline),
+    0,              /* I(stabsym) */
+    0,              /* I(stabtype) */
 };
