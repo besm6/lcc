@@ -7,7 +7,7 @@ import pathlib
     "8q",
     "array",
     "cf",
-#    "cq",  # --- loops forever (target bytecode) TODO
+    "cq",
     "cvt",
     "fields",
     "front",
