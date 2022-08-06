@@ -105,19 +105,19 @@ static void bbexit(Symbol yylink, Symbol f, Tree e)
 }
 
 /* bbfile - add file to list of file names, return its index */
-static int bbfile(char *file)
+static int bbfile(char *filename)
 {
-    if (file) {
+    if (filename) {
         List lp;
         int i = 1;
         if ((lp = filelist) != NULL)
             do {
                 lp = lp->link;
-                if (((Symbol)lp->x)->u.c.v.p == file)
+                if (((Symbol)lp->x)->u.c.v.p == filename)
                     return i;
                 i++;
             } while (lp != filelist);
-        filelist = append(mkstr(file), filelist);
+        filelist = append(mkstr(filename), filelist);
         return i;
     }
     return 0;

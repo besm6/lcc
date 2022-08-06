@@ -1,7 +1,7 @@
 #include "c.h"
 
 #define readsreg(p) (generic((p)->op) == INDIR && (p)->kids[0]->op == VREG + P)
-#define setsrc(d)                                                           \
+#define setsrc(d, src)                                                           \
     ((d) && (d)->x.regnode && (d)->x.regnode->set == src->x.regnode->set && \
      (d)->x.regnode->mask & src->x.regnode->mask)
 
@@ -454,16 +454,16 @@ int move(Node p)
 
 static int requate(Node q)
 {
-    Symbol src = q->x.kids[0]->syms[RX];
+    Symbol source = q->x.kids[0]->syms[RX];
     Symbol tmp = q->syms[RX];
     Node p;
     int n = 0;
 
-    debug(fprint(stderr, "(requate(%x): tmp=%s src=%s)\n", q, tmp->x.name, src->x.name));
+    debug(fprint(stderr, "(requate(%x): tmp=%s src=%s)\n", q, tmp->x.name, source->x.name));
     for (p = q->x.next; p; p = p->x.next)
-        if (p->x.copy && p->syms[RX] == src && p->x.kids[0]->syms[RX] == tmp)
+        if (p->x.copy && p->syms[RX] == source && p->x.kids[0]->syms[RX] == tmp)
             debug(fprint(stderr, "(requate arm 0 at %x)\n", p)), p->syms[RX] = tmp;
-        else if (setsrc(p->syms[RX]) && !moveself(p) && !readsreg(p))
+        else if (setsrc(p->syms[RX], source) && !moveself(p) && !readsreg(p))
             return 0;
         else if (p->x.spills)
             return 0;
@@ -479,7 +479,7 @@ static int requate(Node q)
     assert(n > 0);
     for (p = q->x.next; p; p = p->x.next)
         if (p->syms[RX] == tmp && readsreg(p)) {
-            p->syms[RX] = src;
+            p->syms[RX] = source;
             if (--n <= 0)
                 break;
         }
@@ -711,8 +711,7 @@ static void ralloc(Node p)
             set = (*IR->x.rmap)(opkind(p->op));
         assert(set);
         if (set->sclass != REGISTER) {
-            Symbol r;
-            if (*IR->x._templates[getrule(p, p->x.inst)] == '?')
+            if (*IR->x._templates[getrule(p, p->x.inst)] == '?') {
                 for (i = 1; i < NELEMS(p->x.kids) && p->x.kids[i]; i++) {
                     Symbol r = p->x.kids[i]->syms[RX];
                     assert(p->x.kids[i]->x.registered);
@@ -720,7 +719,8 @@ static void ralloc(Node p)
                     assert(sym->x.wildcard || sym != r);
                     mask[r->x.regnode->set] &= ~r->x.regnode->mask;
                 }
-            r = getreg(set, mask, p);
+            }
+            Symbol r = getreg(set, mask, p);
             if (sym->temporary) {
                 Node q;
                 r->x.lastuse = sym->x.lastuse;

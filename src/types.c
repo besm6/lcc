@@ -438,12 +438,12 @@ Type compose(Type ty1, Type ty2)
         if (p2 && p1 == NULL)
             return func(ty, p2, ty2->u.f.oldstyle);
         for (; *p1 && *p2; p1++, p2++) {
-            Type ty = compose(unqual(*p1), unqual(*p2));
+            Type pty = compose(unqual(*p1), unqual(*p2));
             if (isconst(*p1) || isconst(*p2))
-                ty = qual(CONST, ty);
+                pty = qual(CONST, pty);
             if (isvolatile(*p1) || isvolatile(*p2))
-                ty = qual(VOLATILE, ty);
-            tlist = append(ty, tlist);
+                pty = qual(VOLATILE, pty);
+            tlist = append(pty, tlist);
         }
         assert(*p1 == NULL && *p2 == NULL);
         return func(ty, ltov(&tlist, PERM), 0);

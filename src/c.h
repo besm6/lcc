@@ -344,7 +344,7 @@ extern int wflag;
 extern Events events;
 extern float refinc;
 
-extern unsigned char *cp;
+extern unsigned char *incp;
 extern unsigned char *limit;
 extern char *firstfile;
 extern char *file;

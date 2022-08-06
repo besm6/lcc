@@ -647,12 +647,12 @@ void emitcode(void)
     src = save;
 }
 
-static Node undag(Node forest)
+static Node undag(Node tree)
 {
     Node p;
 
-    tail = &forest;
-    for (p = forest; p; p = p->link)
+    tail = &tree;
+    for (p = tree; p; p = p->link)
         if (generic(p->op) == INDIR) {
             assert(p->count >= 1);
             visit(p, 1);
@@ -669,7 +669,7 @@ static Node undag(Node forest)
             tail  = &p->link;
         }
     *tail = NULL;
-    return forest;
+    return tree;
 }
 static Node replace(Node p)
 {
@@ -690,12 +690,12 @@ static Node replace(Node p)
     }
     return p;
 }
-static Node prune(Node forest)
+static Node prune(Node tree)
 {
-    Node p, *tail = &forest;
+    Node p, *tailp = &tree;
     int count = 0;
 
-    for (p = forest; p; p = p->link) {
+    for (p = tree; p; p = p->link) {
         if (count > 0) {
             p->kids[0] = replace(p->kids[0]);
             p->kids[1] = replace(p->kids[1]);
@@ -717,11 +717,11 @@ static Node prune(Node forest)
             }
         }
         /* keep the assignment and other roots */
-        *tail = p;
-        tail  = &(*tail)->link;
+        *tailp = p;
+        tailp  = &(*tailp)->link;
     }
-    assert(*tail == NULL);
-    return forest;
+    assert(*tailp == NULL);
+    return tree;
 }
 static Node visit(Node p, int listed)
 {

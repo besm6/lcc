@@ -77,7 +77,7 @@
 int needconst;
 int explicitCast;
 
-static int addi(long x, long y, long min, long max, int needconst)
+static int addi(long x, long y, long min, long max, int flag_need_const)
 {
     int cond = x == 0 ||
                y == 0 ||
@@ -85,14 +85,14 @@ static int addi(long x, long y, long min, long max, int needconst)
                (x < 0 && y > 0) ||
                (x > 0 && y < 0) ||
                (x > 0 && y > 0 && x <= max - y);
-    if (!cond && needconst) {
+    if (!cond && flag_need_const) {
         warning("overflow in constant expression\n");
         cond = 1;
     }
     return cond;
 }
 
-static int addd(double x, double y, double min, double max, int needconst)
+static int addd(double x, double y, double min, double max, int flag_need_const)
 {
     int cond = x == 0 ||
                y == 0 ||
@@ -100,7 +100,7 @@ static int addd(double x, double y, double min, double max, int needconst)
                (x < 0 && y > 0) ||
                (x > 0 && y < 0) ||
                (x > 0 && y > 0 && x <= max - y);
-    if (!cond && needconst) {
+    if (!cond && flag_need_const) {
         warning("overflow in constant expression\n");
         cond = 1;
     }
@@ -145,17 +145,17 @@ static Tree addrtree(Tree e, long n, Type ty)
 }
 
 /* div[id] - return 1 if min <= x/y <= max, 0 otherwise */
-static int divi(long x, long y, long min, long max, int needconst)
+static int divi(long x, long y, long min, long max, int flag_need_const)
 {
     int cond = y != 0 && !(x == min && y == -1);
-    if (!cond && needconst) {
+    if (!cond && flag_need_const) {
         warning("overflow in constant expression\n");
         cond = 1;
     }
     return cond;
 }
 
-static int divd(double x, double y, double min, double max, int needconst)
+static int divd(double x, double y, double min, double max, int flag_need_const)
 {
     int cond;
 
@@ -164,7 +164,7 @@ static int divd(double x, double y, double min, double max, int needconst)
     if (y < 0)
         y = -y;
     cond = y != 0 && !(y < 1 && x > max * y);
-    if (!cond && needconst) {
+    if (!cond && flag_need_const) {
         warning("overflow in constant expression\n");
         cond = 1;
     }
@@ -172,7 +172,7 @@ static int divd(double x, double y, double min, double max, int needconst)
 }
 
 /* mul[id] - return 1 if min <= x*y <= max, 0 otherwise */
-static int muli(long x, long y, long min, long max, int needconst)
+static int muli(long x, long y, long min, long max, int flag_need_const)
 {
     int cond = (x > -1 && x <= 1) ||
                (y > -1 && y <= 1) ||
@@ -180,14 +180,14 @@ static int muli(long x, long y, long min, long max, int needconst)
                (x < 0 && y > 0 && x >= min / y) ||
                (x > 0 && y < 0 && y >= min / x) ||
                (x > 0 && y > 0 && x <= max / y);
-    if (!cond && needconst) {
+    if (!cond && flag_need_const) {
         warning("overflow in constant expression\n");
         cond = 1;
     }
     return cond;
 }
 
-static int muld(double x, double y, double min, double max, int needconst)
+static int muld(double x, double y, double min, double max, int flag_need_const)
 {
     int cond = (x >= -1 && x <= 1) ||
                (y >= -1 && y <= 1) ||
@@ -195,7 +195,7 @@ static int muld(double x, double y, double min, double max, int needconst)
                (x < 0 && y > 0 && x >= min / y) ||
                (x > 0 && y < 0 && y >= min / x) ||
                (x > 0 && y > 0 && x <= max / y);
-    if (!cond && needconst) {
+    if (!cond && flag_need_const) {
         warning("overflow in constant expression\n");
         cond = 1;
     }
@@ -203,14 +203,14 @@ static int muld(double x, double y, double min, double max, int needconst)
 }
 
 /* sub[id] - return 1 if min <= x-y <= max, 0 otherwise */
-static int subi(long x, long y, long min, long max, int needconst)
+static int subi(long x, long y, long min, long max, int flag_need_const)
 {
-    return addi(x, -y, min, max, needconst);
+    return addi(x, -y, min, max, flag_need_const);
 }
 
-static int subd(double x, double y, double min, double max, int needconst)
+static int subd(double x, double y, double min, double max, int flag_need_const)
 {
-    return addd(x, -y, min, max, needconst);
+    return addd(x, -y, min, max, flag_need_const);
 }
 
 Tree constexpr(int tok)
@@ -595,10 +595,10 @@ Tree simplify(int op, Type ty, Tree l, Tree r)
         identity(r, l, I, i, 0);
         if (l->op == CNST + I && r->op == CNST + I && r->u.v.i >= 0 &&
             r->u.v.i < 8 * l->type->size) {
-            long n = l->u.v.i >> r->u.v.i;
+            long val = l->u.v.i >> r->u.v.i;
             if (l->u.v.i < 0)
-                n |= ~0UL << (8 * l->type->size - r->u.v.i);
-            return cnsttree(ty, n);
+                val |= ~0UL << (8 * l->type->size - r->u.v.i);
+            return cnsttree(ty, val);
         }
         if (r->op == CNST + I && (r->u.v.i >= 8 * ty->size || r->u.v.i < 0)) {
             warning("shifting an `%t' by %d bits is undefined\n", ty, r->u.v.i);

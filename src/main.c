@@ -85,18 +85,18 @@ int main(int argc, char *argv[])
     memset(&events, 0, sizeof events);
     if (glevel || xref) {
         Symbol symroot = NULL;
-        Coordinate src;
+        Coordinate source;
         foreach (types, GLOBAL, typestab, &symroot)
             ;
         foreach (identifiers, GLOBAL, typestab, &symroot)
             ;
-        src.file = firstfile;
-        src.x    = 0;
-        src.y    = lineno;
+        source.file = firstfile;
+        source.x    = 0;
+        source.y    = lineno;
         if ((glevel > 2 || xref) && IR->stabend)
-            (*IR->stabend)(&src, symroot, ltov(&loci, PERM), ltov(&symbols, PERM), NULL);
+            (*IR->stabend)(&source, symroot, ltov(&loci, PERM), ltov(&symbols, PERM), NULL);
         else if (IR->stabend)
-            (*IR->stabend)(&src, NULL, NULL, NULL, NULL);
+            (*IR->stabend)(&source, NULL, NULL, NULL, NULL);
     }
     finalize();
     (*IR->progend)();

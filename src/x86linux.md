@@ -898,11 +898,11 @@ static void emit2(Node p)
     else if (op == CVU + U && opsize(p->op) == 4 && opsize(p->x.kids[0]->op) == 2)
         print("movzwl %s,%s\n", preg(shortreg), p->syms[RX]->x.name);
     else if (generic(op) == CVI || generic(op) == CVU || generic(op) == LOAD) {
-        char *dst = intreg[getregnum(p)]->x.name;
-        char *src = preg(intreg);
+        char *dest = intreg[getregnum(p)]->x.name;
+        char *source = preg(intreg);
         assert(opsize(p->op) <= opsize(p->x.kids[0]->op));
-        if (dst != src)
-            print("movl %s,%s\n", src, dst);
+        if (dest != source)
+            print("movl %s,%s\n", source, dest);
     } else if (op == ARG + B)
         print("subl $%d,%%esp\nmovl %%esp,%%edi\nmovl $%d,%%ecx\nrep\nmovsb\n",
               roundup(p->syms[0]->u.c.v.i, 4), p->syms[0]->u.c.v.i);

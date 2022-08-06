@@ -16,7 +16,7 @@ Tree (*optree[])(int, Tree, Tree) = {
 #include "token.h"
 };
 
-Tree call(Tree f, Type fty, Coordinate src)
+Tree call(Tree f, Type fty, Coordinate source)
 {
     int n     = 0;
     Tree args = NULL, r = NULL, e;
@@ -90,7 +90,7 @@ Tree call(Tree f, Type fty, Coordinate src)
         args = tree(RIGHT, voidtype, r, args);
     e = calltree(f, rty, args, t3);
     if (events.calls)
-        apply(events.calls, &src, &e);
+        apply(events.calls, &source, &e);
     return e;
 }
 

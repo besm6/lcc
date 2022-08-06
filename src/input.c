@@ -5,7 +5,7 @@ static void resynch(void);
 
 static int bsize;
 static unsigned char buffer[MAXLINE + 1 + BUFSIZE + 1];
-unsigned char *cp;    /* current input character */
+unsigned char *incp;    /* current input character */
 char *file;           /* current input file name */
 char *firstfile;      /* first input file */
 unsigned char *limit; /* points to last character + 1 */
@@ -15,37 +15,37 @@ int lineno;           /* line number of current line */
 void nextline(void)
 {
     do {
-        if (cp >= limit) {
+        if (incp >= limit) {
             fillbuf();
-            if (cp >= limit)
-                cp = limit;
-            if (cp == limit)
+            if (incp >= limit)
+                incp = limit;
+            if (incp == limit)
                 return;
         } else {
             lineno++;
-            for (line = (char *)cp; *cp == ' ' || *cp == '\t'; cp++)
+            for (line = (char *)incp; *incp == ' ' || *incp == '\t'; incp++)
                 ;
-            if (*cp == '#') {
+            if (*incp == '#') {
                 resynch();
                 nextline();
             }
         }
-    } while (*cp == '\n' && cp == limit);
+    } while (*incp == '\n' && incp == limit);
 }
 void fillbuf(void)
 {
     if (bsize == 0)
         return;
-    if (cp >= limit)
-        cp = &buffer[MAXLINE + 1];
+    if (incp >= limit)
+        incp = &buffer[MAXLINE + 1];
     else {
-        int n            = limit - cp;
+        int n            = limit - incp;
         unsigned char *s = &buffer[MAXLINE + 1] - n;
         assert(s >= buffer);
-        line = (char *)s - ((char *)cp - line);
-        while (cp < limit)
-            *s++ = *cp++;
-        cp = &buffer[MAXLINE + 1] - n;
+        line = (char *)s - ((char *)incp - line);
+        while (incp < limit)
+            *s++ = *incp++;
+        incp = &buffer[MAXLINE + 1] - n;
     }
     if (feof(stdin))
         bsize = 0;
@@ -66,21 +66,21 @@ void input_init(int argc, char *argv[])
         return;
     inited = 1;
     main_init(argc, argv);
-    limit = cp = &buffer[MAXLINE + 1];
-    bsize      = -1;
-    lineno     = 0;
-    file       = NULL;
+    limit  = incp = &buffer[MAXLINE + 1];
+    bsize  = -1;
+    lineno = 0;
+    file   = NULL;
     fillbuf();
-    if (cp >= limit)
-        cp = limit;
+    if (incp >= limit)
+        incp = limit;
     nextline();
 }
 
 /* ident - handle #ident "string" */
 static void ident(void)
 {
-    while (*cp != '\n' && *cp != '\0')
-        cp++;
+    while (*incp != '\n' && *incp != '\0')
+        incp++;
 }
 
 /* pragma - handle #pragma ref id... */
@@ -88,9 +88,9 @@ static void pragma(void)
 {
     if ((curtok = gettok()) == ID && strcmp(token, "ref") == 0)
         for (;;) {
-            while (*cp == ' ' || *cp == '\t')
-                cp++;
-            if (*cp == '\n' || *cp == 0)
+            while (*incp == ' ' || *incp == '\t')
+                incp++;
+            if (*incp == '\n' || *incp == 0)
                 break;
             if ((curtok = gettok()) == ID && tsym) {
                 tsym->ref++;
@@ -102,47 +102,47 @@ static void pragma(void)
 /* resynch - set line number/file name in # n [ "file" ], #pragma, etc. */
 static void resynch(void)
 {
-    for (cp++; *cp == ' ' || *cp == '\t';)
-        cp++;
-    if (limit - cp < MAXLINE)
+    for (incp++; *incp == ' ' || *incp == '\t';)
+        incp++;
+    if (limit - incp < MAXLINE)
         fillbuf();
-    if (strncmp((char *)cp, "pragma", 6) == 0) {
-        cp += 6;
+    if (strncmp((char *)incp, "pragma", 6) == 0) {
+        incp += 6;
         pragma();
-    } else if (strncmp((char *)cp, "ident", 5) == 0) {
-        cp += 5;
+    } else if (strncmp((char *)incp, "ident", 5) == 0) {
+        incp += 5;
         ident();
-    } else if (*cp >= '0' && *cp <= '9') {
+    } else if (*incp >= '0' && *incp <= '9') {
     line:
-        for (lineno = 0; *cp >= '0' && *cp <= '9';)
-            lineno = 10 * lineno + *cp++ - '0';
+        for (lineno = 0; *incp >= '0' && *incp <= '9';)
+            lineno = 10 * lineno + *incp++ - '0';
         lineno--;
-        while (*cp == ' ' || *cp == '\t')
-            cp++;
-        if (*cp == '"') {
-            file = (char *)++cp;
-            while (*cp && *cp != '"' && *cp != '\n')
-                cp++;
-            file = stringn(file, (char *)cp - file);
-            if (*cp == '\n')
+        while (*incp == ' ' || *incp == '\t')
+            incp++;
+        if (*incp == '"') {
+            file = (char *)++incp;
+            while (*incp && *incp != '"' && *incp != '\n')
+                incp++;
+            file = stringn(file, (char *)incp - file);
+            if (*incp == '\n')
                 warning("missing \" in preprocessor line\n");
             if (firstfile == 0)
                 firstfile = file;
         }
-    } else if (strncmp((char *)cp, "line", 4) == 0) {
-        for (cp += 4; *cp == ' ' || *cp == '\t';)
-            cp++;
-        if (*cp >= '0' && *cp <= '9')
+    } else if (strncmp((char *)incp, "line", 4) == 0) {
+        for (incp += 4; *incp == ' ' || *incp == '\t';)
+            incp++;
+        if (*incp >= '0' && *incp <= '9')
             goto line;
         if (Aflag >= 2)
             warning("unrecognized control line\n");
-    } else if (Aflag >= 2 && *cp != '\n')
+    } else if (Aflag >= 2 && *incp != '\n')
         warning("unrecognized control line\n");
-    while (*cp) {
-        if (*cp++ == '\n') {
-            if (cp == limit + 1) {
+    while (*incp) {
+        if (*incp++ == '\n') {
+            if (incp == limit + 1) {
                 nextline();
-                if (cp == limit)
+                if (incp == limit)
                     break;
             } else {
                 break;

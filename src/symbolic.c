@@ -26,12 +26,15 @@ static void yyEND(const char *tag)
 #define BEGIN(tag) \
     do {           \
     const char *yytag = yyBEGIN(#tag)
+
 #define END       \
     yyEND(yytag); \
     }             \
     while (0)
+
 #define ITEM  BEGIN(li)
 #define START BEGIN(LI)
+
 #define ANCHOR(attr, code)             \
     do {                               \
         const char *yytag = "a";       \
@@ -42,15 +45,15 @@ static void yyEND(const char *tag)
         }
 #define NEWLINE print(html ? "<br>\n" : "\n")
 
-static void emitCoord(Coordinate src)
+static void emitCoord(Coordinate source)
 {
-    if (src.file && *src.file) {
-        ANCHOR(href, print("%s", src.file));
-        print("%s", src.file);
+    if (source.file && *source.file) {
+        ANCHOR(href, print("%s", source.file));
+        print("%s", source.file);
         END;
         print(":");
     }
-    print("%d.%d", src.y, src.x);
+    print("%d.%d", source.y, source.x);
 }
 
 static void emitString(int len, const char *s)

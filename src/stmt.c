@@ -22,15 +22,15 @@ static void stmtlabel(void);
 static void swstmt(int, int, int);
 static void whilestmt(int, Swtch, int);
 
-Code code(int kind)
+Code code(int k)
 {
     Code cp;
 
-    if (!reachable(kind))
+    if (!reachable(k))
         warning("unreachable code\n");
 
     NEW(cp, FUNC);
-    cp->kind       = kind;
+    cp->kind       = k;
     cp->prev       = codelist;
     cp->next       = NULL;
     codelist->next = cp;
@@ -38,9 +38,9 @@ Code code(int kind)
     return cp;
 }
 
-int reachable(int kind)
+int reachable(int this_kind)
 {
-    if (kind > Start) {
+    if (this_kind > Start) {
         Code cp;
         for (cp = codelist; cp->kind < Label;)
             cp = cp->prev;
@@ -535,12 +535,12 @@ void retcode(Tree p)
             p = tree(RIGHT, p->type, tree(CALL + B, p->type, p->kids[0]->kids[0], idtree(retv)),
                      rvalue(idtree(retv)));
         else {
-            Type ty = retv->type->type;
-            assert(isstruct(ty));
-            if (ty->u.sym->u.s.cfields) {
-                ty->u.sym->u.s.cfields = 0;
+            Type ret_ty = retv->type->type;
+            assert(isstruct(ret_ty));
+            if (ret_ty->u.sym->u.s.cfields) {
+                ret_ty->u.sym->u.s.cfields = 0;
                 p                      = asgntree(ASGN, rvalue(idtree(retv)), p);
-                ty->u.sym->u.s.cfields = 1;
+                ret_ty->u.sym->u.s.cfields = 1;
             } else
                 p = asgntree(ASGN, rvalue(idtree(retv)), p);
         }

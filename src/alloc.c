@@ -14,6 +14,7 @@ union header {
     struct block b;
     union align a;
 };
+
 #ifdef PURIFY
 union header *arena[3];
 
@@ -86,6 +87,7 @@ void *newarray(unsigned long m, unsigned long n, unsigned a)
 {
     return allocate(m * n, a);
 }
+
 void deallocate(unsigned a)
 {
     assert(a < NELEMS(arena));

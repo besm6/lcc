@@ -8,14 +8,6 @@
 #define INTRET 0x00000001
 #define FLTRET 0x00000003
 
-#define readsreg(p) \
-        (generic((p)->op)==INDIR && (p)->kids[0]->op==VREG+P)
-#define setsrc(d) ((d) && (d)->x.regnode && \
-        (d)->x.regnode->set == src->x.regnode->set && \
-        (d)->x.regnode->mask&src->x.regnode->mask)
-
-#define relink(a, b) ((b)->x.prev = (a), (a)->x.next = (b))
-
 #include "c.h"
 #define NODEPTR_TYPE Node
 #define OP_LABEL(p) ((p)->op)
@@ -675,14 +667,14 @@ static Symbol rmap(int opk)
     }
 }
 
-static Symbol argreg(int offset, int ty)
+static Symbol argreg(int offst, int ty)
 {
-    if (offset >= 48)
+    if (offst >= 48)
         return NULL;
     else if (ty == F)
-        return freg[(offset / 8) + 16];
+        return freg[(offst / 8) + 16];
     else
-        return ireg[(offset / 8) + 16];
+        return ireg[(offst / 8) + 16];
 }
 
 static void target(Node p)
@@ -781,7 +773,7 @@ static void clobber(Node p)
 
 static void emit2(Node p)
 {
-    int n, src, sz, ty;
+    int n, source, sz, ty;
     Symbol q;
 
     switch (specific(p->op)) {
@@ -792,17 +784,17 @@ static void emit2(Node p)
         ty  = optype(p->op);
         sz  = opsize(p->op);
         q   = argreg(p->syms[2]->u.c.v.i, ty);
-        src = getregnum(p->x.kids[0]);
+        source = getregnum(p->x.kids[0]);
         if (q)
             break;
         else if (ty == F && sz == 4)
-            print("sts $f%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
+            print("sts $f%d,%d($sp)\n", source, p->syms[2]->u.c.v.i - 48);
         else if (ty == F && sz == 8)
-            print("stt $f%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
+            print("stt $f%d,%d($sp)\n", source, p->syms[2]->u.c.v.i - 48);
         else if (sz == 4)
-            print("stq $%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
+            print("stq $%d,%d($sp)\n", source, p->syms[2]->u.c.v.i - 48);
         else if (sz == 8)
-            print("stq $%d,%d($sp)\n", src, p->syms[2]->u.c.v.i - 48);
+            print("stq $%d,%d($sp)\n", source, p->syms[2]->u.c.v.i - 48);
         else
             unreachable();
         break;
@@ -967,9 +959,9 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls)
                 else if (rs == FREG && tyin == F + sizeop(4))
                     print("sts $f%d,%d($sp)\n", rn, off);
                 else {
-                    int i, n = (in->type->size + 7) / 8;
-                    for (i = rn; i < rn + n && i <= 21; i++)
-                        print("stq $%d,%d($sp)\n", i, off + (i - rn) * 8);
+                    int k, n = (in->type->size + 7) / 8;
+                    for (k = rn; k < rn + n && k <= 21; k++)
+                        print("stq $%d,%d($sp)\n", k, off + (k - rn) * 8);
                 }
             }
         }
@@ -1150,11 +1142,11 @@ static void blkstore(int size, int off, int reg, int tmp)
 }
 
 /* stabinit - initialize stab output */
-static void stabinit(char *file, int argc, char *argv[])
+static void stabinit(char *filename, int argc, char *argv[])
 {
-    if (file) {
-        print(".file 2,\"%s\"\n", file);
-        currentfile = file;
+    if (filename) {
+        print(".file 2,\"%s\"\n", filename);
+        currentfile = filename;
     }
 }
 

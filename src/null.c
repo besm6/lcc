@@ -78,19 +78,19 @@ static void I(stabblock)(int brace, int lev, Symbol *p)
 {
 }
 
-static void I(stabend)(Coordinate *cp, Symbol p, Coordinate **cpp, Symbol *sp, Symbol *stab)
+static void I(stabend)(Coordinate *coord, Symbol p, Coordinate **cpp, Symbol *sp, Symbol *stab)
 {
 }
 
-static void I(stabfend)(Symbol p, int lineno)
+static void I(stabfend)(Symbol p, int line_num)
 {
 }
 
-static void I(stabinit)(char *file, int argc, char *argv[])
+static void I(stabinit)(char *filename, int argc, char *argv[])
 {
 }
 
-static void I(stabline)(Coordinate *cp)
+static void I(stabline)(Coordinate *coord)
 {
 }
 

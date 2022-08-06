@@ -774,10 +774,10 @@ static void funcdefn(int sclass, char *id, Type ty, Symbol params[], Coordinate 
         if (p && p->scope == GLOBAL && isfunc(p->type) && p->type->u.f.proto) {
             Type *proto = p->type->u.f.proto;
             for (i = 0; caller[i] && proto[i]; i++) {
-                Type ty = unqual(proto[i]);
-                if (eqtype(isenum(ty) ? ty->type : ty, unqual(caller[i]->type), 1) == 0)
+                Type ity = unqual(proto[i]);
+                if (eqtype(isenum(ity) ? ity->type : ity, unqual(caller[i]->type), 1) == 0)
                     break;
-                else if (isenum(ty) && !isenum(unqual(caller[i]->type)))
+                else if (isenum(ity) && !isenum(unqual(caller[i]->type)))
                     warning("compatibility of `%t' and `%t' is compiler dependent\n", proto[i],
                             caller[i]->type);
             }
@@ -957,10 +957,10 @@ void compound(int loop, struct swtch *swp, int lev)
         }
     }
     if (level == LOCAL) {
-        Code cp;
-        for (cp = codelist; cp->kind < Label; cp = cp->prev)
+        Code p;
+        for (p = codelist; p->kind < Label; p = p->prev)
             ;
-        if (cp->kind != Jump) {
+        if (p->kind != Jump) {
             if (freturn(cfunc->type) != voidtype) {
                 warning("missing return value\n");
                 retcode(cnsttree(inttype, 0L));
@@ -1095,12 +1095,12 @@ static Symbol dcllocal(int sclass, char *id, Type ty, Coordinate *pos)
                 e = expr1(0);
         } else {
             Symbol t1;
-            Type ty = p->type, ty1 = ty;
+            Type pty = p->type, ty1 = pty;
             while (isarray(ty1))
                 ty1 = ty1->type;
-            if (!isconst(ty) && (!isarray(ty) || !isconst(ty1)))
-                ty = qual(CONST, ty);
-            t1 = genident(STATIC, ty, GLOBAL);
+            if (!isconst(pty) && (!isarray(pty) || !isconst(ty1)))
+                pty = qual(CONST, pty);
+            t1 = genident(STATIC, pty, GLOBAL);
             initglobal(t1, 1);
             if (isarray(p->type) && p->type->size == 0 && t1->type->size > 0)
                 p->type = array(p->type->type, t1->type->size / t1->type->type->size, 0);

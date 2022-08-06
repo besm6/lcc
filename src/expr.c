@@ -124,7 +124,7 @@ static Tree expr3(int k)
     Tree p = unary();
 
     for (k1 = prec[curtok]; k1 >= k; k1--)
-        while (prec[curtok] == k1 && *cp != '=') {
+        while (prec[curtok] == k1 && *incp != '=') {
             Tree r;
             Coordinate pt;
             int op = curtok;
@@ -406,40 +406,40 @@ static Tree primary(void)
         break;
     case ID:
         if (tsym == NULL) {
-            Symbol p = install(token, &identifiers, level, PERM);
-            p->src   = src;
+            Symbol s = install(token, &identifiers, level, PERM);
+            s->src   = src;
             if (getchr() == '(') {
                 Symbol q  = lookup(token, externals);
-                p->type   = func(inttype, NULL, 1);
-                p->sclass = EXTERN;
+                s->type   = func(inttype, NULL, 1);
+                s->sclass = EXTERN;
                 if (Aflag >= 1)
                     warning("missing prototype\n");
-                if (q && !eqtype(q->type, p->type, 1))
+                if (q && !eqtype(q->type, s->type, 1))
                     warning(
                         "implicit declaration of `%s' does not match previous declaration at %w\n",
                         q->name, &q->src);
 
                 if (q == NULL) {
-                    q         = install(p->name, &externals, GLOBAL, PERM);
-                    q->type   = p->type;
+                    q         = install(s->name, &externals, GLOBAL, PERM);
+                    q->type   = s->type;
                     q->sclass = EXTERN;
                     q->src    = src;
                     (*IR->defsymbol)(q);
                 }
-                p->u.alias = q;
+                s->u.alias = q;
             } else {
-                error("undeclared identifier `%s'\n", p->name);
-                p->sclass = AUTO;
-                p->type   = inttype;
-                if (p->scope == GLOBAL)
-                    (*IR->defsymbol)(p);
+                error("undeclared identifier `%s'\n", s->name);
+                s->sclass = AUTO;
+                s->type   = inttype;
+                if (s->scope == GLOBAL)
+                    (*IR->defsymbol)(s);
                 else
-                    addlocal(p);
+                    addlocal(s);
             }
             curtok = gettok();
             if (xref)
-                use(p, src);
-            return idtree(p);
+                use(s, src);
+            return idtree(s);
         }
         if (xref)
             use(tsym, src);
@@ -601,32 +601,32 @@ Tree cond(Tree p)
 
 Tree cast(Tree p, Type type)
 {
-    Type src, dst;
+    Type source, dest;
 
     p = value(p);
     if (p->type == type)
         return p;
-    dst = unqual(type);
-    src = unqual(p->type);
-    if (src->op != dst->op || src->size != dst->size) {
-        switch (src->op) {
+    dest = unqual(type);
+    source = unqual(p->type);
+    if (source->op != dest->op || source->size != dest->size) {
+        switch (source->op) {
         case INT:
-            if (src->size < inttype->size)
+            if (source->size < inttype->size)
                 p = simplify(CVI, inttype, p, NULL);
             break;
         case UNSIGNED:
-            if (src->size < inttype->size)
+            if (source->size < inttype->size)
                 p = simplify(CVU, inttype, p, NULL);
-            else if (src->size < unsignedtype->size)
+            else if (source->size < unsignedtype->size)
                 p = simplify(CVU, unsignedtype, p, NULL);
             break;
         case ENUM:
             p = retype(p, inttype);
             break;
         case POINTER:
-            if (isint(dst) && src->size > dst->size)
+            if (isint(dest) && source->size > dest->size)
                 warning("conversion from `%t' to `%t' is undefined\n", p->type, type);
-            p = simplify(CVP, super(src), p, NULL);
+            p = simplify(CVP, super(source), p, NULL);
             break;
         case FLOAT:
             break;
@@ -634,75 +634,75 @@ Tree cast(Tree p, Type type)
             unreachable();
         }
         {
-            src = unqual(p->type);
-            dst = super(dst);
-            if (src->op != dst->op)
-                switch (src->op) {
+            source = unqual(p->type);
+            dest = super(dest);
+            if (source->op != dest->op)
+                switch (source->op) {
                 case INT:
-                    p = simplify(CVI, dst, p, NULL);
+                    p = simplify(CVI, dest, p, NULL);
                     break;
                 case UNSIGNED:
-                    if (isfloat(dst)) {
-                        Type ssrc = signedint(src);
+                    if (isfloat(dest)) {
+                        Type ssrc = signedint(source);
                         Tree two  = cnsttree(longdouble, (long double)2.0);
                         p         = (*optree['+'])(
                             ADD,
                             (*optree['*'])(
                                 MUL, two,
-                                simplify(CVU, ssrc, simplify(RSH, src, p, consttree(1, inttype)),
+                                simplify(CVU, ssrc, simplify(RSH, source, p, consttree(1, inttype)),
                                                  NULL)),
-                            simplify(CVU, ssrc, simplify(BAND, src, p, consttree(1, unsignedtype)),
+                            simplify(CVU, ssrc, simplify(BAND, source, p, consttree(1, unsignedtype)),
                                              NULL));
                     } else
-                        p = simplify(CVU, dst, p, NULL);
+                        p = simplify(CVU, dest, p, NULL);
                     break;
                 case FLOAT:
-                    if (isunsigned(dst)) {
-                        Type sdst = signedint(dst);
+                    if (isunsigned(dest)) {
+                        Type sdst = signedint(dest);
                         Tree c =
                             cast(cnsttree(longdouble, (long double)sdst->u.sym->u.limits.max.i + 1),
-                                 src);
+                                 source);
                         p = condtree(
-                            simplify(GE, src, p, c),
+                            simplify(GE, source, p, c),
                             (*optree['+'])(
-                                ADD, cast(cast(simplify(SUB, src, p, c), sdst), dst),
+                                ADD, cast(cast(simplify(SUB, source, p, c), sdst), dest),
                                 cast(cnsttree(unsignedlong,
                                               (unsigned long)sdst->u.sym->u.limits.max.i + 1),
-                                     dst)),
+                                     dest)),
                             simplify(CVF, sdst, p, NULL));
                     } else
-                        p = simplify(CVF, dst, p, NULL);
+                        p = simplify(CVF, dest, p, NULL);
                     break;
                 default:
                     unreachable();
                 }
-            dst = unqual(type);
+            dest = unqual(type);
         }
     }
-    src = unqual(p->type);
-    switch (src->op) {
+    source = unqual(p->type);
+    switch (source->op) {
     case INT:
-        if (src->op != dst->op || src->size != dst->size)
-            p = simplify(CVI, dst, p, NULL);
+        if (source->op != dest->op || source->size != dest->size)
+            p = simplify(CVI, dest, p, NULL);
         break;
     case UNSIGNED:
-        if (src->op != dst->op || src->size != dst->size)
-            p = simplify(CVU, dst, p, NULL);
+        if (source->op != dest->op || source->size != dest->size)
+            p = simplify(CVU, dest, p, NULL);
         break;
     case FLOAT:
-        if (src->op != dst->op || src->size != dst->size)
-            p = simplify(CVF, dst, p, NULL);
+        if (source->op != dest->op || source->size != dest->size)
+            p = simplify(CVF, dest, p, NULL);
         break;
     case POINTER:
-        if (src->op != dst->op)
-            p = simplify(CVP, dst, p, NULL);
+        if (source->op != dest->op)
+            p = simplify(CVP, dest, p, NULL);
         else {
-            if ((isfunc(src->type) && !isfunc(dst->type)) ||
-                (!isfunc(src->type) && isfunc(dst->type)))
+            if ((isfunc(source->type) && !isfunc(dest->type)) ||
+                (!isfunc(source->type) && isfunc(dest->type)))
                 warning("conversion from `%t' to `%t' is compiler dependent\n", p->type, type);
 
-            if (src->size != dst->size)
-                p = simplify(CVP, dst, p, NULL);
+            if (source->size != dest->size)
+                p = simplify(CVP, dest, p, NULL);
         }
         break;
     default:

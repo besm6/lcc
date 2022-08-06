@@ -723,22 +723,22 @@ static void emit2(Node p)
     switch (p->op) {
     case INDIR + F + sizeop(8):
         if (generic(p->kids[0]->op) != VREG) {
-            int dst = getregnum(p);
+            int dest = getregnum(p);
             print("ld [");
             emitasm(p->kids[0], _base_NT);
-            print("],%%f%d; ", dst);
+            print("],%%f%d; ", dest);
             print("ld [");
             emitasm(p->kids[0], _base_NT);
-            print("+4],%%f%d\n", dst + 1);
+            print("+4],%%f%d\n", dest + 1);
         }
         break;
     case ASGN + F + sizeop(8):
         if (generic(p->kids[0]->op) != VREG) {
-            int src = getregnum(p->kids[1]);
-            print("st %%f%d,[", src);
+            int source = getregnum(p->kids[1]);
+            print("st %%f%d,[", source);
             emitasm(p->kids[0], _base_NT);
             print("]; ");
-            print("st %%f%d,[", src + 1);
+            print("st %%f%d,[", source + 1);
             emitasm(p->kids[0], _base_NT);
             print("+4]\n");
         }
@@ -752,9 +752,9 @@ static void emit2(Node p)
     }
     case ARG + F + sizeop(8): {
         int n   = p->syms[RX]->u.c.v.i;
-        int src = getregnum(p->x.kids[0]);
-        print("st %%f%d,[%%sp+4*%d+68]\n", src, n);
-        print("st %%f%d,[%%sp+4*%d+68]\n", src + 1, n + 1);
+        int source = getregnum(p->x.kids[0]);
+        print("st %%f%d,[%%sp+4*%d+68]\n", source, n);
+        print("st %%f%d,[%%sp+4*%d+68]\n", source + 1, n + 1);
         if (n <= 5)
             print("ld [%%sp+4*%d+68],%%o%d\n", n, n);
         if (n <= 4)
@@ -762,17 +762,17 @@ static void emit2(Node p)
         break;
     }
     case LOAD + F + sizeop(8): {
-        int dst = getregnum(p);
-        int src = getregnum(p->x.kids[0]);
-        print("fmovs %%f%d,%%f%d; ", src, dst);
-        print("fmovs %%f%d,%%f%d\n", src + 1, dst + 1);
+        int dest = getregnum(p);
+        int source = getregnum(p->x.kids[0]);
+        print("fmovs %%f%d,%%f%d; ", source, dest);
+        print("fmovs %%f%d,%%f%d\n", source + 1, dest + 1);
         break;
     }
     case NEG + F + sizeop(8): {
-        int dst = getregnum(p);
-        int src = getregnum(p->x.kids[0]);
-        print("fnegs %%f%d,%%f%d; ", src, dst);
-        print("fmovs %%f%d,%%f%d\n", src + 1, dst + 1);
+        int dest = getregnum(p);
+        int source = getregnum(p->x.kids[0]);
+        print("fnegs %%f%d,%%f%d; ", source, dest);
+        print("fmovs %%f%d,%%f%d\n", source + 1, dest + 1);
         break;
     }
     case ASGN + B: {

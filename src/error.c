@@ -123,7 +123,7 @@ static void printtoken(void)
         break;
     }
     case FCON:
-        fprint(stderr, " `%S'", token, (char *)cp - token);
+        fprint(stderr, " `%S'", token, (char *)incp - token);
         break;
     case '`':
     case '\'':

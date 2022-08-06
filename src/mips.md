@@ -8,12 +8,6 @@
 #define INTRET 0x00000004
 #define FLTRET 0x00000003
 
-#define readsreg(p) \
-        (generic((p)->op)==INDIR && (p)->kids[0]->op==VREG+P)
-#define setsrc(d) ((d) && (d)->x.regnode && \
-        (d)->x.regnode->set == src->x.regnode->set && \
-        (d)->x.regnode->mask&src->x.regnode->mask)
-
 #define relink(a, b) ((b)->x.prev = (a), (a)->x.next = (b))
 
 #include "c.h"
@@ -662,7 +656,7 @@ static void clobber(Node p)
 
 static void emit2(Node p)
 {
-    int dst, n, src, sz, ty;
+    int dest, n, source, sz, ty;
     static int ty0;
     Symbol q;
 
@@ -676,17 +670,17 @@ static void emit2(Node p)
         if (p->x.argno == 0)
             ty0 = ty;
         q   = argreg(p->x.argno, p->syms[2]->u.c.v.i, ty, sz, ty0);
-        src = getregnum(p->x.kids[0]);
+        source = getregnum(p->x.kids[0]);
         if (q == NULL && ty == F && sz == 4)
-            print("s.s $f%d,%d($sp)\n", src, p->syms[2]->u.c.v.i);
+            print("s.s $f%d,%d($sp)\n", source, p->syms[2]->u.c.v.i);
         else if (q == NULL && ty == F)
-            print("s.d $f%d,%d($sp)\n", src, p->syms[2]->u.c.v.i);
+            print("s.d $f%d,%d($sp)\n", source, p->syms[2]->u.c.v.i);
         else if (q == NULL)
-            print("sw $%d,%d($sp)\n", src, p->syms[2]->u.c.v.i);
+            print("sw $%d,%d($sp)\n", source, p->syms[2]->u.c.v.i);
         else if (ty == F && sz == 4 && q->x.regnode->set == IREG)
-            print("mfc1 $%d,$f%d\n", q->x.regnode->number, src);
+            print("mfc1 $%d,$f%d\n", q->x.regnode->number, source);
         else if (ty == F && q->x.regnode->set == IREG)
-            print("mfc1.d $%d,$f%d\n", q->x.regnode->number, src);
+            print("mfc1.d $%d,$f%d\n", q->x.regnode->number, source);
         break;
     case ASGN + B:
         dalign = salign = p->syms[1]->u.c.v.i;
@@ -698,17 +692,17 @@ static void emit2(Node p)
         salign = p->syms[1]->u.c.v.i;
         blkcopy(29, p->syms[2]->u.c.v.i, getregnum(p->x.kids[0]), 0, p->syms[0]->u.c.v.i, tmpregs);
         n   = p->syms[2]->u.c.v.i + p->syms[0]->u.c.v.i;
-        dst = p->syms[2]->u.c.v.i;
-        for (; dst <= 12 && dst < n; dst += 4)
-            print("lw $%d,%d($sp)\n", (dst / 4) + 4, dst);
+        dest = p->syms[2]->u.c.v.i;
+        for (; dest <= 12 && dest < n; dest += 4)
+            print("lw $%d,%d($sp)\n", (dest / 4) + 4, dest);
         break;
     }
 }
 
-static Symbol argreg(int argno, int offset, int ty, int sz, int ty0)
+static Symbol argreg(int argno, int offst, int ty, int sz, int ty0)
 {
-    assert((offset & 3) == 0);
-    if (offset > 12)
+    assert((offst & 3) == 0);
+    if (offst > 12)
         return NULL;
     else if (argno == 0 && ty == F)
         return freg2[12];
@@ -717,7 +711,7 @@ static Symbol argreg(int argno, int offset, int ty, int sz, int ty0)
     else if (argno == 1 && ty == F && sz == 8)
         return d6; /* Pair! */
     else
-        return ireg[(offset / 4) + 4];
+        return ireg[(offst / 4) + 4];
 }
 
 static void doarg(Node p)
@@ -851,9 +845,9 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int ncalls)
                 else if (rs == FREG && tyin == F + sizeop(4))
                     print("s.s $f%d,%d($sp)\n", rn, off);
                 else {
-                    int i, n = (in->type->size + 3) / 4;
-                    for (i = rn; i < rn + n && i <= 7; i++)
-                        print("sw $%d,%d($sp)\n", i, off + (i - rn) * 4);
+                    int k, n = (in->type->size + 3) / 4;
+                    for (k = rn; k < rn + n && k <= 7; k++)
+                        print("sw $%d,%d($sp)\n", k, off + (k - rn) * 4);
                 }
             }
         }
@@ -1044,11 +1038,11 @@ static int bitcount(unsigned mask)
 }
 
 /* stabinit - initialize stab output */
-static void stabinit(char *file, int argc, char *argv[])
+static void stabinit(char *filename, int argc, char *argv[])
 {
-    if (file) {
-        print(".file 2,\"%s\"\n", file);
-        currentfile = file;
+    if (filename) {
+        print(".file 2,\"%s\"\n", filename);
+        currentfile = filename;
     }
 }
 

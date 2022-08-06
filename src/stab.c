@@ -225,20 +225,20 @@ void stabblock(int brace, int lev, Symbol *p)
 }
 
 /* stabinit - initialize stab output */
-void stabinit(char *file, int argc, char *argv[])
+void stabinit(char *filename, int argc, char *argv[])
 {
     typedef void (*Closure)(Symbol, void *);
     extern char *getcwd(char *, size_t);
 
     print(".stabs \"lcc4_compiled.\",0x%x,0,0,0\n", N_OPT);
-    if (file && *file) {
+    if (filename && *filename) {
         char buf[1024], *cwd = getcwd(buf, sizeof buf);
         if (cwd)
             print(".stabs \"%s/\",0x%x,0,3,%stext0\n", cwd, N_SO, stabprefix);
-        print(".stabs \"%s\",0x%x,0,3,%stext0\n", file, N_SO, stabprefix);
+        print(".stabs \"%s\",0x%x,0,3,%stext0\n", filename, N_SO, stabprefix);
         (*IR->segment)(CODE);
         print("%stext0:\n", stabprefix, N_SO);
-        currentfile = file;
+        currentfile = filename;
     }
     dbxtype(inttype);
     dbxtype(chartype);
@@ -260,19 +260,19 @@ void stabinit(char *file, int argc, char *argv[])
 }
 
 /* stabline - emit stab entry for source coordinate *cp */
-void stabline(Coordinate *cp)
+void stabline(Coordinate *sym)
 {
-    if (cp->file && cp->file != currentfile) {
+    if (sym->file && sym->file != currentfile) {
         int lab = genlabel(1);
-        print(".stabs \"%s\",0x%x,0,0,%s%d\n", cp->file, N_SOL, stabprefix, lab);
+        print(".stabs \"%s\",0x%x,0,0,%s%d\n", sym->file, N_SOL, stabprefix, lab);
         print("%s%d:\n", stabprefix, lab);
-        currentfile = cp->file;
+        currentfile = sym->file;
     }
     if (IR == &sparcIR)
-        print(".stabd 0x%x,0,%d\n", N_SLINE, cp->y);
+        print(".stabd 0x%x,0,%d\n", N_SLINE, sym->y);
     else {
         int lab = genlabel(1);
-        print(".stabn 0x%x,0,%d,%s%d-%s\n", N_SLINE, cp->y, stabprefix, lab, cfunc->x.name);
+        print(".stabn 0x%x,0,%d,%s%d-%s\n", N_SLINE, sym->y, stabprefix, lab, cfunc->x.name);
         print("%s%d:\n", stabprefix, lab);
     }
 }
@@ -340,7 +340,7 @@ void stabtype(Symbol p)
 }
 
 /* stabend - finalize a function */
-void stabfend(Symbol p, int lineno)
+void stabfend(Symbol p, int line_num)
 {
 }
 

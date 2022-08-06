@@ -9,12 +9,12 @@ xx(sparc/sun,    sparcIR) \
 xx(sparc/solaris,solarisIR) \
 xx(x86/win32,    x86IR) \
 xx(x86/linux,    x86linuxIR) \
-xx(symbolic/osf, symbolic64IR) \
-xx(symbolic/irix,symbolicIR) \
-xx(symbolic,     symbolicIR) \
 xx(bytecode,     bytecodeIR) \
 xx(null,         nullIR)
 // clang-format on
+//xx(symbolic/osf, symbolic64IR)
+//xx(symbolic/irix,symbolicIR)
+//xx(symbolic,     symbolicIR)
 
 #undef xx
 #define xx(a, b) extern Interface b;

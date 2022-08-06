@@ -13,7 +13,9 @@ struct table {
     } * buckets[256];
     Symbol all;
 };
+
 #define HASHSIZE NELEMS(((Table)0)->buckets)
+
 static struct table cns = { CONSTANTS }, ext = { GLOBAL }, ids = { GLOBAL }, tys = { GLOBAL };
 Table constants   = &cns;
 Table externals   = &ext;
@@ -33,15 +35,16 @@ Table newtable(int arena)
     return new;
 }
 
-Table table(Table tp, int level)
+Table table(Table tp, int lvl)
 {
     Table new     = newtable(FUNC);
     new->previous = tp;
-    new->level    = level;
+    new->level    = lvl;
     if (tp)
         new->all = tp->all;
     return new;
 }
+
 void foreach (Table tp, int lev, void (*apply)(Symbol, void *), void *cl)
 {
     assert(tp);
@@ -58,11 +61,13 @@ void foreach (Table tp, int lev, void (*apply)(Symbol, void *), void *cl)
         src = sav;
     }
 }
+
 void enterscope(void)
 {
     if (++level == LOCAL)
         tempid = 0;
 }
+
 void exitscope(void)
 {
     rmtypes(level);
@@ -83,31 +88,33 @@ void exitscope(void)
     assert(level >= GLOBAL);
     --level;
 }
-Symbol install(const char *name, Table *tpp, int level, int arena)
+
+Symbol install(const char *name, Table *tpp, int lvl, int arena)
 {
     Table tp = *tpp;
     struct entry *p;
     unsigned h = (unsigned long)name & (HASHSIZE - 1);
 
-    assert(level == 0 || level >= tp->level);
-    if (level > 0 && tp->level < level)
-        tp = *tpp = table(tp, level);
+    assert(lvl == 0 || lvl >= tp->level);
+    if (lvl > 0 && tp->level < lvl)
+        tp = *tpp = table(tp, lvl);
     NEW0(p, arena);
     p->sym.name    = (char *)name;
-    p->sym.scope   = level;
+    p->sym.scope   = lvl;
     p->sym.up      = tp->all;
     tp->all        = &p->sym;
     p->link        = tp->buckets[h];
     tp->buckets[h] = p;
     return &p->sym;
 }
-Symbol relocate(const char *name, Table src, Table dst)
+
+Symbol relocate(const char *name, Table source, Table dst)
 {
     struct entry *p, **q;
     Symbol *r;
     unsigned h = (unsigned long)name & (HASHSIZE - 1);
 
-    for (q = &src->buckets[h]; *q; q = &(*q)->link)
+    for (q = &source->buckets[h]; *q; q = &(*q)->link)
         if (name == (*q)->sym.name)
             break;
     assert(*q);
@@ -117,7 +124,7 @@ Symbol relocate(const char *name, Table src, Table dst)
     */
     p  = *q;
     *q = (*q)->link;
-    for (r = &src->all; *r && *r != &p->sym; r = &(*r)->up)
+    for (r = &source->all; *r && *r != &p->sym; r = &(*r)->up)
         ;
     assert(*r == &p->sym);
     *r = p->sym.up;
@@ -132,6 +139,7 @@ Symbol relocate(const char *name, Table src, Table dst)
     dst->all        = &p->sym;
     return &p->sym;
 }
+
 Symbol lookup(const char *name, Table tp)
 {
     struct entry *p;
@@ -145,6 +153,7 @@ Symbol lookup(const char *name, Table tp)
     while ((tp = tp->previous) != NULL);
     return NULL;
 }
+
 int genlabel(int n)
 {
     static int label = 1;
@@ -152,6 +161,7 @@ int genlabel(int n)
     label += n;
     return label - n;
 }
+
 Symbol findlabel(int lab)
 {
     struct entry *p;
@@ -172,6 +182,7 @@ Symbol findlabel(int lab)
     (*IR->defsymbol)(&p->sym);
     return &p->sym;
 }
+
 Symbol constant(Type ty, Value v)
 {
     struct entry *p;
@@ -230,6 +241,7 @@ Symbol constant(Type ty, Value v)
     p->sym.defined = 1;
     return &p->sym;
 }
+
 Symbol intconst(int n)
 {
     Value v;
@@ -237,6 +249,7 @@ Symbol intconst(int n)
     v.i = n;
     return constant(inttype, v);
 }
+
 Symbol genident(int scls, Type ty, int lev)
 {
     Symbol p;
@@ -265,6 +278,7 @@ Symbol temporary(int scls, Type ty)
     p->generated = 1;
     return p;
 }
+
 Symbol newtemp(int sclass, int tc, int size)
 {
     Symbol p = temporary(sclass, btot(tc, size));
@@ -285,14 +299,15 @@ void locus(Table tp, Coordinate *cp)
     symbols = append(allsymbols(tp), symbols);
 }
 
-void use(Symbol p, Coordinate src)
+void use(Symbol p, Coordinate source)
 {
     Coordinate *cp;
 
     NEW(cp, PERM);
-    *cp     = src;
+    *cp     = source;
     p->uses = append(cp, p->uses);
 }
+
 /* findtype - find type ty in identifiers */
 Symbol findtype(Type ty)
 {
