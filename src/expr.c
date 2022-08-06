@@ -644,7 +644,7 @@ Tree cast(Tree p, Type type)
                 case UNSIGNED:
                     if (isfloat(dest)) {
                         Type ssrc = signedint(source);
-                        Tree two  = cnsttree(longdouble, (long double)2.0);
+                        Tree two  = cnsttree(longdouble, (/*long*/ double)2.0);
                         p         = (*optree['+'])(
                             ADD,
                             (*optree['*'])(
@@ -660,7 +660,7 @@ Tree cast(Tree p, Type type)
                     if (isunsigned(dest)) {
                         Type sdst = signedint(dest);
                         Tree c =
-                            cast(cnsttree(longdouble, (long double)sdst->u.sym->u.limits.max.i + 1),
+                            cast(cnsttree(longdouble, (/*long*/ double)sdst->u.sym->u.limits.max.i + 1),
                                  source);
                         p = condtree(
                             simplify(GE, source, p, c),

@@ -189,7 +189,7 @@ Tree cnsttree(Type ty, ...)
         p->u.v.u = va_arg(ap, unsigned long) & ones(8 * ty->size);
         break;
     case FLOAT:
-        p->u.v.d = va_arg(ap, long double);
+        p->u.v.d = va_arg(ap, /*long*/ double);
         break;
     case POINTER:
         p->u.v.p = va_arg(ap, void *);

@@ -89,7 +89,7 @@ TwoForty:
 .size MinusOne,8
 MinusOne:
 .long 0
-.long -524288
+.long -1074790400
 .globl OneAndHalf
 .align 4
 .type OneAndHalf,@object
@@ -7449,7 +7449,7 @@ sahf
 jp .LC1025
 jae .LC1025
 .LC1027:
-fldl .LC1030
+fldl .LC827
 fcompl 20(%ebp)
 fstsw %ax
 sahf
@@ -7476,13 +7476,13 @@ fldl .LC8
 fcompl 28(%ebp)
 fstsw %ax
 sahf
-jp .LC1031
-jbe .LC1031
+jp .LC1030
+jbe .LC1030
 fldl 28(%ebp)
 fchs
 fstpl 28(%ebp)
 movl $1,-24(%ebp)
-.LC1031:
+.LC1030:
 leal -32(%ebp),%edi
 pushl %edi
 fldl 28(%ebp)
@@ -7498,7 +7498,7 @@ fcompl 28(%ebp)
 fstsw %ax
 sahf
 jp 1f
-je .LC1033
+je .LC1032
 1:
 fldl 20(%ebp)
 subl $8,%esp
@@ -7515,11 +7515,11 @@ addl $8,%esp
 fstpl -80(%ebp)
 fldl -80(%ebp)
 fstpl -16(%ebp)
-jmp .LC1034
-.LC1033:
+jmp .LC1033
+.LC1032:
 fldl .LC9
 fstpl -16(%ebp)
-.LC1034:
+.LC1033:
 leal -8(%ebp),%edi
 pushl %edi
 fldl 20(%ebp)
@@ -7543,49 +7543,49 @@ fldcw 0(%esp)
 addl $4,%esp
 movl %eax,-4(%ebp)
 cmpl $0,%eax
-je .LC1035
-.LC1037:
+je .LC1034
+.LC1036:
 movl -4(%ebp),%edi
 andl $1,%edi
 cmpl $0,%edi
-je .LC1041
+je .LC1040
 fldl -16(%ebp)
 fmull 20(%ebp)
 fstpl -16(%ebp)
 movl -8(%ebp),%edi
 addl %edi,-20(%ebp)
-.LC1041:
+.LC1040:
 movl -4(%ebp),%edi
 sarl $1,%edi
 movl %edi,-4(%ebp)
 cmpl $0,%edi
-jne .LC1043
-jmp .LC1039
-.LC1043:
+jne .LC1042
+jmp .LC1038
+.LC1042:
 fldl 20(%ebp)
 fmull 20(%ebp)
 fstpl 20(%ebp)
 sall $1,-8(%ebp)
-fldl .LC1047
+fldl .LC1046
 fcompl 20(%ebp)
 fstsw %ax
 sahf
-jp .LC1037
-jbe .LC1037
-fldl .LC1048
+jp .LC1036
+jbe .LC1036
+fldl .LC1047
 fmull 20(%ebp)
 fstpl 20(%ebp)
 decl -8(%ebp)
-jmp .LC1037
-.LC1039:
-.LC1035:
+jmp .LC1036
+.LC1038:
+.LC1034:
 cmpl $0,-24(%ebp)
-je .LC1049
+je .LC1048
 fldl .LC9
 fdivl -16(%ebp)
 fstpl -16(%ebp)
 negl -20(%ebp)
-.LC1049:
+.LC1048:
 pushl -20(%ebp)
 fldl -16(%ebp)
 subl $8,%esp
@@ -7601,8 +7601,8 @@ popl %esi
 popl %ebx
 popl %ebp
 ret
-.Lf1051:
-.size pow,.Lf1051-pow
+.Lf1050:
+.size pow,.Lf1050-pow
 .bss
 .globl UfNGrad
 .align 4
@@ -8021,17 +8021,13 @@ ret
 .comm ovfl_buf,64
 .data
 .align 4
-.LC1048:
+.LC1047:
 .long 0
 .long 1073741824
 .align 4
-.LC1047:
+.LC1046:
 .long 0
 .long 1071644672
-.align 4
-.LC1030:
-.long 0
-.long -524288
 .align 4
 .LC1029:
 .long 0
@@ -8039,7 +8035,7 @@ ret
 .align 4
 .LC1028:
 .long 0
-.long -524288
+.long -1064226816
 .align 1
 .LC1020:
 .byte 115
@@ -12050,7 +12046,7 @@ ret
 .align 4
 .LC827:
 .long 0
-.long -524288
+.long -1074790400
 .align 1
 .LC821:
 .byte 69
