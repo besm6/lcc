@@ -4,6 +4,8 @@
 #undef yy
 #define yy \
 xx(alpha/osf,     alphaIR) \
+xx(besm6,         besm6IR) \
+xx(bytecode,      bytecodeIR) \
 xx(mips/irix,     mipsebIR) \
 xx(sparc/sun,     sparcIR) \
 xx(sparc/solaris, solarisIR) \
@@ -12,7 +14,6 @@ xx(symbolic/irix, symbolicIR) \
 xx(symbolic,      symbolicIR) \
 xx(x86/win32,     x86IR) \
 xx(x86/linux,     x86linuxIR) \
-xx(bytecode,      bytecodeIR) \
 xx(null,          nullIR)
 // clang-format on
 

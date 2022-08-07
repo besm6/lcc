@@ -56,6 +56,12 @@ add_custom_command(
     DEPENDS ${CMAKE_BINARY_DIR}/lburg
             ${CMAKE_SOURCE_DIR}/src/x86linux.md
 )
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/besm6.c
+    COMMAND ${CMAKE_BINARY_DIR}/lburg ${CMAKE_SOURCE_DIR}/src/besm6.md > ${CMAKE_BINARY_DIR}/besm6.c
+    DEPENDS ${CMAKE_BINARY_DIR}/lburg
+            ${CMAKE_SOURCE_DIR}/src/besm6.md
+)
 
 #
 # Build rcc library
@@ -95,6 +101,7 @@ add_library(librcc STATIC
     ${CMAKE_BINARY_DIR}/sparc.c
     ${CMAKE_BINARY_DIR}/x86.c
     ${CMAKE_BINARY_DIR}/x86linux.c
+    ${CMAKE_BINARY_DIR}/besm6.c
 )
 target_include_directories(librcc BEFORE PUBLIC
     src

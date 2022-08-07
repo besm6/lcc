@@ -44,3 +44,11 @@ Expected output:
     tst/test_rcc.py .................................... [100%]
 
     ==================== 36 passed in 0.39s ====================
+
+Every test case consists of several files. For example, for `cq` test::
+
+ * `tst/cq.c` - source C file
+ * `tst/cq.0` - input file for the test (stdin), optional
+ * `tst/TARGET/cq.sbk` - expected assembly code, per platform
+ * `tst/TARGET/cq.1bk` - expected output from the test (stdout), optional
+ * `tst/TARGET/cq.2bk` - expected warnings from the compiler (stderr)
