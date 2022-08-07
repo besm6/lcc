@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 
-/* $Id$ */
 /* iburg.c: */
 extern void *alloc(int nbytes);
 

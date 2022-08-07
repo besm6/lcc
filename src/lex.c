@@ -5,7 +5,14 @@
 
 #define MAXTOKEN 32
 
-enum { BLANK = 01, NEWLINE = 02, LETTER = 04, DIGIT = 010, HEX = 020, OTHER = 040 };
+enum {
+    BLANK = 01,
+    NEWLINE = 02,
+    LETTER = 04,
+    DIGIT = 010,
+    HEX = 020,
+    OTHER = 040
+};
 
 static unsigned char map[256] = {
     /* 000 nul */ 0,
@@ -136,6 +143,7 @@ static unsigned char map[256] = {
     /* 175 }   */ OTHER,
     /* 176 ~   */ OTHER,
 };
+
 static struct symbol tval;
 static char cbuf[BUFSIZE + 1];
 static unsigned int wcbuf[BUFSIZE + 1];
@@ -640,6 +648,7 @@ int gettok(void)
         }
     }
 }
+
 static Symbol icon(unsigned long n, int overflow, int base)
 {
     if (((*incp == 'u' || *incp == 'U') && (incp[1] == 'l' || incp[1] == 'L')) ||
@@ -687,6 +696,7 @@ static Symbol icon(unsigned long n, int overflow, int base)
     ppnumber("integer");
     return &tval;
 }
+
 static void ppnumber(char *which)
 {
     unsigned char *rcp = incp--;
@@ -699,6 +709,7 @@ static void ppnumber(char *which)
 
               (char *)incp - token, which);
 }
+
 static Symbol fcon(void)
 {
     if (*incp == '.')
@@ -807,6 +818,7 @@ static void *scon(int q, void *put(int c, void *cl), void *cl)
         warning("%s literal contains non-portable characters\n", q == '"' ? "string" : "character");
     return cl;
 }
+
 int getchr(void)
 {
     for (;;) {
@@ -820,6 +832,7 @@ int getchr(void)
             return EOI;
     }
 }
+
 static int backslash(int q)
 {
     unsigned int c;

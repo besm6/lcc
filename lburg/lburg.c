@@ -17,6 +17,7 @@ static Term terms;
 static Nonterm nts;
 static Rule rules;
 static int nrules;
+
 static struct block {
     struct block *link;
 } * memlist; /* list of allocated blocks */
@@ -136,6 +137,7 @@ struct entry {
     } sym;
     struct entry *link;
 } * table[211];
+
 #define HASHSIZE (sizeof table / sizeof table[0])
 
 /* hash - return hash number for str */

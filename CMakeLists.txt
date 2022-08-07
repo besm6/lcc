@@ -150,3 +150,11 @@ add_library(liblcc STATIC
     lib/bbexit.c
     lib/yynull.c
 )
+
+#
+# Run all unit tests
+#
+add_custom_target(test
+    COMMAND pytest ${CMAKE_SOURCE_DIR}/tst/test_rcc.py -v
+    COMMENT "Run unit tests"
+)

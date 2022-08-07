@@ -410,9 +410,10 @@ int lookuparg(Nlist *mac, Token *tp)
 /*
  * Return a quoted version of the tokenrow (from # arg)
  */
-#define STRLEN 512
 Tokenrow *stringify(Tokenrow *vp)
 {
+#define STRLEN 512
+
     static Token t     = { STRING };
     static Tokenrow tr = { &t, &t, &t + 1, 1 };
     Token *tp;

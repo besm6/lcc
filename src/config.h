@@ -18,6 +18,7 @@ typedef struct {
     void (*target)(Node);
     void (*clobber)(Node);
 } Xinterface;
+
 extern int askregvar(Symbol, Symbol);
 extern void blkcopy(int, int, int, int, int, int[]);
 extern unsigned emitasm(Node, int);
@@ -45,6 +46,7 @@ extern unsigned freemask[], usedmask[];
 extern int offset, maxoffset;
 extern int swap;
 extern unsigned tmask[], vmask[];
+
 typedef struct {
     unsigned listed : 1;
     unsigned registered : 1;
@@ -60,13 +62,16 @@ typedef struct {
     Node prevuse;
     short argno;
 } Xnode;
+
 typedef struct {
     Symbol vbl;
     short set;
     short number;
     unsigned mask;
 } * Regnode;
+
 enum { IREG = 0, FREG = 1 };
+
 typedef struct {
     char *name;
     unsigned int eaddr; /* omit */
@@ -76,7 +81,9 @@ typedef struct {
     Regnode regnode;
     Symbol *wildcard;
 } Xsymbol;
+
 enum { RX = 2 };
+
 typedef struct {
     int offset;
     unsigned freemask[2];

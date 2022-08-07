@@ -9,8 +9,8 @@
  * They are referred to by indices in the hidesets array.
  * Hideset 0 is empty.
  */
-
 #define HSSIZ 32
+
 typedef Nlist **Hideset;
 Hideset *hidesets;
 int nhidesets   = 0;

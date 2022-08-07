@@ -32,6 +32,7 @@ Tree texpr(Tree (*f)(int), int tok, int a)
     where = save;
     return p;
 }
+
 static Tree root1(Tree p)
 {
     if (p == NULL)

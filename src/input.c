@@ -5,7 +5,8 @@ static void resynch(void);
 
 static int bsize;
 static unsigned char buffer[MAXLINE + 1 + BUFSIZE + 1];
-unsigned char *incp;    /* current input character */
+
+unsigned char *incp;  /* current input character */
 char *file;           /* current input file name */
 char *firstfile;      /* first input file */
 unsigned char *limit; /* points to last character + 1 */
@@ -32,6 +33,7 @@ void nextline(void)
         }
     } while (*incp == '\n' && incp == limit);
 }
+
 void fillbuf(void)
 {
     if (bsize == 0)
@@ -58,6 +60,7 @@ void fillbuf(void)
     limit  = &buffer[MAXLINE + 1 + bsize];
     *limit = '\n';
 }
+
 void input_init(int argc, char *argv[])
 {
     static int inited;

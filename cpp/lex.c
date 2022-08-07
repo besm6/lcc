@@ -83,13 +83,14 @@ enum state {
 
 int tottok;
 int tokkind[256];
+
 struct fsm {
     int state;     /* if in this state */
     uchar ch[4];   /* and see one of these characters */
     int nextstate; /* enter this state if +ve */
 };
 
-/*const*/ struct fsm fsm[] = {
+const struct fsm fsm[] = {
     // clang-format off
     /* start state */
     { START,    { C_XX },               ACT(UNCLASS,S_SELF) },
@@ -278,7 +279,7 @@ short bigfsm[256][MAXSTATE];
 
 void expandlex(void)
 {
-    /*const*/ struct fsm *fp;
+    const struct fsm *fp;
     int i, j, nstate;
 
     for (fp = fsm; fp->state >= 0; fp++) {

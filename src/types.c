@@ -9,6 +9,7 @@ static struct entry {
     struct type type;
     struct entry *link;
 } * typetable[128];
+
 static int maxlevel;
 
 static Symbol pointersym;
@@ -66,6 +67,7 @@ static Type xxinit(int op, char *name, Metrics m)
     }
     return ty;
 }
+
 static Type type(int op, Type ty, int size, int align, void *sym)
 {
     unsigned h = (op ^ ((unsigned long)ty >> 3)) & (NELEMS(typetable) - 1);
@@ -86,6 +88,7 @@ static Type type(int op, Type ty, int size, int align, void *sym)
     typetable[h]   = tn;
     return &tn->type;
 }
+
 void type_init(int argc, char *argv[])
 {
     static int inited;
@@ -166,6 +169,7 @@ void type_init(int argc, char *argv[])
     }
 #undef xx
 }
+
 void rmtypes(int lev)
 {
     if (maxlevel >= lev) {
@@ -186,10 +190,12 @@ void rmtypes(int lev)
         }
     }
 }
+
 Type ptr(Type ty)
 {
     return type(POINTER, ty, IR->ptrmetric.size, IR->ptrmetric.align, pointersym);
 }
+
 Type deref(Type ty)
 {
     if (isptr(ty))
@@ -198,6 +204,7 @@ Type deref(Type ty)
         error("type error: %s\n", "pointer expected");
     return isenum(ty) ? unqual(ty)->type : ty;
 }
+
 Type array(Type ty, int n, int a)
 {
     assert(ty);
@@ -219,6 +226,7 @@ Type array(Type ty, int n, int a)
     }
     return type(ARRAY, ty, n * ty->size, a ? a : ty->align, NULL);
 }
+
 Type atop(Type ty)
 {
     if (isarray(ty))
@@ -226,6 +234,7 @@ Type atop(Type ty)
     error("type error: %s\n", "array expected");
     return ptr(ty);
 }
+
 Type qual(int op, Type ty)
 {
     if (isarray(ty))
@@ -244,6 +253,7 @@ Type qual(int op, Type ty)
     }
     return ty;
 }
+
 Type func(Type ty, Type *proto, int style)
 {
     if (ty && (isarray(ty) || isfunc(ty)))
@@ -253,6 +263,7 @@ Type func(Type ty, Type *proto, int style)
     ty->u.f.oldstyle = style;
     return ty;
 }
+
 Type freturn(Type ty)
 {
     if (isfunc(ty))
@@ -260,6 +271,7 @@ Type freturn(Type ty)
     error("type error: %s\n", "function expected");
     return inttype;
 }
+
 int variadic(Type ty)
 {
     if (isfunc(ty) && ty->u.f.proto) {
@@ -270,6 +282,7 @@ int variadic(Type ty)
     }
     return 0;
 }
+
 Type newstruct(int op, char *tag)
 {
     Symbol p;
@@ -291,6 +304,7 @@ Type newstruct(int op, char *tag)
     p->src = src;
     return p->type;
 }
+
 Field newfield(char *name, Type ty, Type fty)
 {
     Field p, *q = &ty->u.sym->u.s.flist;
@@ -311,6 +325,7 @@ Field newfield(char *name, Type ty, Type fty)
     }                                                            /* omit */
     return p;
 }
+
 int eqtype(Type ty1, Type ty2, int ret)
 {
     if (ty1 == ty2)
@@ -368,6 +383,7 @@ int eqtype(Type ty1, Type ty2, int ret)
     unreachable();
     return 0;
 }
+
 Type promote(Type ty)
 {
     ty = unqual(ty);
@@ -390,6 +406,7 @@ Type promote(Type ty)
     }
     return ty;
 }
+
 Type signedint(Type ty)
 {
     if (ty->op == INT)
@@ -405,6 +422,7 @@ Type signedint(Type ty)
     unreachable();
     return NULL;
 }
+
 Type compose(Type ty1, Type ty2)
 {
     if (ty1 == ty2)
@@ -452,6 +470,7 @@ Type compose(Type ty1, Type ty2)
     unreachable();
     return NULL;
 }
+
 int ttob(Type ty)
 {
     switch (ty->op) {
@@ -478,6 +497,7 @@ int ttob(Type ty)
     unreachable();
     return INT;
 }
+
 Type btot(int op, int size)
 {
 #define xx(ty)              \
@@ -520,6 +540,7 @@ Type btot(int op, int size)
     unreachable();
     return 0;
 }
+
 int hasproto(Type ty)
 {
     if (ty == 0)
@@ -545,6 +566,7 @@ int hasproto(Type ty)
     unreachable();
     return 0;
 }
+
 /* fieldlist - construct a flat list of fields in type ty */
 Field fieldlist(Type ty)
 {

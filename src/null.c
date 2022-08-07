@@ -97,6 +97,7 @@ static void I(stabline)(Coordinate *coord)
 static void I(stabsym)(Symbol p)
 {
 }
+
 static void I(stabtype)(Symbol p)
 {
 }

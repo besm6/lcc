@@ -3,6 +3,7 @@
 #define add(x, n)         (x > inttype->u.sym->u.limits.max.i - (n) ? (overflow = 1, x) : x + (n))
 #define chkoverflow(x, n) ((void)add(x, n))
 #define bits2bytes(n)     (((n) + 7) / 8)
+
 static int regcount;
 
 static List autos, registers;

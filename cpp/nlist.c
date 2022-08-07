@@ -9,6 +9,7 @@ extern char *optarg;
 extern int optind;
 extern int verbose;
 extern int Cplusplus;
+
 Nlist *kwdefined;
 
 #define NLSIZE 128

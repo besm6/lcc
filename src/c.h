@@ -21,14 +21,18 @@
 #define opkind(op)          ((op) & ~0x3F0)
 #define opsize(op)          ((op) >> 10)
 #define optype(op)          ((op)&0xF)
+
 #ifdef __LCC__
 #ifndef __STDC__
 #define __STDC__
 #endif
 #endif
+
 #define NELEMS(a) ((int)(sizeof(a) / sizeof((a)[0])))
+
 #undef roundup
 #define roundup(x, n) (((x) + ((n)-1)) & (~((n)-1)))
+
 #define mkop(op, ty)  (specific((op) + ttob(ty)))
 
 #define extend(x, ty)                                                           \
@@ -57,14 +61,11 @@
 #define fieldright(p) ((p)->lsb - 1)
 #define fieldleft(p)  (8 * (p)->type->size - fieldsize(p) - fieldright(p))
 #define fieldmask(p)  (~(fieldsize(p) < 8 * unsignedtype->size ? ~0u << fieldsize(p) : 0u))
+
 typedef struct node *Node;
-
 typedef struct list *List;
-
 typedef struct code *Code;
-
 typedef struct swtch *Swtch;
-
 typedef struct symbol *Symbol;
 
 typedef struct coord {
@@ -83,7 +84,6 @@ typedef union value {
 typedef struct tree *Tree;
 
 typedef struct type *Type;
-
 typedef struct field *Field;
 
 typedef struct {
@@ -94,9 +94,11 @@ typedef struct {
 } Xtype;
 
 #include "config.h"
+
 typedef struct metrics {
     unsigned char size, align, outofline;
 } Metrics;
+
 typedef struct interface {
     Metrics charmetric;
     Metrics shortmetric;
@@ -142,6 +144,7 @@ typedef struct interface {
     void (*stabtype)(Symbol);
     Xinterface x;
 } Interface;
+
 typedef struct binding {
     char *name;
     Interface *ir;
@@ -149,6 +152,7 @@ typedef struct binding {
 
 extern Binding bindings[];
 extern Interface *IR;
+
 typedef struct {
     List blockentry;
     List blockexit;
@@ -166,6 +170,7 @@ enum {
 #include "token.h"
     LAST
 };
+
 struct node {
     short op;
     short count;
@@ -174,7 +179,9 @@ struct node {
     Node link;
     Xnode x;
 };
+
 enum { F = FLOAT, I = INT, U = UNSIGNED, P = POINTER, V = VOID, B = STRUCT };
+
 #define gop(name, value) name = value << 4,
 #define op(name, type, sizes)
 
@@ -185,8 +192,10 @@ enum {
 
 #undef gop
 #undef op
+
 enum { CODE = 1, BSS, DATA, LIT };
 enum { PERM = 0, FUNC, STMT };
+
 struct list {
     void *x;
     List link;
@@ -226,6 +235,7 @@ struct code {
 
     } u;
 };
+
 struct swtch {
     Symbol sym;
     int lab;
@@ -235,6 +245,7 @@ struct swtch {
     long *values;
     Symbol *labels;
 };
+
 struct symbol {
     char *name;
     int scope;
@@ -287,7 +298,9 @@ struct symbol {
     } u;
     Xsymbol x;
 };
+
 enum { CONSTANTS = 1, LABELS, GLOBAL, PARAM, LOCAL };
+
 struct tree {
     int op;
     Type type;
@@ -300,6 +313,7 @@ struct tree {
         Field field;
     } u;
 };
+
 enum {
     AND   = 38 << 4,
     NOT   = 39 << 4,
@@ -308,6 +322,7 @@ enum {
     RIGHT = 42 << 4,
     FIELD = 43 << 4
 };
+
 struct type {
     int op;
     Type type;
@@ -322,6 +337,7 @@ struct type {
     } u;
     Xtype x;
 };
+
 struct field {
     char *name;
     Type type;
@@ -330,6 +346,7 @@ struct field {
     short lsb;
     Field link;
 };
+
 extern int assignargs;
 extern int prunetemps;
 extern int nodecount;
@@ -379,7 +396,6 @@ extern Table types;
 extern int level;
 
 extern List loci, symbols;
-
 extern List symbols;
 
 extern int where;

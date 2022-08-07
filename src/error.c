@@ -3,11 +3,13 @@
 static void printtoken(void);
 int errcnt   = 0;
 int errlimit = 20;
+
 char kind[]  = {
 #define xx(a, b, c, d, e, f, g) f,
 #define yy(a, b, c, d, e, f, g) f,
 #include "token.h"
 };
+
 int wflag; /* != 0 to suppress warning messages */
 
 void test(int tok, char set[])
@@ -21,6 +23,7 @@ void test(int tok, char set[])
             curtok = gettok();
     }
 }
+
 void expect(int tok)
 {
     if (curtok == tok)
@@ -31,6 +34,7 @@ void expect(int tok)
         fprint(stderr, " expecting `%k'\n", tok);
     }
 }
+
 void error(const char *fmt, ...)
 {
     va_list ap;
@@ -73,6 +77,7 @@ void skipto(int tok, char set[])
     if (n > 0)
         fprint(stderr, "\n");
 }
+
 /* fatal - issue fatal error message and exit */
 int fatal(const char *name, const char *fmt, int n)
 {

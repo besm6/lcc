@@ -1,13 +1,16 @@
 /* $Id$ */
 #include <stdio.h>
+
 #define INS      32768 /* input buffer */
 #define OBS      4096  /* outbut buffer */
 #define NARG     32    /* Max number arguments to a macro */
 #define NINCLUDE 32    /* Max number of include directories (-I) */
 #define NIF      32    /* depth of nesting of #if */
+
 #ifndef EOF
 #define EOF (-1)
 #endif
+
 #ifndef NULL
 #define NULL 0
 #endif
@@ -157,6 +160,7 @@ typedef struct includelist {
 #define new(t) (t *)domalloc(sizeof(t))
 #define quicklook(a, b) (namebit[(a)&077] & (1 << ((b)&037)))
 #define quickset(a, b)  namebit[(a)&077] |= (1 << ((b)&037))
+
 extern unsigned long namebit[077 + 1];
 
 enum errtype { WARNING, ERROR, FATAL };
@@ -212,6 +216,7 @@ int newhideset(int, Nlist *);
 int unionhideset(int, int);
 void iniths(void);
 void setobjname(char *);
+
 #define rowlen(tokrow) ((tokrow)->lp - (tokrow)->bp)
 
 extern char *outp;

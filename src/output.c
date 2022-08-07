@@ -39,6 +39,7 @@ static char *outu(unsigned long n, int base, FILE *f, char *bp)
     while ((n /= base) != 0);
     return outs(s, f, bp);
 }
+
 void print(const char *fmt, ...)
 {
     va_list ap;
@@ -47,7 +48,8 @@ void print(const char *fmt, ...)
     vfprint(stdout, NULL, fmt, ap);
     va_end(ap);
 }
-/* fprint - formatted output to  f */
+
+/* fprint - formatted output to a file */
 void fprint(FILE *f, const char *fmt, ...)
 {
     va_list ap;

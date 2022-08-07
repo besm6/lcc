@@ -6,6 +6,7 @@ struct entry {
 };
 
 Events events;
+
 void attach(Apply func, void *cl, List *list)
 {
     struct entry *p;
@@ -15,6 +16,7 @@ void attach(Apply func, void *cl, List *list)
     p->cl   = cl;
     *list   = append(p, *list);
 }
+
 void apply(List event, void *arg1, void *arg2)
 {
     if (event) {

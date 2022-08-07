@@ -1,6 +1,7 @@
 #include "c.h"
 
 #define readsreg(p) (generic((p)->op) == INDIR && (p)->kids[0]->op == VREG + P)
+
 #define setsrc(d, src)                                                           \
     ((d) && (d)->x.regnode && (d)->x.regnode->set == src->x.regnode->set && \
      (d)->x.regnode->mask & src->x.regnode->mask)
@@ -31,38 +32,33 @@ static void spillr(Symbol, Node);
 static int uses(Node, Regnode);
 
 int offset;
-
 int maxoffset;
-
 int framesize;
 int argoffset;
-
 int maxargoffset;
-
 int dalign, salign;
 int bflag = 0; /* omit */
 int dflag = 0;
-
 int swap;
 
 unsigned (*emitter)(Node, int) = emitasm;
 
 static char NeedsReg[] = {
-            0,                /* unused */
-            1,                /* CNST */
-            0, 0,             /* ARG ASGN */
-            1,                /* INDIR  */
-            0, 0, 1, 1,       /*  -  - CVF CVI */
-            1, 0, 1, 1,       /* CVP - CVU NEG */
-            1,                /* CALL */
-            1,                /* LOAD */
-            0,                /* RET */
-            1, 1, 1,          /* ADDRG ADDRF ADDRL */
-            1, 1, 1, 1, 1,    /* ADD SUB LSH MOD RSH */
-            1, 1, 1, 1,       /* BAND BCOM BOR BXOR */
-            1, 1,             /* DIV MUL */
-            0, 0, 0, 0, 0, 0, /* EQ GE GT LE LT NE */
-            0, 0              /* JUMP LABEL   */
+    0,                /* unused */
+    1,                /* CNST */
+    0, 0,             /* ARG ASGN */
+    1,                /* INDIR  */
+    0, 0, 1, 1,       /*  -  - CVF CVI */
+    1, 0, 1, 1,       /* CVP - CVU NEG */
+    1,                /* CALL */
+    1,                /* LOAD */
+    0,                /* RET */
+    1, 1, 1,          /* ADDRG ADDRF ADDRL */
+    1, 1, 1, 1, 1,    /* ADD SUB LSH MOD RSH */
+    1, 1, 1, 1,       /* BAND BCOM BOR BXOR */
+    1, 1,             /* DIV MUL */
+    0, 0, 0, 0, 0, 0, /* EQ GE GT LE LT NE */
+    0, 0              /* JUMP LABEL   */
 };
 Node head;
 

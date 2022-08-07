@@ -12,12 +12,14 @@ struct callsite {
         } be;
     } u;
 };
+
 struct func {
     struct func *link;
     struct caller *callers;
     char *name;
     union coordinate src;
 };
+
 struct map { /* source code map; 200 coordinates/map */
     int size;
     union coordinate u[200];

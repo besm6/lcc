@@ -6,6 +6,7 @@ static void typestab(Symbol, void *);
 
 static void stabline(Coordinate *);
 static void stabend(Coordinate *, Symbol, Coordinate **, Symbol *, Symbol *);
+
 Interface *IR = NULL;
 
 int Aflag;      /* >= 0 if -A specified */
@@ -21,6 +22,7 @@ static char *currentfile; /* current file name */
 static int currentline;   /* current line number */
 static FILE *srcfp;       /* stream for current file, if non-NULL */
 static int srcpos;        /* position of srcfp, if srcfp is non-NULL */
+
 int main(int argc, char *argv[])
 {
     int i, j;
@@ -103,6 +105,7 @@ int main(int argc, char *argv[])
     deallocate(PERM);
     return errcnt > 0;
 }
+
 /* main_init - process program arguments */
 void main_init(int argc, char *argv[])
 {
@@ -183,6 +186,7 @@ void main_init(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 }
+
 /* typestab - emit stab entries for p */
 static void typestab(Symbol p, void *cl)
 {
