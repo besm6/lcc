@@ -582,7 +582,7 @@ addrj: ADDRGP4  "%a"
 addrj: reg      "*%0"  2
 addrj: mem4     "*%0"  2
 
-stmt: LABELV         "%a:\n"
+stmt: LABELV         "%a     ноп\n"
 stmt: JUMPV(addrj)   "jmp %0\n"  3
 stmt: EQI4(mem4,rc)  "cmpl %1,%0\nje %a\n"   5
 stmt: GEI4(mem4,rc)  "cmpl %1,%0\njge %a\n"  5
@@ -777,7 +777,7 @@ static Symbol prevg;
 static void globalend(void)
 {
     if (prevg && prevg->type->size > 0)
-        print("* End of %s, size %d\n", prevg->x.name, prevg->type->size);
+        print("* Конец %s, размер %d\n", prevg->x.name, prevg->type->size);
     prevg = NULL;
 }
 
@@ -788,7 +788,7 @@ static void progend(void)
 {
     globalend();
     (*IR->segment)(CODE);
-    print("* Compiler LCC 4.2\n");
+    print("* Создано компилятором LCC 4.2\n");
 }
 
 static void target(Node p)
@@ -916,28 +916,22 @@ static void emit2(Node p)
 //
 // Generate a function.
 //
+//  main   старт '1'
+//         счим  14
+//         пв    csv(14)
+//         слиа  N(15)
+//         ...
+//         пб    cret
+//         финиш main
+//
 static void function(Symbol f, Symbol caller[], Symbol callee[], int n)
 {
     int i;
 
     globalend();
-    print(".align 16\n");
-    print(".type %s,@function\n", f->x.name);
-    print("%s:\n", f->x.name);
-    print("pushl %%ebp\n");
-    if (pflag) {
-        static int plab;
-        print("movl %%esp,%%ebp\n");
-        (*IR->segment)(DATA);
-        print(".align 4\n.LP%d:\n.long 0\n", plab);
-        (*IR->segment)(CODE);
-        print("movl $.LP%d,%%edx\ncall mcount\n", plab);
-        plab++;
-    }
-    print("pushl %%ebx\n");
-    print("pushl %%esi\n");
-    print("pushl %%edi\n");
-    print("movl %%esp,%%ebp\n");
+    print("%s%I старт '1'\n", f->x.name, 6 - strlen(f->x.name));
+    print("       счим  14\n");
+    print("       пв    csv(14)\n");
 
     usedmask[0] = usedmask[1] = 0;
     freemask[0] = freemask[1] = ~0U;
@@ -947,28 +941,33 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int n)
         Symbol p = callee[i];
         Symbol q = caller[i];
         assert(q);
-        offset      = roundup(offset, q->type->align);
-        p->x.offset = q->x.offset = offset;
-        p->x.name = q->x.name = stringf("%d", p->x.offset);
-        p->sclass = q->sclass = AUTO;
-        offset += roundup(q->type->size, 4);
+        offset = roundup(offset, q->type->align);
+
+        p->x.offset = offset;
+        p->x.name   = stringf("%d", p->x.offset);
+        p->sclass   = AUTO;
+
+        q->x.offset = offset;
+        q->x.name   = p->x.name;
+        q->sclass   = AUTO;
+
+        offset += roundup(q->type->size, 6);
     }
     assert(caller[i] == 0);
     offset = maxoffset = 0;
     gencode(caller, callee);
-    framesize = roundup(maxoffset, 4);
-    if (framesize > 0)
-        print("subl $%d,%%esp\n", framesize);
+
+    framesize = roundup(maxoffset, 6);
+    if (framesize > 0) {
+        print("       слиа  %d(15)\n", framesize/6);
+    }
     emitcode();
-    print("movl %%ebp,%%esp\n");
-    print("popl %%edi\n");
-    print("popl %%esi\n");
-    print("popl %%ebx\n");
-    print("popl %%ebp\n");
-    if (isstruct(freturn(f->type)))
-        print("ret $4\n");
-    else
-        print("ret\n");
+
+    if (isstruct(freturn(f->type))) {
+        error("return of structs not implemented\n");
+    }
+    print("       пб    cret\n");
+    print("       финиш %s\n", f->x.name);
 }
 
 //
@@ -980,9 +979,9 @@ static void function(Symbol f, Symbol caller[], Symbol callee[], int n)
 static void defsymbol(Symbol p)
 {
     if (p->scope >= LOCAL && p->sclass == STATIC)
-        p->x.name = stringf("%s.%d", p->name, genlabel(1));
+        p->x.name = stringf("%sь%d", p->name, genlabel(1));
     else if (p->generated)
-        p->x.name = stringf(".LC%s", p->name);
+        p->x.name = stringf("ы%s", p->name);
     else if (p->scope == GLOBAL || p->sclass == EXTERN)
         p->x.name = stringf("%s", p->name);
     else
@@ -1000,11 +999,11 @@ static void segment(int n)
     cseg = n;
 
     if (cseg == CODE)
-        print(".text\n");
+        print("*----- text\n");
     else if (cseg == BSS)
-        print(".bss\n");
+        print("*----- bss\n");
     else if (cseg == DATA || cseg == LIT)
-        print(".data\n");
+        print("*----- data\n");
 }
 
 //
@@ -1069,7 +1068,9 @@ static void defstring(int n, char *str)
 static void export(Symbol p)
 {
     globalend();
-    print(".globl %s\n", p->x.name);
+    if (!isfunc(p->type)) {
+        print("%s входн\n", p->x.name);
+    }
 }
 
 //
@@ -1099,7 +1100,7 @@ static void global(Symbol p)
         else
             print(".comm %s,%d\n", p->x.name, p->type->size);
     } else {
-        print("%s:\n", p->x.name);
+        print("%s%I ноп\n", p->x.name, 6 - strlen(p->x.name));
     }
 }
 
